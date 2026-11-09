@@ -6,10 +6,12 @@ description: Start here for any work in the Postloom repo (personal social media
 # Postloom
 
 ## When to use
+
 - Any task in this repo, before opening files.
 - "Start piece NN", "what's next", "which branch", "where is X".
 
 ## Steps
+
 1. Read `CLAUDE.md` and `docs/roadmap.md` to find the piece, its branch name and title.
 2. Open the feature skill from the table below, then its KB doc.
 3. Plan the piece (files, approach, logging points, tests, KB/skill updates, risks) and wait for "approved".
@@ -17,9 +19,10 @@ description: Start here for any work in the Postloom repo (personal social media
 5. Ship the checklist in `.claude/rules/kb-and-skills.md`.
 
 ## Feature skills
-| Area | Skill | KB |
-|---|---|---|
+
+| Area                       | Skill                 | KB                                       |
+| -------------------------- | --------------------- | ---------------------------------------- |
 | Setup, processes, database | `postloom` (this one) | `knowledge-base/project-setup/README.md` |
-| Logging | `logging` | `knowledge-base/logging/README.md` |
+| Logging                    | `logging`             | `knowledge-base/logging/README.md`       |
 
 Add a row here whenever a piece adds a new skill.
