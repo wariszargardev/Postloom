@@ -104,6 +104,24 @@ it('saves nothing when the owner cancels on LinkedIn', function () {
     expect(SocialAccount::query()->count())->toBe(0);
 });
 
+it('accepts the comma-separated scopes LinkedIn really returns', function () {
+    fakeLinkedInCallback(fakeLinkedInUser(approvedScopes: ['email,openid,profile,w_member_social']));
+
+    $this->actingAs($this->user)
+        ->get(route('accounts.linkedin.callback', ['code' => 'abc']))
+        ->assertSessionHas('inertia.flash_data.toast.message', 'Muhammad Waris is connected.');
+
+    expect(SocialAccount::query()->sole()->scopes)->toBe(['email', 'openid', 'profile', 'w_member_social']);
+});
+
+it('rejects comma-separated scopes without the posting permission', function () {
+    fakeLinkedInCallback(fakeLinkedInUser(approvedScopes: ['email,openid,profile']));
+
+    $this->actingAs($this->user)->get(route('accounts.linkedin.callback', ['code' => 'abc']));
+
+    expect(SocialAccount::query()->count())->toBe(0);
+});
+
 it('rejects a connection without the posting permission', function () {
     fakeLinkedInCallback(fakeLinkedInUser(approvedScopes: ['openid', 'profile', 'email']));
 

@@ -25,7 +25,7 @@ The same app works for every LinkedIn profile you want to connect: each profile 
 1. **Accounts → LinkedIn → Connect** opens `GET /accounts/linkedin/redirect`. The current workspace id is stored in the session (`linkedin_connect_workspace_id`), and Socialite sends the browser to LinkedIn with scopes `openid profile email w_member_social` and a random `state`.
 2. The owner approves on LinkedIn. LinkedIn redirects to `GET /accounts/linkedin/callback?code=…&state=…`.
 3. The callback checks `state`, swaps the code for a token, and reads the profile from `https://api.linkedin.com/v2/userinfo` (`sub`, `name`, `picture`, `email`).
-4. If LinkedIn reports approved scopes and `w_member_social` is missing, the connection is refused (`LinkedInScopeMissingException`).
+4. LinkedIn returns the granted scopes comma-separated in one string (`"email,openid,profile,w_member_social"`); `normalizeScopes()` splits them on commas and spaces. If `w_member_social` is then missing, the connection is refused (`LinkedInScopeMissingException`).
 5. `SocialAccountService::saveConnectedAccount()` saves it into the workspace from step 1 (or the current one if that workspace is gone): provider `linkedin`, type `profile`, `provider_account_id` = `sub`, token encrypted, `token_expires_at` = now + `expires_in` (about 60 days).
 6. The browser goes back to Accounts with a toast: "<name> is connected."
 

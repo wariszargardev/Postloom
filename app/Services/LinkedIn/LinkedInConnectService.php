@@ -54,7 +54,7 @@ class LinkedInConnectService
             throw new RuntimeException('LinkedIn returned an unexpected user type.');
         }
 
-        $approvedScopes = $linkedInUser->approvedScopes;
+        $approvedScopes = $this->normalizeScopes($linkedInUser->approvedScopes);
 
         if ($approvedScopes !== [] && ! in_array(self::PUBLISH_SCOPE, $approvedScopes, true)) {
             LogService::warning('LinkedIn did not grant the posting permission', ['approved_scopes' => $approvedScopes]);
@@ -81,6 +81,22 @@ class LinkedInConnectService
         ]);
 
         return $account;
+    }
+
+    /**
+     * LinkedIn returns the granted scopes comma-separated ("email,openid,profile,w_member_social"),
+     * while Socialite splits them on spaces, so split them again on both.
+     *
+     * @param  array<int, string>  $scopes
+     * @return array<int, string>
+     */
+    private function normalizeScopes(array $scopes): array
+    {
+        return collect($scopes)
+            ->flatMap(fn (string $scope): array => preg_split('/[\s,]+/', $scope, -1, PREG_SPLIT_NO_EMPTY) ?: [])
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function provider(): AbstractProvider
