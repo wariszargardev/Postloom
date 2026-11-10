@@ -32,6 +32,7 @@ class SocialAccountController extends Controller
                 'status' => $account->status()->value,
                 'status_label' => $account->status()->label(),
                 'token_expires_at' => $account->token_expires_at?->toIso8601String(),
+                'token_renews_automatically' => $account->canRefreshToken(),
                 'connected_at' => $account->connected_at?->toIso8601String(),
             ]);
 

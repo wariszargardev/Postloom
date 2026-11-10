@@ -70,7 +70,7 @@ Feature `linkedin` (connect flow) and `accounts` (save and token check).
 | `LinkedIn connection cancelled`                      | info    | `error`                                                           |
 | `LinkedIn callback state did not match`              | error   | exception                                                         |
 | `LinkedIn connection failed`                         | error   | exception                                                         |
-| `Social account connected` / `reconnected`           | info    | `account_id`, `provider`, `token_expires_at` (feature `accounts`) |
+| `Social account connected` / `reconnected`           | info    | `account_id`, `provider`, `token_expires_at` (same trace)         |
 | `Social account token expired, marked for reconnect` | warning | `account_id`, `provider`, `token_expires_at` (feature `accounts`) |
 | `Social account token expires soon`                  | warning | same                                                              |
 | `Social account token check finished`                | info    | `marked_for_reconnect`, `expiring_soon`                           |

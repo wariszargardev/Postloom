@@ -6,7 +6,7 @@ One folder per platform with a step-by-step guide, its screenshots and a short v
 | --------------------------- | ---------------------------------------- | ------------------------------------------------- | --------------------------------- |
 | LinkedIn (personal profile) | [linkedin/README.md](linkedin/README.md) | [linkedin-setup.mp4](linkedin/linkedin-setup.mp4) | done (6 screenshots still to add) |
 | LinkedIn Company Page       | `linkedin-pages/`                        |                                                   | with `feat/linkedin-pages`        |
-| YouTube                     | `youtube/`                               |                                                   | with `feat/youtube`               |
+| YouTube (channels)          | [youtube/README.md](youtube/README.md)   | [youtube-setup.mp4](youtube/youtube-setup.mp4)    | done (7 screenshots still to add) |
 | Facebook and Instagram      | `facebook-instagram/`                    |                                                   | with `feat/facebook-instagram`    |
 | TikTok                      | `tiktok/`                                |                                                   | with `feat/tiktok`                |
 

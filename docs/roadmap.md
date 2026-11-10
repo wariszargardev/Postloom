@@ -13,7 +13,9 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 06  | `feat/06-calendar`              | Calendar                                 | Month/week/day views, click a slot to create, drag to reschedule, failed posts in red                                        | merged    |
 | 07  | `feat/07-scheduler`             | Scheduler and publish queue              | Every-minute due check, one job per target, lock, retries, `publish_attempts`, catch-up for missed posts                     | merged    |
 | 08  | `feat/08-linkedin-publish`      | Publish to LinkedIn                      | Text, multi-image, video and document posts to the personal profile; audio converted to video                                | merged    |
-| 09  | `docs/09-platform-setup-guides` | Platform setup guides                    | Step-by-step LinkedIn app guide with screenshots and video; template and video builder for future platforms                  | in review |
+| 09  | `docs/09-platform-setup-guides` | Platform setup guides                    | Step-by-step LinkedIn app guide with screenshots and video; template and video builder for future platforms                  | merged    |
+| 10  | `feat/10-youtube-connect`       | Connect a YouTube channel                | Google OAuth with offline access, one account per channel, automatic token renewal, setup guide                              | in review |
+| 11  | `feat/11-youtube-publish`       | Publish to YouTube                       | Resumable video upload, title/privacy/made-for-kids settings, audio as video, quota-aware errors                             | planned   |
 
 ## Later
 
@@ -21,7 +23,6 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | ------------------------- | ------------------------------------------------------------ |
 | `feat/linkedin-pages`     | LinkedIn company pages + guide `docs/guides/linkedin-pages/` |
 | `feat/csv-import`         | Import posts from CSV                                        |
-| `feat/youtube`            | YouTube channels                                             |
 | `feat/facebook-instagram` | Facebook pages and Instagram                                 |
 | `feat/tiktok`             | TikTok                                                       |
 | `feat/axiom-logging`      | Send logs to Axiom                                           |
