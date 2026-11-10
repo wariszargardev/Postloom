@@ -38,7 +38,7 @@ See [logging](../logging/README.md).
 
 ## Config (`.env`)
 
-`APP_NAME=Postloom`, `APP_URL=http://localhost:8000`, `DB_*` (port 3307), `QUEUE_CONNECTION=database`, `POSTLOOM_LOG_CHANNELS`, `POSTLOOM_LOG_DAYS`.
+`APP_NAME=Postloom`, `APP_URL=http://localhost:8000`, `DB_*` (port 3307), `QUEUE_CONNECTION=database`, `POSTLOOM_LOG_CHANNELS`, `POSTLOOM_LOG_DAYS`, `POSTLOOM_TIMEZONE` (timezone for scheduled commands), `LINKEDIN_*` (see `knowledge-base/linkedin/README.md`).
 
 ## Tests
 

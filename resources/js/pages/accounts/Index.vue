@@ -26,6 +26,7 @@ type ProviderRow = {
     label: string;
     is_available: boolean;
     availability_note: string;
+    connect_url: string | null;
 };
 
 const props = defineProps<{
@@ -164,12 +165,26 @@ function disconnect(account: AccountRow): void {
                                 </span>
                             </div>
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            @click="disconnect(account)"
-                            >Disconnect</Button
-                        >
+                        <div class="flex flex-wrap gap-2">
+                            <Button
+                                v-if="
+                                    account.status !== 'connected' &&
+                                    group.provider.connect_url
+                                "
+                                size="sm"
+                                as-child
+                            >
+                                <a :href="group.provider.connect_url"
+                                    >Reconnect</a
+                                >
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="disconnect(account)"
+                                >Disconnect</Button
+                            >
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -189,9 +204,14 @@ function disconnect(account: AccountRow): void {
                             provider.availability_note
                         }}</span>
                     </div>
-                    <Button size="sm" :disabled="!provider.is_available"
-                        >Connect</Button
-                    >
+                    <Button v-if="provider.connect_url" size="sm" as-child>
+                        <a
+                            :href="provider.connect_url"
+                            :data-test="`connect-${provider.value}`"
+                            >Connect</a
+                        >
+                    </Button>
+                    <Button v-else size="sm" disabled>Connect</Button>
                 </div>
             </div>
         </section>

@@ -7,7 +7,7 @@ use App\Enums\SocialAccountType;
 use App\Enums\SocialProvider;
 use App\Models\SocialAccount;
 use App\Models\Workspace;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 
 class SocialAccountService
 {
@@ -23,7 +23,7 @@ class SocialAccountService
      *     avatar_url?: string|null,
      *     access_token: string,
      *     refresh_token?: string|null,
-     *     token_expires_at?: Carbon|null,
+     *     token_expires_at?: CarbonInterface|null,
      *     scopes?: array<int, string>|null,
      * }  $details
      */

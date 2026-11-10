@@ -20,6 +20,12 @@ Promotion (only when Waris says): `develop → test → stage → main`, each th
 - PR description uses `.github/pull_request_template.md`: summary, what changed, how to test, KB and skill paths, logging added, tests run.
 - One push per piece when it's ready; more pushes only for review fixes.
 
+## Fixes while a PR is open
+
+- If the piece's PR is still **open**, every fix for it (bug found in testing, review comment, CI failure, doc correction) is committed on **the same branch** and pushed, so it lands in **the same PR**. Never open a second PR or a `fix/...` branch for it, and never ask Waris to close the PR.
+- After pushing, add a line about the fix to the PR description (what broke, what changed, tests).
+- A `fix/NN-...` branch and new PR are only for bugs found **after** the piece's PR is merged.
+
 ## Opening the PR (Claude does it directly)
 
 When a piece is done and its tests pass, Claude commits, pushes the piece branch and **opens the PR into `develop` itself**. Waris does not open PRs by hand, and does not need to ask for this separately.

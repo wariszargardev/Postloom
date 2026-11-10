@@ -9,7 +9,7 @@ Workspaces group social accounts (for example "Personal", "Build Real Code"). A 
 1. Every logged-in request runs `EnsureCurrentWorkspace`. If the owner has no workspace, a **Personal** workspace is created and made current. If the current workspace is missing, the oldest one becomes current.
 2. The sidebar's workspace switcher lists all workspaces. Choosing one calls `POST /workspaces/{id}/switch` and stores it in `users.current_workspace_id`.
 3. **Workspaces page** (`/workspaces`): add (and switch to it), rename, switch, delete. Delete is blocked while the workspace has accounts, and for the last workspace.
-4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (all disabled until each platform's piece ships).
+4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03).
 5. A platform's OAuth callback (piece 03 onward) calls `SocialAccountService::saveConnectedAccount()`. Reconnecting the same account updates the existing row instead of adding a duplicate.
 
 ## Entry points
@@ -85,5 +85,5 @@ Tokens are never logged.
 
 ## Known limits
 
-- No platform can be connected yet; the Connect buttons are disabled until piece 03 (LinkedIn).
+- Only LinkedIn personal profiles can be connected so far (piece 03). The other platforms stay disabled until their pieces.
 - Once posts exist (piece 05), disconnecting an account that has scheduled posts needs a rule. Decide it in that piece.

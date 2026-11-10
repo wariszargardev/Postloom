@@ -40,6 +40,9 @@ class SocialAccountController extends Controller
             'label' => $provider->label(),
             'is_available' => $provider->isAvailable(),
             'availability_note' => $provider->availabilityNote(),
+            'connect_url' => $provider->isAvailable() && $provider->connectRouteName() !== null
+                ? route($provider->connectRouteName())
+                : null,
         ]);
 
         return Inertia::render('accounts/Index', [
