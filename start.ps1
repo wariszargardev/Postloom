@@ -13,10 +13,11 @@ if (Test-Path $pidFile) {
 # The web server runs PHP's built-in server directly so the upload limits below apply to this project only
 # (Herd's php.ini allows 2 MB per file). "php artisan serve" starts a child process that would not get them.
 $uploadLimits = '-d upload_max_filesize=512M -d post_max_size=520M -d memory_limit=512M'
-$router = 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'
+# Laravel's router file loads index.php from the current folder, so the server must run inside public/.
+$router = '../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'
 
 $processes = [ordered]@{
-    'web'       = "php $uploadLimits -S localhost:8000 -t public $router"
+    'web'       = "Set-Location public; php $uploadLimits -S localhost:8000 -t . $router"
     'scheduler' = 'php artisan schedule:work'
     'queue'     = 'php artisan queue:work --tries=1 --timeout=300'
     'vite'      = 'npm run dev'
