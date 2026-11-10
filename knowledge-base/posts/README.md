@@ -12,7 +12,7 @@ Write a post once, choose which accounts it goes to, attach media from the libra
     2. **Text:** main text with a live counter against the strictest chosen platform's limit.
     3. **Media:** "Add media from library" opens a picker over the workspace library (latest 200). Selection order = display order; reorder with the arrows, remove with ×.
     4. **Per account:** "Customize" gives an optional different text and the platform's settings (LinkedIn: who can see it).
-    5. **When:** `ScheduleTimePicker`: a date field (no past days) and a time field (minute precision; on today, times before the next minute are blocked), quick buttons +15 min, +30 min, +1 hour, +4 hours and Tomorrow 9:00 AM, and a live hint ("Goes out in 1 h 5 min" or "This time has passed"). All in the chosen timezone (default `POSTLOOM_TIMEZONE`, Asia/Karachi), using `resources/js/lib/zonedTime.ts`. Any future minute today is allowed; the server still refuses the past. Internal name is optional.
+    5. **When:** `ScheduleTimePicker`: a calendar date picker (`DatePicker.vue`: month grid with ‹ › navigation, past days disabled, today outlined, Today and Tomorrow shortcuts; no extra package) and a time field (minute precision; on today, times before the next minute are blocked), quick buttons +15 min, +30 min, +1 hour, +4 hours and Tomorrow 9:00 AM, and a live hint ("Goes out in 1 h 5 min" or "This time has passed"). All in the chosen timezone (default `POSTLOOM_TIMEZONE`, Asia/Karachi), using `resources/js/lib/zonedTime.ts`. Any future minute today is allowed; the server still refuses the past. Internal name is optional.
     6. **Preview:** one LinkedIn-style card per chosen account, using that account's text, media and visibility.
 3. **Save draft** saves as `draft` with no checks beyond the form. **Schedule** saves and runs `PostValidator::scheduleErrors()`; if anything fails, the whole save is rolled back and the reasons appear at the top of the form.
 4. **Move to drafts** turns a scheduled post back into a draft. **Duplicate** makes a draft copy with no time. Saving a scheduled post again with **Save draft** also makes it a draft.
@@ -35,7 +35,7 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 - `app/Services/Posts/Rules/PlatformPostRules.php` (contract), `LinkedInPostRules.php`, `PlatformRulesRegistry.php`
 - `app/Http/Requests/Posts/SavePostRequest.php` (also checks ownership first, so another owner's post gives 403)
 - `app/Http/Controllers/PostController.php`, `app/Policies/PostPolicy.php`
-- Vue: `resources/js/pages/posts/Index.vue`, `posts/Form.vue`, `components/posts/MediaPicker.vue`, `components/posts/PostPreview.vue`, types in `resources/js/types/posts.ts`
+- Vue: `resources/js/pages/posts/Index.vue`, `posts/Form.vue`, `components/posts/MediaPicker.vue`, `components/posts/PostPreview.vue`, `components/posts/ScheduleTimePicker.vue`, `components/posts/DatePicker.vue`, `lib/zonedTime.ts`, types in `resources/js/types/posts.ts`
 
 ## Data
 

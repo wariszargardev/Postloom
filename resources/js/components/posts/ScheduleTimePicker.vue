@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import DatePicker from '@/components/posts/DatePicker.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,14 +109,14 @@ const presets = [
         <div class="grid gap-3 sm:grid-cols-2">
             <div class="flex flex-col gap-1">
                 <Label for="schedule-date">Date</Label>
-                <Input
+                <DatePicker
                     id="schedule-date"
                     v-model="date"
-                    type="date"
                     :min="nowParts.date"
+                    :today="nowParts.date"
                     :disabled="disabled"
                     data-test="schedule-date"
-                    @change="onDateChange"
+                    @update:model-value="onDateChange"
                 />
             </div>
             <div class="flex flex-col gap-1">
