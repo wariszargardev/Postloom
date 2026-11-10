@@ -18,6 +18,7 @@ type AccountRow = {
     status: 'connected' | 'expiring_soon' | 'reconnect_needed';
     status_label: string;
     token_expires_at: string | null;
+    token_renews_automatically: boolean;
     connected_at: string | null;
 };
 
@@ -161,7 +162,13 @@ function disconnect(account: AccountRow): void {
                                         >· @{{ account.handle }}</template
                                     >
                                     · Token:
-                                    {{ formatDate(account.token_expires_at) }}
+                                    {{
+                                        account.token_renews_automatically
+                                            ? 'renews automatically'
+                                            : formatDate(
+                                                  account.token_expires_at,
+                                              )
+                                    }}
                                 </span>
                             </div>
                         </div>

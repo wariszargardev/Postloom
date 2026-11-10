@@ -109,17 +109,29 @@ class SocialAccount extends Model
     {
         $query->where(fn (Builder $attentionQuery) => $attentionQuery
             ->where('needs_reconnect', true)
-            ->orWhere('token_expires_at', '<=', now()->addDays(self::EXPIRING_SOON_DAYS)));
+            ->orWhere(fn (Builder $expiringQuery) => $expiringQuery
+                ->whereNull('refresh_token')
+                ->where('token_expires_at', '<=', now()->addDays(self::EXPIRING_SOON_DAYS))));
+    }
+
+    /**
+     * Accounts with a refresh token (YouTube) renew their short-lived access token themselves,
+     * so its expiry date never means the owner has to reconnect.
+     */
+    public function canRefreshToken(): bool
+    {
+        return $this->refresh_token !== null;
     }
 
     public function isTokenExpired(): bool
     {
-        return $this->token_expires_at !== null && $this->token_expires_at->isPast();
+        return ! $this->canRefreshToken() && $this->token_expires_at !== null && $this->token_expires_at->isPast();
     }
 
     public function expiresSoon(): bool
     {
-        return $this->token_expires_at !== null
+        return ! $this->canRefreshToken()
+            && $this->token_expires_at !== null
             && ! $this->isTokenExpired()
             && $this->token_expires_at->lte(now()->addDays(self::EXPIRING_SOON_DAYS));
     }

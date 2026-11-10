@@ -9,7 +9,7 @@ Workspaces group social accounts (for example "Personal", "Build Real Code"). A 
 1. Every logged-in request runs `EnsureCurrentWorkspace`. If the owner has no workspace, a **Personal** workspace is created and made current. If the current workspace is missing, the oldest one becomes current.
 2. The sidebar's workspace switcher lists all workspaces. Choosing one calls `POST /workspaces/{id}/switch` and stores it in `users.current_workspace_id`.
 3. **Workspaces page** (`/workspaces`): add (and switch to it), rename, switch, delete. Delete is blocked while the workspace has accounts, and for the last workspace.
-4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03).
+4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03, YouTube since piece 10).
 5. A platform's OAuth callback (piece 03 onward) calls `SocialAccountService::saveConnectedAccount()`. Reconnecting the same account updates the existing row instead of adding a duplicate.
 
 ## Entry points
@@ -56,6 +56,7 @@ Unique: `workspace_id + provider + provider_account_id` (the same account can be
 ## Rules
 
 - Status (`SocialAccount::status()`): **Reconnect needed** if `needs_reconnect` or the token is expired; **Expires soon** if it expires within 7 days (`EXPIRING_SOON_DAYS`); else **Connected**.
+- Accounts with a refresh token (YouTube, `canRefreshToken()`) renew their access token themselves, so its expiry never makes them "Expires soon" or "Reconnect needed"; only `needs_reconnect` does. The Accounts page shows "Token: renews automatically" for them.
 - Creating a workspace switches to it.
 - Deleting the current workspace switches to the oldest remaining one.
 - Changing `APP_KEY` makes every stored token unreadable, so all accounts would need reconnecting.

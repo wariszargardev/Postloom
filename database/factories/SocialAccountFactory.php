@@ -50,4 +50,17 @@ class SocialAccountFactory extends Factory
     {
         return $this->state(fn () => ['needs_reconnect' => true]);
     }
+
+    public function youTube(): static
+    {
+        return $this->state(fn () => [
+            'provider' => SocialProvider::YouTube,
+            'account_type' => SocialAccountType::Channel,
+            'provider_account_id' => 'UC'.fake()->unique()->regexify('[A-Za-z0-9_-]{22}'),
+            'handle' => fake()->userName(),
+            'refresh_token' => fake()->sha256(),
+            'token_expires_at' => now()->addHour(),
+            'scopes' => ['openid', 'profile', 'email', 'https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
+        ]);
+    }
 }

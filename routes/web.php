@@ -6,6 +6,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
+use App\Http\Controllers\YouTubeConnectController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -24,6 +25,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('accounts/linkedin/redirect', [LinkedInConnectController::class, 'redirect'])->name('accounts.linkedin.redirect');
     Route::get('accounts/linkedin/callback', [LinkedInConnectController::class, 'callback'])->name('accounts.linkedin.callback');
+
+    Route::get('accounts/youtube/redirect', [YouTubeConnectController::class, 'redirect'])->name('accounts.youtube.redirect');
+    Route::get('accounts/youtube/callback', [YouTubeConnectController::class, 'callback'])->name('accounts.youtube.callback');
 
     Route::get('media', [MediaController::class, 'index'])->name('media.index');
     Route::post('media', [MediaController::class, 'store'])->name('media.store');
