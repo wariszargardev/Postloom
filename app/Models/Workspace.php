@@ -38,4 +38,12 @@ class Workspace extends Model
     {
         return $this->hasMany(SocialAccount::class);
     }
+
+    /**
+     * @return HasMany<Media, $this>
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class);
+    }
 }

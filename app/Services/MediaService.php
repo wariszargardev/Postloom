@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\LogFeature;
+use App\Enums\MediaKind;
+use App\Models\Media;
+use App\Models\Workspace;
+use App\Services\Media\MediaInspector;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
+
+class MediaService
+{
+    public function __construct(private MediaInspector $mediaInspector) {}
+
+    /**
+     * @return array{media: Media, duplicate: bool}
+     */
+    public function upload(Workspace $workspace, UploadedFile $file): array
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $kind = MediaKind::fromExtension($extension)
+            ?? throw new InvalidArgumentException("Unsupported file type: {$extension}");
+
+        LogService::startFeatureLogging(LogFeature::Media, ['workspace_id' => $workspace->id]);
+        LogService::info('Media upload received', [
+            'kind' => $kind->value,
+            'extension' => $extension,
+            'size_bytes' => $file->getSize(),
+        ]);
+
+        $checksum = hash_file('sha256', $file->getRealPath());
+        $existing = $workspace->media()->where('checksum', $checksum)->first();
+
+        if ($existing !== null) {
+            LogService::info('Media already in library, reused', ['media_id' => $existing->id]);
+
+            return ['media' => $existing, 'duplicate' => true];
+        }
+
+        $diskName = config('postloom.media.disk');
+        $disk = Storage::disk($diskName);
+        $directory = "media/{$workspace->id}/".now()->format('Y/m');
+        $fileStem = (string) Str::uuid();
+        $path = $disk->putFileAs($directory, $file, "{$fileStem}.{$extension}");
+
+        if ($path === false) {
+            LogService::error('Media file could not be saved to disk', ['disk' => $diskName, 'directory' => $directory]);
+
+            throw new RuntimeException("Could not save {$file->getClientOriginalName()} to the {$diskName} disk.");
+        }
+
+        $details = $this->mediaInspector->inspect($kind, $disk->path($path));
+        $thumbnailPath = $kind === MediaKind::Video ? $this->createVideoThumbnail($diskName, $path, $directory, $fileStem) : null;
+
+        $media = $workspace->media()->create([
+            'kind' => $kind,
+            'disk' => $diskName,
+            'path' => $path,
+            'original_name' => Str::limit($file->getClientOriginalName(), 250, ''),
+            'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
+            'size_bytes' => $file->getSize(),
+            'width' => $details['width'],
+            'height' => $details['height'],
+            'duration_seconds' => $details['duration_seconds'],
+            'thumbnail_path' => $thumbnailPath,
+            'checksum' => $checksum,
+        ]);
+
+        LogService::info('Media stored', [
+            'media_id' => $media->id,
+            'kind' => $kind->value,
+            'path' => $path,
+            'has_thumbnail' => $thumbnailPath !== null,
+        ]);
+
+        return ['media' => $media, 'duplicate' => false];
+    }
+
+    public function updateAltText(Media $media, ?string $altText): Media
+    {
+        $media->update(['alt_text' => $altText]);
+
+        LogService::startFeatureLogging(LogFeature::Media, ['workspace_id' => $media->workspace_id]);
+        LogService::info('Media alt text updated', ['media_id' => $media->id]);
+
+        return $media;
+    }
+
+    public function delete(Media $media): void
+    {
+        LogService::startFeatureLogging(LogFeature::Media, ['workspace_id' => $media->workspace_id]);
+
+        $disk = Storage::disk($media->disk);
+        $disk->delete(array_filter([$media->path, $media->thumbnail_path]));
+
+        $mediaId = $media->id;
+        $media->delete();
+
+        LogService::info('Media deleted', ['media_id' => $mediaId]);
+    }
+
+    private function createVideoThumbnail(string $diskName, string $videoPath, string $directory, string $fileStem): ?string
+    {
+        $disk = Storage::disk($diskName);
+        $thumbnailPath = "{$directory}/thumbs/{$fileStem}.jpg";
+        $disk->makeDirectory("{$directory}/thumbs");
+
+        $created = $this->mediaInspector->makeVideoThumbnail($disk->path($videoPath), $disk->path($thumbnailPath));
+
+        return $created && $disk->exists($thumbnailPath) ? $thumbnailPath : null;
+    }
+}

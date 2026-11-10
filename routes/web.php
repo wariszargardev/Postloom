@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LinkedInConnectController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('accounts/linkedin/redirect', [LinkedInConnectController::class, 'redirect'])->name('accounts.linkedin.redirect');
     Route::get('accounts/linkedin/callback', [LinkedInConnectController::class, 'callback'])->name('accounts.linkedin.callback');
+
+    Route::get('media', [MediaController::class, 'index'])->name('media.index');
+    Route::post('media', [MediaController::class, 'store'])->name('media.store');
+    Route::get('media/{media}/file', [MediaController::class, 'show'])->name('media.show');
+    Route::get('media/{media}/thumbnail', [MediaController::class, 'thumbnail'])->name('media.thumbnail');
+    Route::patch('media/{media}', [MediaController::class, 'update'])->name('media.update');
+    Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
 });
 
 require __DIR__.'/settings.php';

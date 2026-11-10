@@ -27,5 +27,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | Login, owner account         | `auth`                | `knowledge-base/auth/README.md`                |
 | Workspaces, social accounts  | `workspaces-accounts` | `knowledge-base/workspaces-accounts/README.md` |
 | LinkedIn connect and posting | `linkedin`            | `knowledge-base/linkedin/README.md`            |
+| Media library, uploads       | `media`               | `knowledge-base/media/README.md`               |
 
 Add a row here whenever a piece adds a new skill.
