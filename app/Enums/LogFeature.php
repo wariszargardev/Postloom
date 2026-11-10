@@ -6,6 +6,7 @@ enum LogFeature: string
 {
     case System = 'system';
     case Auth = 'auth';
+    case Workspaces = 'workspaces';
     case Accounts = 'accounts';
     case LinkedIn = 'linkedin';
     case Media = 'media';

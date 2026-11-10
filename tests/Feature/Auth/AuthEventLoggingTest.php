@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\PasswordReset;
@@ -47,6 +48,8 @@ it('logs a failed login without the password', function () {
 
 it('logs a logout', function () {
     $user = User::factory()->create(['email' => 'waris@example.com']);
+    $workspace = Workspace::factory()->for($user)->create();
+    $user->forceFill(['current_workspace_id' => $workspace->id])->save();
 
     Log::shouldReceive('info')->once()->with('User logged out', [
         'user_id' => $user->id,

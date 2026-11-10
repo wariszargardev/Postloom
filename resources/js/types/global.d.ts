@@ -20,6 +20,10 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             canRegister: boolean;
+            workspaces: {
+                current_id: number | null;
+                list: { id: number; name: string }[];
+            } | null;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

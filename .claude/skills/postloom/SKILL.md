@@ -20,10 +20,11 @@ description: Start here for any work in the Postloom repo (personal social media
 
 ## Feature skills
 
-| Area                       | Skill                 | KB                                       |
-| -------------------------- | --------------------- | ---------------------------------------- |
-| Setup, processes, database | `postloom` (this one) | `knowledge-base/project-setup/README.md` |
-| Logging                    | `logging`             | `knowledge-base/logging/README.md`       |
-| Login, owner account       | `auth`                | `knowledge-base/auth/README.md`          |
+| Area                        | Skill                 | KB                                             |
+| --------------------------- | --------------------- | ---------------------------------------------- |
+| Setup, processes, database  | `postloom` (this one) | `knowledge-base/project-setup/README.md`       |
+| Logging                     | `logging`             | `knowledge-base/logging/README.md`             |
+| Login, owner account        | `auth`                | `knowledge-base/auth/README.md`                |
+| Workspaces, social accounts | `workspaces-accounts` | `knowledge-base/workspaces-accounts/README.md` |
 
 Add a row here whenever a piece adds a new skill.
