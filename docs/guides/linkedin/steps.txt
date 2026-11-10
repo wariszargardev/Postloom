@@ -1,0 +1,14 @@
+# One slide per line: image file (in images/) | caption shown in the video.
+# A missing image becomes a text slide, so the video always builds. Add the screenshot later with the same name.
+01-connect-disabled-no-keys.png | 1. Before setup: LinkedIn Connect is disabled until the app keys are in .env
+02-create-app-form.png | 2. linkedin.com/developers/apps > Create app: name Postloom, your Company Page, privacy URL, logo
+03-verify-page.png | 3. Settings tab > Verify: open the link as the Page admin and approve
+04-products-added.png | 4. Products tab: add Share on LinkedIn and Sign In with LinkedIn using OpenID Connect
+05-openid-endpoints.png | 5. Both products show up as Added (OpenID gives /v2/userinfo with the openid scope)
+06-auth-redirect-url.png | 6. Auth tab: add redirect URL http://localhost:8000/accounts/linkedin/callback
+07-client-id-secret.png | 7. Auth tab: copy Client ID and Primary Client Secret into .env (never share the secret)
+08-accounts-connect-ready.png | 8. php artisan config:clear, restart: LinkedIn Connect is now active
+09-linkedin-consent.png | 9. Click Connect, sign in to LinkedIn and Allow the permissions
+10-post-editor.png | 10. Write a post, pick the LinkedIn account, add media and schedule or Publish now
+11-post-publishing.png | 11. The post goes Publishing, then Published within about a minute
+12-post-on-linkedin.png | 12. Done: the post is on your profile; View post opens it
