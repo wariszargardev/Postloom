@@ -8,10 +8,12 @@ use App\Http\Requests\Posts\SavePostRequest;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostTarget;
+use App\Models\PublishAttempt;
 use App\Models\SocialAccount;
 use App\Models\Workspace;
 use App\Services\Posts\PostService;
 use App\Services\Posts\Rules\PlatformRulesRegistry;
+use App\Services\Publishing\PostDispatcher;
 use App\Services\WorkspaceService;
 use DateTimeZone;
 use Illuminate\Http\RedirectResponse;
@@ -89,7 +91,7 @@ class PostController extends Controller
         $workspace = $this->workspaceService->ensureCurrent($request->user());
         $post = $this->postService->save($workspace, $request->user(), $request->postData(), $request->wantsToSchedule());
 
-        $this->flashSaved($post);
+        $this->afterSave($request, $post);
 
         return to_route('posts.edit', $post);
     }
@@ -107,9 +109,25 @@ class PostController extends Controller
 
         $post = $this->postService->save($post->workspace, $request->user(), $request->postData(), $request->wantsToSchedule(), $post);
 
-        $this->flashSaved($post);
+        $this->afterSave($request, $post);
 
         return to_route('posts.edit', $post);
+    }
+
+    public function retry(Post $post): RedirectResponse
+    {
+        Gate::authorize('update', $post);
+
+        $this->postService->retryFailed($post);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => PostDispatcher::isEnabled()
+                ? __('Sending the failed accounts again.')
+                : __('Failed accounts are scheduled again. Publishing is turned off, so they will wait.'),
+        ]);
+
+        return back();
     }
 
     public function unschedule(Post $post): RedirectResponse
@@ -145,6 +163,24 @@ class PostController extends Controller
         return to_route('posts.index');
     }
 
+    private function afterSave(SavePostRequest $request, Post $post): void
+    {
+        if (! $request->wantsToPublishNow()) {
+            $this->flashSaved($post);
+
+            return;
+        }
+
+        $sent = $this->postService->publishNow($post);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $sent
+                ? __('Publishing now.')
+                : __('Scheduled for the next minute. Publishing is turned off, so it will wait.'),
+        ]);
+    }
+
     private function flashSaved(Post $post): void
     {
         $message = $post->status === PostStatus::Scheduled
@@ -159,7 +195,7 @@ class PostController extends Controller
      */
     private function editorProps(Workspace $workspace, ?Post $post): array
     {
-        $post?->load(['targets', 'media']);
+        $post?->load(['targets.publishAttempts' => fn ($query) => $query->latest('id')->limit(10), 'media']);
 
         $accounts = $workspace->socialAccounts()->orderBy('provider')->orderBy('name')->get()
             ->map(fn (SocialAccount $account): array => [
@@ -192,12 +228,24 @@ class PostController extends Controller
                 'status' => $post->status->value,
                 'status_label' => $post->status->label(),
                 'is_editable' => $post->status->isEditable(),
+                'can_retry' => in_array($post->status, [PostStatus::Failed, PostStatus::PartlyPublished], true),
                 'targets' => $post->targets->map(fn (PostTarget $target): array => [
                     'social_account_id' => $target->social_account_id,
                     'content_override' => $target->content_override,
                     'settings' => $target->settings ?? (object) [],
                     'status' => $target->status->value,
+                    'status_label' => $target->status->label(),
+                    'attempts' => $target->attempts,
                     'last_error' => $target->last_error,
+                    'external_url' => $target->external_url,
+                    'published_at' => $target->published_at?->toIso8601String(),
+                    'history' => $target->publishAttempts->map(fn (PublishAttempt $attempt): array => [
+                        'attempt' => $attempt->attempt,
+                        'status' => $attempt->status->value,
+                        'error_message' => $attempt->error_message,
+                        'started_at' => $attempt->started_at->toIso8601String(),
+                        'duration_ms' => $attempt->duration_ms,
+                    ])->values(),
                 ])->values(),
                 'media_ids' => $post->media->pluck('id')->values(),
             ],
@@ -205,6 +253,7 @@ class PostController extends Controller
             'library' => $library,
             'defaultTimezone' => config('postloom.timezone'),
             'timezones' => DateTimeZone::listIdentifiers(),
+            'publishingEnabled' => PostDispatcher::isEnabled(),
         ];
     }
 }

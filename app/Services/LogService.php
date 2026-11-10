@@ -39,9 +39,9 @@ class LogService
     /**
      * @param  array<string, mixed>  $context
      */
-    public static function warning(string $message, array $context = []): void
+    public static function warning(string $message, array $context = [], ?Throwable $exception = null): void
     {
-        Log::channel(self::CHANNEL)->warning($message, $context);
+        Log::channel(self::CHANNEL)->warning($message, self::withException($context, $exception));
     }
 
     /**
@@ -49,15 +49,24 @@ class LogService
      */
     public static function error(string $message, array $context = [], ?Throwable $exception = null): void
     {
-        if ($exception !== null) {
-            $context = [
-                ...$context,
-                'exception_class' => $exception::class,
-                'exception_message' => $exception->getMessage(),
-                'exception_location' => $exception->getFile().':'.$exception->getLine(),
-            ];
+        Log::channel(self::CHANNEL)->error($message, self::withException($context, $exception));
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
+    private static function withException(array $context, ?Throwable $exception): array
+    {
+        if ($exception === null) {
+            return $context;
         }
 
-        Log::channel(self::CHANNEL)->error($message, $context);
+        return [
+            ...$context,
+            'exception_class' => $exception::class,
+            'exception_message' => $exception->getMessage(),
+            'exception_location' => $exception->getFile().':'.$exception->getLine(),
+        ];
     }
 }

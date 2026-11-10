@@ -46,6 +46,25 @@ export type EditorPost = {
     status: string;
     status_label: string;
     is_editable: boolean;
-    targets: (TargetForm & { status: string; last_error: string | null })[];
+    can_retry: boolean;
+    targets: (TargetForm & TargetDelivery)[];
     media_ids: number[];
+};
+
+export type PublishAttemptRow = {
+    attempt: number;
+    status: 'running' | 'succeeded' | 'failed';
+    error_message: string | null;
+    started_at: string;
+    duration_ms: number | null;
+};
+
+export type TargetDelivery = {
+    status: 'pending' | 'publishing' | 'published' | 'failed';
+    status_label: string;
+    attempts: number;
+    last_error: string | null;
+    external_url: string | null;
+    published_at: string | null;
+    history: PublishAttemptRow[];
 };

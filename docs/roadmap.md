@@ -10,8 +10,8 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 03  | `feat/03-linkedin-connect`    | Connect a LinkedIn profile               | OAuth (OpenID Connect + `w_member_social`), store person URN and token, expiry warning                                       | merged    |
 | 04  | `feat/04-media-library`       | Media library                            | Upload and reuse images, videos, PDFs and audio; type and size checks                                                        | merged    |
 | 05  | `feat/05-post-editor`         | Post editor                              | Main text, per-account override and settings, media, preview, drafts                                                         | merged    |
-| 06  | `feat/06-calendar`            | Calendar                                 | Month/week/day views, click a slot to create, drag to reschedule, failed posts in red                                        | in review |
-| 07  | `feat/07-scheduler`           | Scheduler and publish queue              | Every-minute due check, one job per target, lock, retries, `publish_attempts`, catch-up for missed posts                     | planned   |
+| 06  | `feat/06-calendar`            | Calendar                                 | Month/week/day views, click a slot to create, drag to reschedule, failed posts in red                                        | merged    |
+| 07  | `feat/07-scheduler`           | Scheduler and publish queue              | Every-minute due check, one job per target, lock, retries, `publish_attempts`, catch-up for missed posts                     | in review |
 | 08  | `feat/08-linkedin-publish`    | Publish to LinkedIn                      | Text, multi-image, video and document posts to the personal profile; audio converted to video                                | planned   |
 
 ## Later

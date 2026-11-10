@@ -6,6 +6,12 @@ return [
 
     'timezone' => env('POSTLOOM_TIMEZONE', 'Asia/Karachi'),
 
+    'publishing' => [
+        'enabled' => (bool) env('POSTLOOM_PUBLISHING_ENABLED', false),
+        'catch_up_hours' => (int) env('POSTLOOM_CATCH_UP_HOURS', 6),
+        'stuck_minutes' => (int) env('POSTLOOM_STUCK_MINUTES', 30),
+    ],
+
     'media' => [
         'disk' => env('POSTLOOM_MEDIA_DISK', 'local'),
         'max_files_per_upload' => 10,

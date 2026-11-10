@@ -92,5 +92,5 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 ## Known limits
 
 - The media picker shows the latest 200 files; there is no search yet.
-- No "Post now" button yet; that comes with the scheduler (piece 07).
+- Publish now and Retry failed accounts are covered in `knowledge-base/scheduler/README.md`.
 - The LinkedIn preview is close to LinkedIn's layout, not pixel-perfect. "see more" is cut at 210 characters.
