@@ -14,7 +14,7 @@ One way to log everything, so any run can be traced from start to finish and lat
 ## Entry points
 
 - `app/Services/LogService.php`
-- `app/Enums/LogFeature.php`: `system`, `auth`, `accounts`, `linkedin`, `media`, `posts`, `calendar`, `scheduler`, `publishing`
+- `app/Enums/LogFeature.php`: `system`, `auth`, `workspaces`, `accounts`, `linkedin`, `media`, `posts`, `calendar`, `scheduler`, `publishing`
 - `config/logging.php`: channels `postloom`, `postloom_file`
 
 ## Data

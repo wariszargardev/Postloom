@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Workspace;
 use App\Services\RegistrationGate;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -43,6 +44,12 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+            ],
+            'workspaces' => fn (): ?array => $request->user() === null ? null : [
+                'current_id' => $request->user()->current_workspace_id,
+                'list' => $request->user()->workspaces()->orderBy('name')->get(['id', 'name'])
+                    ->map(fn (Workspace $workspace): array => ['id' => $workspace->id, 'name' => $workspace->name])
+                    ->all(),
             ],
             'canRegister' => fn (): bool => $request->user() === null && $this->registrationGate->isOpen(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
