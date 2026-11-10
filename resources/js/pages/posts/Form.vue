@@ -6,6 +6,7 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import MediaPicker from '@/components/posts/MediaPicker.vue';
 import PostPreview from '@/components/posts/PostPreview.vue';
+import ScheduleTimePicker from '@/components/posts/ScheduleTimePicker.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -472,17 +473,13 @@ const initials = (name: string): string =>
 
             <section class="flex flex-col gap-3">
                 <h2 class="text-sm font-semibold">5. When</h2>
+                <ScheduleTimePicker
+                    v-model="form.scheduled_at"
+                    :timezone="form.timezone"
+                    :disabled="!isEditable"
+                />
+                <InputError :message="form.errors.scheduled_at" />
                 <div class="grid gap-3 sm:grid-cols-2">
-                    <div class="flex flex-col gap-1">
-                        <Label for="scheduled_at">Date and time</Label>
-                        <Input
-                            id="scheduled_at"
-                            v-model="form.scheduled_at"
-                            type="datetime-local"
-                            :disabled="!isEditable"
-                        />
-                        <InputError :message="form.errors.scheduled_at" />
-                    </div>
                     <div class="flex flex-col gap-1">
                         <Label for="timezone">Timezone</Label>
                         <select

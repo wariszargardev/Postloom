@@ -91,6 +91,21 @@ it('refuses to schedule and saves nothing when the post is not ready', function 
     'no text and no media' => [['content' => ''], 'content'],
 ]);
 
+it('schedules later today down to the minute but not a minute ago', function (string $localTime, bool $accepted) {
+    Carbon::setTestNow(Carbon::parse('2026-11-12 12:55:00', 'Asia/Karachi'));
+
+    $response = $this->actingAs($this->user)
+        ->post(route('posts.store'), postPayload(['intent' => 'schedule', 'scheduled_at' => "2026-11-12T{$localTime}"]));
+
+    $accepted ? $response->assertSessionHasNoErrors() : $response->assertSessionHasErrors('scheduled_at');
+    expect(Post::query()->where('status', PostStatus::Scheduled)->exists())->toBe($accepted);
+})->with([
+    'one minute later' => ['12:56', true],
+    '20 minutes later' => ['13:15', true],
+    '4 hours later' => ['16:55', true],
+    'one minute ago' => ['12:54', false],
+]);
+
 it('names the account and the limit when the text is too long', function () {
     $this->actingAs($this->user)
         ->post(route('posts.store'), postPayload(['intent' => 'schedule', 'content' => str_repeat('a', 3120)]))

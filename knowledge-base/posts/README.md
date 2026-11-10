@@ -12,7 +12,7 @@ Write a post once, choose which accounts it goes to, attach media from the libra
     2. **Text:** main text with a live counter against the strictest chosen platform's limit.
     3. **Media:** "Add media from library" opens a picker over the workspace library (latest 200). Selection order = display order; reorder with the arrows, remove with ×.
     4. **Per account:** "Customize" gives an optional different text and the platform's settings (LinkedIn: who can see it).
-    5. **When:** date and time (`datetime-local`) and timezone (default `POSTLOOM_TIMEZONE`, Asia/Karachi). Internal name is optional.
+    5. **When:** `ScheduleTimePicker`: a date field (no past days) and a time field (minute precision; on today, times before the next minute are blocked), quick buttons +15 min, +30 min, +1 hour, +4 hours and Tomorrow 9:00 AM, and a live hint ("Goes out in 1 h 5 min" or "This time has passed"). All in the chosen timezone (default `POSTLOOM_TIMEZONE`, Asia/Karachi), using `resources/js/lib/zonedTime.ts`. Any future minute today is allowed; the server still refuses the past. Internal name is optional.
     6. **Preview:** one LinkedIn-style card per chosen account, using that account's text, media and visibility.
 3. **Save draft** saves as `draft` with no checks beyond the form. **Schedule** saves and runs `PostValidator::scheduleErrors()`; if anything fails, the whole save is rolled back and the reasons appear at the top of the form.
 4. **Move to drafts** turns a scheduled post back into a draft. **Duplicate** makes a draft copy with no time. Saving a scheduled post again with **Save draft** also makes it a draft.
@@ -86,7 +86,7 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 
 ## Tests
 
-- `tests/Feature/Posts/PostEditorTest.php`: draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; duplicate; delete; another owner gets 403; list and filter; editor props.
+- `tests/Feature/Posts/PostEditorTest.php`: same-day times (1 minute, 20 minutes, 4 hours later accepted; 1 minute ago refused); draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; duplicate; delete; another owner gets 403; list and filter; editor props.
 - `tests/Feature/Posts/InUseGuardsTest.php`: the two in-use guards, blocked and allowed.
 
 ## Known limits
