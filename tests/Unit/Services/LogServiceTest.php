@@ -16,6 +16,16 @@ it('adds the feature and a trace id to the log context', function () {
         ->and(Context::get('post_id'))->toBe(7);
 });
 
+it('clears context left over from an earlier run', function () {
+    LogService::startFeatureLogging(LogFeature::Scheduler, ['command' => 'posts:dispatch-due']);
+    $traceId = LogService::startFeatureLogging(LogFeature::Publishing, ['target_id' => 4]);
+
+    expect(Context::get('command'))->toBeNull()
+        ->and(Context::get('feature'))->toBe('publishing')
+        ->and(Context::get('target_id'))->toBe(4)
+        ->and(Context::get('trace_id'))->toBe($traceId);
+});
+
 it('writes info messages to the postloom channel', function () {
     Log::shouldReceive('channel')->once()->with('postloom')->andReturnSelf();
     Log::shouldReceive('info')->once()->with('Post published', ['post_id' => 7]);

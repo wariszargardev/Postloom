@@ -2,7 +2,7 @@
 
 Use `App\Services\LogService` only. Never call `Log::` directly in app code.
 
-- Every entry point (controller action, job `handle`, command `handle`, listener) starts with
+- Every entry point (controller action, job `handle`, command `handle`, listener) starts with (this clears Context left from an earlier run; helper services called inside a run must not call it again)
   `LogService::startFeatureLogging(LogFeature::<Feature>, ['<id>' => ...])`. Add an enum case to `App\Enums\LogFeature` if none fits.
 - Log at: entry, key decisions (skipped, retried, chosen account), every external API call (before and result), failures, final result.
 - `LogService::info('<clear message>', [<context>])`, `LogService::warning('<message>', [<context>], $exception)` and `LogService::error('<message>', [<context>], $exception)`. The exception is optional for warning and error and adds `exception_class`, `exception_message` and `exception_location`.

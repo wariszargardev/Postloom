@@ -13,6 +13,7 @@ use App\Services\Publishing\PostStatusResolver;
 use App\Services\Publishing\PublisherRegistry;
 use App\Services\Publishing\PublishException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Context;
 use Tests\Support\FakePublisher;
 use Tests\TestCase;
 
@@ -118,6 +119,26 @@ it('keeps the post publishing until every account has finished', function () {
     runPublishJob($this->target, new FakePublisher);
 
     expect($this->post->fresh()->status)->toBe(PostStatus::Publishing);
+});
+
+it('logs one send under a single trace id, without the scheduler command label', function () {
+    Context::add(['command' => 'posts:dispatch-due', 'trace_id' => 'scheduler-trace']);
+    $logFile = storage_path('logs/postloom-'.now()->format('Y-m-d').'.log');
+    $linesBefore = is_file($logFile) ? count(file($logFile)) : 0;
+
+    runPublishJob($this->target, new FakePublisher);
+
+    $entries = collect(array_slice(file($logFile), $linesBefore))
+        ->map(fn (string $line) => json_decode($line, true))
+        ->keyBy('message');
+
+    $jobTrace = $entries['Publishing to account']['extra']['trace_id'];
+
+    expect($jobTrace)->not->toBe('scheduler-trace')
+        ->and($entries['Published to account']['extra']['trace_id'])->toBe($jobTrace)
+        ->and($entries['Post status resolved']['extra']['trace_id'])->toBe($jobTrace)
+        ->and($entries['Post status resolved']['context']['post_id'])->toBe($this->post->id)
+        ->and($entries->pluck('extra.command')->filter()->all())->toBe([]);
 });
 
 it('does not publish an account twice', function () {
