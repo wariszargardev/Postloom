@@ -86,4 +86,4 @@ Tokens are never logged.
 ## Known limits
 
 - Only LinkedIn personal profiles can be connected so far (piece 03). The other platforms stay disabled until their pieces.
-- Once posts exist (piece 05), disconnecting an account that has scheduled posts needs a rule. Decide it in that piece.
+- Disconnecting an account with a scheduled or publishing post is blocked (`SocialAccountService::disconnectBlockReason()`); used only in drafts, it is disconnected and removed from them. See `knowledge-base/posts/README.md`.

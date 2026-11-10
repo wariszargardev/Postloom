@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\LogFeature;
+use App\Enums\PostStatus;
 use App\Enums\SocialAccountType;
 use App\Enums\SocialProvider;
 use App\Models\SocialAccount;
@@ -73,5 +74,16 @@ class SocialAccountService
         $account->delete();
 
         LogService::info('Social account disconnected', ['account_id' => $accountId]);
+    }
+
+    public function disconnectBlockReason(SocialAccount $account): ?string
+    {
+        $upcomingPosts = $account->postTargets()
+            ->whereHas('post', fn ($query) => $query->whereIn('status', PostStatus::upcoming()))
+            ->count();
+
+        return $upcomingPosts === 0
+            ? null
+            : trans_choice('{1} This account has 1 scheduled post. Move it to drafts or remove the account from it first.|[2,*] This account has :count scheduled posts. Move them to drafts or remove the account from them first.', $upcomingPosts);
     }
 }

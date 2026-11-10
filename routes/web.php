@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('media/{media}/thumbnail', [MediaController::class, 'thumbnail'])->name('media.thumbnail');
     Route::patch('media/{media}', [MediaController::class, 'update'])->name('media.update');
     Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
+
+    Route::get('posts', [PostController::class, 'index'])->name('posts.index');
+    Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::post('posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    Route::put('posts/{post}', [PostController::class, 'update'])->name('posts.update');
+    Route::post('posts/{post}/unschedule', [PostController::class, 'unschedule'])->name('posts.unschedule');
+    Route::post('posts/{post}/duplicate', [PostController::class, 'duplicate'])->name('posts.duplicate');
+    Route::delete('posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 });
 
 require __DIR__.'/settings.php';

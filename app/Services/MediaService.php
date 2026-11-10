@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\LogFeature;
 use App\Enums\MediaKind;
+use App\Enums\PostStatus;
 use App\Models\Media;
 use App\Models\Workspace;
 use App\Services\Media\MediaInspector;
@@ -89,6 +90,15 @@ class MediaService
         LogService::info('Media alt text updated', ['media_id' => $media->id]);
 
         return $media;
+    }
+
+    public function deletionBlockReason(Media $media): ?string
+    {
+        $upcomingPosts = $media->posts()->whereIn('status', PostStatus::upcoming())->count();
+
+        return $upcomingPosts === 0
+            ? null
+            : trans_choice('{1} This file is used by 1 scheduled post. Remove it from the post or move the post to drafts first.|[2,*] This file is used by :count scheduled posts. Remove it from them or move them to drafts first.', $upcomingPosts);
     }
 
     public function delete(Media $media): void

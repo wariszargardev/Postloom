@@ -55,6 +55,14 @@ class SocialAccountController extends Controller
     {
         Gate::authorize('delete', $socialAccount);
 
+        $blockReason = $this->socialAccountService->disconnectBlockReason($socialAccount);
+
+        if ($blockReason !== null) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $blockReason]);
+
+            return to_route('accounts.index');
+        }
+
         $this->socialAccountService->disconnect($socialAccount);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Account disconnected.')]);

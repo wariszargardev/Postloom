@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Images, Layers, LayoutGrid, Share2 } from '@lucide/vue';
+import { Images, Layers, LayoutGrid, PenSquare, Share2 } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -17,6 +17,7 @@ import {
 import { dashboard } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
 import { index as mediaIndex } from '@/routes/media';
+import { index as postsIndex } from '@/routes/posts';
 import { index as workspacesIndex } from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
@@ -25,6 +26,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Posts',
+        href: postsIndex(),
+        icon: PenSquare,
     },
     {
         title: 'Accounts',
