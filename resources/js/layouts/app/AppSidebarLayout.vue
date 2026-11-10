@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AccountsAttentionBanner from '@/components/AccountsAttentionBanner.vue';
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
@@ -20,6 +21,7 @@ withDefaults(defineProps<Props>(), {
         <AppSidebar />
         <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+            <AccountsAttentionBanner />
             <slot />
         </AppContent>
         <Toaster />

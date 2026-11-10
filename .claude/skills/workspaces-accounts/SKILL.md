@@ -10,7 +10,7 @@ KB: `knowledge-base/workspaces-accounts/README.md`.
 ## Key files
 
 - `app/Models/Workspace.php`, `app/Models/SocialAccount.php` (`status()`, `isTokenExpired()`, `expiresSoon()`)
-- `app/Enums/SocialProvider.php` (`label()`, `isAvailable()`, `availabilityNote()`), `SocialAccountType.php`, `SocialAccountStatus.php`
+- `app/Enums/SocialProvider.php` (`label()`, `isAvailable()`, `availabilityNote()`, `connectRouteName()`), `SocialAccountType.php`, `SocialAccountStatus.php`
 - `app/Services/WorkspaceService.php`, `app/Services/SocialAccountService.php`
 - `app/Http/Middleware/EnsureCurrentWorkspace.php`
 - `app/Http/Controllers/WorkspaceController.php`, `SocialAccountController.php`, policies in `app/Policies`
@@ -18,7 +18,7 @@ KB: `knowledge-base/workspaces-accounts/README.md`.
 
 ## Adding a platform (pieces 03+)
 
-1. Make `SocialProvider::isAvailable()` return true for it and update `availabilityNote()`.
+1. Make `SocialProvider::isAvailable()` return true for it (LinkedIn checks its keys are set), update `availabilityNote()`, and return its redirect route from `connectRouteName()`. See the `linkedin` skill as the worked example.
 2. In the OAuth callback, call `SocialAccountService::saveConnectedAccount($user->currentWorkspace, [...])` with provider, account type, provider account id, name, tokens and expiry.
 3. Point the Accounts page Connect button at the platform's redirect route.
 

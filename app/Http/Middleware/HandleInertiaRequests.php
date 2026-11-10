@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SocialAccount;
 use App\Models\Workspace;
 use App\Services\RegistrationGate;
 use Illuminate\Http\Request;
@@ -51,6 +52,10 @@ class HandleInertiaRequests extends Middleware
                     ->map(fn (Workspace $workspace): array => ['id' => $workspace->id, 'name' => $workspace->name])
                     ->all(),
             ],
+            'accountsNeedingAttention' => fn (): ?int => $request->user() === null ? null : SocialAccount::query()
+                ->ownedBy($request->user())
+                ->needingAttention()
+                ->count(),
             'canRegister' => fn (): bool => $request->user() === null && $this->registrationGate->isOpen(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

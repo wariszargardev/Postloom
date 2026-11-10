@@ -27,6 +27,6 @@ Personal social media scheduler: plan posts on a calendar and publish them on ti
 
 - Start everything: `./start.ps1` (MySQL, web server, scheduler, queue, Vite). Stop: `./stop.ps1`.
 - Tests: `php artisan test --compact <file or --filter=name>`
-- Full CI check (run before every PR, same as GitHub Actions): `composer ci:check`
+- Full CI check (run before every PR, same as GitHub Actions): `npm run build` then `composer ci:check` (a stale `public/build` makes page tests fail with "Not a valid Inertia response")
 - Format: `vendor/bin/pint --dirty`
 - Frontend build: `npm run build`

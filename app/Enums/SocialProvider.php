@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Services\LinkedIn\LinkedInConnectService;
+
 enum SocialProvider: string
 {
     case LinkedIn = 'linkedin';
@@ -25,14 +27,27 @@ enum SocialProvider: string
 
     public function isAvailable(): bool
     {
-        return false;
+        return match ($this) {
+            self::LinkedIn => LinkedInConnectService::isConfigured(),
+            default => false,
+        };
     }
 
     public function availabilityNote(): string
     {
         return match ($this) {
-            self::LinkedIn => 'Coming in piece 03',
+            self::LinkedIn => $this->isAvailable()
+                ? 'Personal profile'
+                : 'Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET to .env',
             default => 'Coming later',
+        };
+    }
+
+    public function connectRouteName(): ?string
+    {
+        return match ($this) {
+            self::LinkedIn => 'accounts.linkedin.redirect',
+            default => null,
         };
     }
 }

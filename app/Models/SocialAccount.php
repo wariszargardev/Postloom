@@ -8,6 +8,8 @@ use App\Enums\SocialProvider;
 use Database\Factories\SocialAccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -79,6 +81,26 @@ class SocialAccount extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ownedBy(Builder $query, User $user): void
+    {
+        $query->whereHas('workspace', fn (Builder $workspaceQuery) => $workspaceQuery->where('user_id', $user->id));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function needingAttention(Builder $query): void
+    {
+        $query->where(fn (Builder $attentionQuery) => $attentionQuery
+            ->where('needs_reconnect', true)
+            ->orWhere('token_expires_at', '<=', now()->addDays(self::EXPIRING_SOON_DAYS)));
     }
 
     public function isTokenExpired(): bool
