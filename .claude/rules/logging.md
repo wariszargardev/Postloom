@@ -1,0 +1,12 @@
+# Logging rules
+
+Use `App\Services\LogService` only. Never call `Log::` directly in app code.
+
+- Every entry point (controller action, job `handle`, command `handle`, listener) starts with
+  `LogService::startFeatureLogging(LogFeature::<Feature>, ['<id>' => ...])`. Add an enum case to `App\Enums\LogFeature` if none fits.
+- Log at: entry, key decisions (skipped, retried, chosen account), every external API call (before and result), failures, final result.
+- `LogService::info('<clear message>', [<context>])`, `LogService::warning(...)`, `LogService::error('<message>', [<context>], $exception)`.
+- Context holds ids and statuses (`post_id`, `target_id`, `account_id`, `provider`, `attempt`, `status_code`). Never tokens, secrets, passwords or full API responses.
+- Output: JSON lines in `storage/logs/postloom-YYYY-MM-DD.log` (channel `postloom` → `postloom_file`). Every line has `feature` and `trace_id` from the context.
+- Axiom later: add an `axiom` channel and set `POSTLOOM_LOG_CHANNELS=postloom_file,axiom` in `.env`. No app code changes.
+- Business history of publishing is also stored in the database (`publish_attempts`), so the UI can show it without reading logs.
