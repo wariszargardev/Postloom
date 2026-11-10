@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::post('posts/{post}/unschedule', [PostController::class, 'unschedule'])->name('posts.unschedule');
     Route::post('posts/{post}/duplicate', [PostController::class, 'duplicate'])->name('posts.duplicate');
+    Route::post('posts/{post}/retry', [PostController::class, 'retry'])->name('posts.retry');
     Route::delete('posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');

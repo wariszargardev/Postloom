@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Workspace;
 use App\Services\LogService;
 use App\Services\Posts\Rules\PlatformRulesRegistry;
+use App\Services\Publishing\PostDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,7 +21,54 @@ class PostService
     public function __construct(
         private PostValidator $postValidator,
         private PlatformRulesRegistry $platformRulesRegistry,
+        private PostDispatcher $postDispatcher,
     ) {}
+
+    /**
+     * Send a just-scheduled post to the publish queue now instead of waiting for its minute.
+     * Returns false when publishing is turned off (the post then stays scheduled).
+     */
+    public function publishNow(Post $post): bool
+    {
+        if ($post->status !== PostStatus::Scheduled || ! PostDispatcher::isEnabled()) {
+            return false;
+        }
+
+        LogService::startFeatureLogging(LogFeature::Publishing, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
+        LogService::info('Publish now requested', []);
+
+        return $this->postDispatcher->dispatchPost($post);
+    }
+
+    /**
+     * Send only the failed accounts of a failed or partly published post again.
+     */
+    public function retryFailed(Post $post): Post
+    {
+        if (! in_array($post->status, [PostStatus::Failed, PostStatus::PartlyPublished], true)) {
+            throw ValidationException::withMessages(['post' => 'Only failed or partly published posts can be retried.']);
+        }
+
+        $retriedTargets = $post->targets()->where('status', PostTargetStatus::Failed)->update([
+            'status' => PostTargetStatus::Pending,
+            'attempts' => 0,
+            'last_error' => null,
+        ]);
+
+        $post->update([
+            'status' => PostStatus::Scheduled,
+            'scheduled_at' => $post->scheduled_at !== null && $post->scheduled_at->isFuture() ? $post->scheduled_at : now(),
+        ]);
+
+        LogService::startFeatureLogging(LogFeature::Publishing, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
+        LogService::info('Retry of failed accounts requested', ['accounts' => $retriedTargets]);
+
+        if (PostDispatcher::isEnabled()) {
+            $this->postDispatcher->dispatchPost($post);
+        }
+
+        return $post->refresh();
+    }
 
     /**
      * Create or update a post with its accounts and media. With $schedule the post is also scheduled;

@@ -8,4 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Schedule::command('posts:dispatch-due')->everyMinute()->withoutOverlapping();
+
 Schedule::command('accounts:check-tokens')->dailyAt('09:00')->timezone(config('postloom.timezone'))->withoutOverlapping();

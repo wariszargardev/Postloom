@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import DeliveryPanel from '@/components/posts/DeliveryPanel.vue';
 import MediaPicker from '@/components/posts/MediaPicker.vue';
 import PostPreview from '@/components/posts/PostPreview.vue';
 import ScheduleTimePicker from '@/components/posts/ScheduleTimePicker.vue';
@@ -28,6 +29,7 @@ const props = defineProps<{
     defaultTimezone: string;
     timezones: string[];
     prefillScheduledAt?: string | null;
+    publishingEnabled: boolean;
 }>();
 
 defineOptions({
@@ -37,7 +39,7 @@ defineOptions({
 });
 
 const form = useForm<{
-    intent: 'draft' | 'schedule';
+    intent: 'draft' | 'schedule' | 'publish_now';
     title: string;
     content: string;
     timezone: string;
@@ -156,7 +158,47 @@ function toggleCustomText(accountId: number): void {
         target.content_override === null ? form.content : null;
 }
 
-function submit(intent: 'draft' | 'schedule'): void {
+function publishNow(): void {
+    if (confirm('Publish this post now to the selected accounts?')) {
+        submit('publish_now');
+    }
+}
+
+function retryFailed(): void {
+    if (props.post) {
+        router.post(
+            PostController.retry(props.post.id).url,
+            {},
+            { preserveScroll: true },
+        );
+    }
+}
+
+const deliveryRows = computed(() =>
+    (props.post?.targets ?? [])
+        .map((delivery) => ({
+            delivery,
+            account: props.accounts.find(
+                (account) => account.id === delivery.social_account_id,
+            ),
+        }))
+        .filter(
+            (
+                row,
+            ): row is {
+                delivery: (typeof row)['delivery'];
+                account: EditorAccount;
+            } => row.account !== undefined,
+        ),
+);
+
+const showDelivery = computed(
+    () =>
+        props.post !== null &&
+        !['draft', 'scheduled'].includes(props.post.status),
+);
+
+function submit(intent: 'draft' | 'schedule' | 'publish_now'): void {
     form.intent = intent;
 
     const options = { preserveScroll: true };
@@ -531,6 +573,30 @@ const initials = (name: string): string =>
                     Schedule
                 </Button>
                 <Button
+                    type="button"
+                    variant="secondary"
+                    :disabled="form.processing || !isEditable"
+                    :title="
+                        publishingEnabled
+                            ? 'Send it now'
+                            : 'Publishing is turned off (POSTLOOM_PUBLISHING_ENABLED=false); it will be scheduled for the next minute and wait'
+                    "
+                    data-test="publish-now"
+                    @click="publishNow"
+                >
+                    Publish now
+                </Button>
+                <Button
+                    v-if="post?.can_retry"
+                    type="button"
+                    variant="outline"
+                    :disabled="form.processing"
+                    data-test="retry-failed"
+                    @click="retryFailed"
+                >
+                    Retry failed accounts
+                </Button>
+                <Button
                     v-if="post?.status === 'scheduled'"
                     type="button"
                     variant="ghost"
@@ -552,6 +618,11 @@ const initials = (name: string): string =>
         </form>
 
         <aside class="flex flex-col gap-4 xl:sticky xl:top-4 xl:self-start">
+            <DeliveryPanel
+                v-if="showDelivery"
+                :rows="deliveryRows"
+                :timezone="form.timezone"
+            />
             <h2 class="text-sm font-semibold">Preview</h2>
             <p
                 v-if="selectedAccounts.length === 0"

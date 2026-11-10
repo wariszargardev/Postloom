@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -68,6 +69,14 @@ class PostTarget extends Model
     public function socialAccount(): BelongsTo
     {
         return $this->belongsTo(SocialAccount::class);
+    }
+
+    /**
+     * @return HasMany<PublishAttempt, $this>
+     */
+    public function publishAttempts(): HasMany
+    {
+        return $this->hasMany(PublishAttempt::class);
     }
 
     public function contentFor(Post $post): string

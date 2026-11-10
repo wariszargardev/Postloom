@@ -13,6 +13,8 @@ class SavePostRequest extends FormRequest
 
     public const INTENT_SCHEDULE = 'schedule';
 
+    public const INTENT_PUBLISH_NOW = 'publish_now';
+
     public function authorize(): bool
     {
         $post = $this->route('post');
@@ -28,7 +30,7 @@ class SavePostRequest extends FormRequest
         $workspaceId = $this->workspaceId();
 
         return [
-            'intent' => ['required', Rule::in([self::INTENT_DRAFT, self::INTENT_SCHEDULE])],
+            'intent' => ['required', Rule::in([self::INTENT_DRAFT, self::INTENT_SCHEDULE, self::INTENT_PUBLISH_NOW])],
             'title' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'string', 'max:10000'],
             'timezone' => ['required', 'timezone:all'],
@@ -81,7 +83,9 @@ class SavePostRequest extends FormRequest
             'title' => isset($validated['title']) ? (string) $validated['title'] : null,
             'content' => (string) ($validated['content'] ?? ''),
             'timezone' => (string) $validated['timezone'],
-            'scheduled_at' => isset($validated['scheduled_at']) ? (string) $validated['scheduled_at'] : null,
+            'scheduled_at' => $this->wantsToPublishNow()
+                ? now((string) $validated['timezone'])->addMinute()->format('Y-m-d\TH:i')
+                : (isset($validated['scheduled_at']) ? (string) $validated['scheduled_at'] : null),
             'targets' => array_values(array_map(fn (array $target): array => [
                 'social_account_id' => (int) $target['social_account_id'],
                 'content_override' => isset($target['content_override']) ? (string) $target['content_override'] : null,
@@ -93,7 +97,15 @@ class SavePostRequest extends FormRequest
 
     public function wantsToSchedule(): bool
     {
-        return $this->input('intent') === self::INTENT_SCHEDULE;
+        return in_array($this->input('intent'), [self::INTENT_SCHEDULE, self::INTENT_PUBLISH_NOW], true);
+    }
+
+    /**
+     * "Publish now" schedules the post for the next minute and sends it to the queue straight away.
+     */
+    public function wantsToPublishNow(): bool
+    {
+        return $this->input('intent') === self::INTENT_PUBLISH_NOW;
     }
 
     private function workspaceId(): ?int
