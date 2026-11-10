@@ -6,7 +6,7 @@ One way to log everything, so any run can be traced from start to finish and lat
 
 ## Flow
 
-1. An entry point calls `LogService::startFeatureLogging(LogFeature::X, [ids])`. This adds `feature`, a new `trace_id` and the ids to Laravel's `Context`.
+1. An entry point calls `LogService::startFeatureLogging(LogFeature::X, [ids])`. This first clears any Context left from an earlier run (queued jobs receive the dispatcher's Context), then adds `feature`, a new `trace_id` and the ids to Laravel's `Context`. Helpers called inside a run (for example `PostStatusResolver`) must not call it again, so the whole run keeps one `trace_id`.
 2. Code calls `LogService::info`, `warning` or `error` (warning and error take an optional exception). Laravel adds the Context to every line.
 3. The `postloom` stack channel writes to the channels listed in `POSTLOOM_LOG_CHANNELS` (default `postloom_file`).
 4. `postloom_file` writes JSON lines to `storage/logs/postloom-YYYY-MM-DD.log`, kept for `POSTLOOM_LOG_DAYS` days.

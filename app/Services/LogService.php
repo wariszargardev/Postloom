@@ -13,12 +13,16 @@ class LogService
     public const CHANNEL = 'postloom';
 
     /**
+     * Start a new traced run. Context left over from an earlier run is cleared first: queued jobs
+     * receive the dispatcher's Context, which would otherwise mislabel the job's log lines.
+     *
      * @param  array<string, mixed>  $context
      */
     public static function startFeatureLogging(LogFeature $feature, array $context = []): string
     {
         $traceId = (string) Str::uuid();
 
+        Context::flush();
         Context::add([
             'feature' => $feature->value,
             'trace_id' => $traceId,

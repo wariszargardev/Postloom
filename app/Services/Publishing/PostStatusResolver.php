@@ -2,7 +2,6 @@
 
 namespace App\Services\Publishing;
 
-use App\Enums\LogFeature;
 use App\Enums\PostStatus;
 use App\Enums\PostTargetStatus;
 use App\Models\Post;
@@ -37,8 +36,8 @@ class PostStatusResolver
 
         $post->update(['status' => $newStatus]);
 
-        LogService::startFeatureLogging(LogFeature::Publishing, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
         LogService::info('Post status resolved', [
+            'post_id' => $post->id,
             'status' => $newStatus->value,
             'published' => $publishedCount,
             'accounts' => $statuses->count(),
