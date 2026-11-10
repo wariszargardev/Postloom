@@ -54,7 +54,7 @@ Google access tokens last about an hour; the refresh token keeps working until t
 
 - One account per channel. Brand channels under one Google login are connected one at a time (pick a different channel on the Google screen).
 - Never ask for more than `youtube.upload` + `youtube.readonly`.
-- Google app mode: use **In production** (unverified is fine for your own channels; you see a "Google hasn't verified this app" warning once). In **Testing** mode logins die after 7 days.
+- Google app mode: **Testing** with each Google login added as a test user works now (logins end after 7 days; the daily check flags them for Reconnect). **Publish app** needs a home page, privacy page and an authorized domain you own; then logins stop expiring.
 - Posting to YouTube stays blocked by the post editor ("posting is not available yet") until piece 11 adds `YouTubePostRules`.
 
 ## Logging

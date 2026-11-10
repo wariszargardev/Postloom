@@ -64,14 +64,14 @@ Unique: `workspace_id + provider + provider_account_id` (the same account can be
 
 ## Logging
 
-| Feature      | Message                                                         | Context                                                                      |
-| ------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `workspaces` | `Default workspace created`                                     | `user_id`, `workspace_id`                                                    |
-| `workspaces` | `Workspace created` / `Workspace renamed` / `Workspace deleted` | `workspace_id` (+ `old_name`, `new_name` on rename)                          |
-| `workspaces` | `Switched workspace`                                            | `workspace_id`                                                               |
-| `workspaces` | `Workspace delete blocked` (warning)                            | `workspace_id`, `reason`                                                     |
-| `accounts`   | `Social account connected` / `Social account reconnected`       | `workspace_id`, `provider`, `account_id`, `account_type`, `token_expires_at` |
-| `accounts`   | `Social account disconnected`                                   | `workspace_id`, `provider`, `account_id`                                     |
+| Feature                        | Message                                                         | Context                                                                      |
+| ------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `workspaces`                   | `Default workspace created`                                     | `user_id`, `workspace_id`                                                    |
+| `workspaces`                   | `Workspace created` / `Workspace renamed` / `Workspace deleted` | `workspace_id` (+ `old_name`, `new_name` on rename)                          |
+| `workspaces`                   | `Switched workspace`                                            | `workspace_id`                                                               |
+| `workspaces`                   | `Workspace delete blocked` (warning)                            | `workspace_id`, `reason`                                                     |
+| caller (`linkedin`, `youtube`) | `Social account connected` / `Social account reconnected`       | `workspace_id`, `provider`, `account_id`, `account_type`, `token_expires_at` |
+| `accounts`                     | `Social account disconnected`                                   | `workspace_id`, `provider`, `account_id`                                     |
 
 Tokens are never logged.
 

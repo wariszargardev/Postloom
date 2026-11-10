@@ -30,11 +30,6 @@ class SocialAccountService
      */
     public function saveConnectedAccount(Workspace $workspace, array $details): SocialAccount
     {
-        LogService::startFeatureLogging(LogFeature::Accounts, [
-            'workspace_id' => $workspace->id,
-            'provider' => $details['provider']->value,
-        ]);
-
         $account = $workspace->socialAccounts()->updateOrCreate(
             [
                 'provider' => $details['provider'],
@@ -55,6 +50,8 @@ class SocialAccountService
         );
 
         LogService::info($account->wasRecentlyCreated ? 'Social account connected' : 'Social account reconnected', [
+            'workspace_id' => $workspace->id,
+            'provider' => $account->provider->value,
             'account_id' => $account->id,
             'account_type' => $account->account_type->value,
             'token_expires_at' => $account->token_expires_at?->toIso8601String(),

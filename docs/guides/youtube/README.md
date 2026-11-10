@@ -54,14 +54,18 @@ Open <https://console.cloud.google.com/> → project picker (top left) → **New
 
 ![Scopes](images/05-scopes.png)
 
-## 6. Publish the app (important)
+## 6. Test users (or publish)
 
-**Audience → Publishing status → Publish app** → confirm. Status becomes **In production**.
+**Publish app** stays greyed out ("complete your configuration on the Branding page") until Branding has a home page link, a privacy policy link and an authorized domain you own. `localhost` and `github.io` don't count.
 
-- In **Testing** mode Google ends the login after **7 days**, so you would reconnect every week.
-- In production but unverified, Google shows "Google hasn't verified this app" once when you connect. Click **Advanced → Go to Postloom (unsafe)**. That's expected for a personal app; verification is only needed for 100+ users.
+![Publish app disabled](images/06-publish-app.png)
 
-![Publish app](images/06-publish-app.png)
+So start in **Testing**: **Audience → Test users → Add users** → the Gmail that owns the channel → **Save**. Every Google login you connect (not every channel; brand channels under the same Gmail are covered) must be on this list, up to 100.
+
+![Add test user](images/06b-add-test-user.png)
+
+- In Testing, Google ends the login after **7 days**. The daily check then marks the channel **Reconnect needed**; one click on Reconnect fixes it.
+- To stop the weekly reconnect later: put a home page and privacy page on a domain you own, add them on Branding with the domain under Authorized domains, then **Publish app**. Unverified is fine for your own channels: Google shows "Google hasn't verified this app" once (**Advanced → Go to Postloom**).
 
 ## 7. Create the OAuth client
 
@@ -73,7 +77,7 @@ Open <https://console.cloud.google.com/> → project picker (top left) → **New
 | Name                     | `Postloom local`                                  |
 | Authorized redirect URIs | `http://localhost:8000/accounts/youtube/callback` |
 
-**Create**.
+Leave **Authorized JavaScript origins** empty. Putting the callback URL there fails with "URIs must not contain a path"; it belongs under **Authorized redirect URIs**. **Create**.
 
 ![OAuth client](images/07-oauth-client.png)
 
@@ -113,7 +117,7 @@ You come back to Accounts with "<channel> is connected." The token line says **r
 
 Click **Connect** again and pick a different channel (or Google account) on the Google screen. Each channel becomes its own account. To put a channel in another workspace, switch workspace first, then Connect.
 
-![Several channels](images/11-several-channels.png)
+![Channel connected](images/11-channel-connected.png)
 
 ---
 
@@ -124,7 +128,10 @@ See `.claude/skills/youtube/SKILL.md` (debug table) and `knowledge-base/youtube/
 - **`redirect_uri_mismatch`**: the URI in step 7 must equal `YOUTUBE_REDIRECT_URI` exactly.
 - **"Could not connect YouTube"** with `accessNotConfigured` in the log: step 3 was skipped.
 - **Reconnect needed every week**: the app is still in Testing (step 6).
+- **`access_blocked` / "has not completed the Google verification process"**: that Google login isn't a test user (step 6).
 
 ## Screenshots still to add
 
-All of them: take each one while doing the setup and save it in `docs/guides/youtube/images/` with the name used above.
+Save them in `docs/guides/youtube/images/` with these names (blur secrets, crop out emails):
+
+- `01-connect-disabled-no-keys.png`, `02-new-project.png`, `05-scopes.png`, `07-oauth-client.png`, `08-client-id-secret.png`, `09-accounts-connect-ready.png`, `10-google-consent.png`
