@@ -11,3 +11,4 @@ One folder per feature. Each `README.md` follows the sections in `.claude/rules/
 | LinkedIn                       | [linkedin](linkedin/README.md)                       | `linkedin`            | 03    |
 | Media library                  | [media](media/README.md)                             | `media`               | 04    |
 | Posts and post editor          | [posts](posts/README.md)                             | `posts`               | 05    |
+| Calendar                       | [calendar](calendar/README.md)                       | `calendar`            | 06    |

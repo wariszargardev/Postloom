@@ -77,6 +77,37 @@ class PostService
         return $post->refresh();
     }
 
+    /**
+     * Move a draft or scheduled post to a new moment (from the calendar). The status stays as it is.
+     */
+    public function reschedule(Post $post, Carbon $newTime): Post
+    {
+        LogService::startFeatureLogging(LogFeature::Calendar, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
+
+        $reason = match (true) {
+            ! $post->status->isMovable() => "A {$post->status->label()} post can't be moved.",
+            $newTime->isPast() => 'Pick a date and time in the future.',
+            default => null,
+        };
+
+        if ($reason !== null) {
+            LogService::warning('Reschedule refused', ['reason' => $reason, 'requested_at' => $newTime->toIso8601String()]);
+
+            throw ValidationException::withMessages(['scheduled_at' => $reason]);
+        }
+
+        $oldTime = $post->scheduled_at?->toIso8601String();
+        $post->update(['scheduled_at' => $newTime->copy()->utc()]);
+
+        LogService::info('Post rescheduled', [
+            'from' => $oldTime,
+            'to' => $post->scheduled_at?->toIso8601String(),
+            'status' => $post->status->value,
+        ]);
+
+        return $post;
+    }
+
     public function unschedule(Post $post): Post
     {
         $this->ensureEditable($post);

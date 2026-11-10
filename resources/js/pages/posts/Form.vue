@@ -27,6 +27,7 @@ const props = defineProps<{
     library: LibraryMedia[];
     defaultTimezone: string;
     timezones: string[];
+    prefillScheduledAt?: string | null;
 }>();
 
 defineOptions({
@@ -48,7 +49,7 @@ const form = useForm<{
     title: props.post?.title ?? '',
     content: props.post?.content ?? '',
     timezone: props.post?.timezone ?? props.defaultTimezone,
-    scheduled_at: props.post?.scheduled_at ?? '',
+    scheduled_at: props.post?.scheduled_at ?? props.prefillScheduledAt ?? '',
     targets: (props.post?.targets ?? []).map((target) => ({
         social_account_id: target.social_account_id,
         content_override: target.content_override,

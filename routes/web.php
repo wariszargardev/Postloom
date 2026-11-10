@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
@@ -39,6 +40,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('posts/{post}/unschedule', [PostController::class, 'unschedule'])->name('posts.unschedule');
     Route::post('posts/{post}/duplicate', [PostController::class, 'duplicate'])->name('posts.duplicate');
     Route::delete('posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+    Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
+    Route::patch('posts/{post}/reschedule', [CalendarController::class, 'reschedule'])->name('posts.reschedule');
 });
 
 require __DIR__.'/settings.php';

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PostStatus;
 use Database\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,6 +40,21 @@ class Post extends Model
             'status' => PostStatus::class,
             'scheduled_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Always store scheduled_at in UTC. Eloquent saves a date's wall-clock time and ignores its timezone,
+     * so a Karachi Carbon would otherwise be saved 5 hours off.
+     *
+     * @return Attribute<Carbon|null, string|null>
+     */
+    protected function scheduledAt(): Attribute
+    {
+        return Attribute::make(
+            set: fn (mixed $value): ?string => $value === null || $value === ''
+                ? null
+                : $this->fromDateTime(Carbon::parse($value)->utc()),
+        );
     }
 
     /**
