@@ -76,8 +76,12 @@ class PostController extends Controller
     public function create(Request $request): Response
     {
         $workspace = $this->workspaceService->ensureCurrent($request->user());
+        $prefillTime = (string) $request->query('scheduled_at');
 
-        return Inertia::render('posts/Form', $this->editorProps($workspace, null));
+        return Inertia::render('posts/Form', [
+            ...$this->editorProps($workspace, null),
+            'prefillScheduledAt' => preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $prefillTime) === 1 ? $prefillTime : null,
+        ]);
     }
 
     public function store(SavePostRequest $request): RedirectResponse

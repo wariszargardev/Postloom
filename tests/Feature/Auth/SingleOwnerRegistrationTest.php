@@ -47,7 +47,7 @@ it('reopens registration when the env switch is on', function () {
         'email' => 'second@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertRedirect(route('dashboard', absolute: false));
+    ])->assertRedirect(route('calendar.index', absolute: false));
 
     expect(User::query()->count())->toBe(2);
 });

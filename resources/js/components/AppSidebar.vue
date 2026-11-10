@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Images, Layers, LayoutGrid, PenSquare, Share2 } from '@lucide/vue';
+import {
+    CalendarDays,
+    Images,
+    Layers,
+    LayoutGrid,
+    PenSquare,
+    Share2,
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -16,12 +23,18 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
+import { index as calendarIndex } from '@/routes/calendar';
 import { index as mediaIndex } from '@/routes/media';
 import { index as postsIndex } from '@/routes/posts';
 import { index as workspacesIndex } from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
+    {
+        title: 'Calendar',
+        href: calendarIndex(),
+        icon: CalendarDays,
+    },
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -56,7 +69,7 @@ const mainNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link :href="calendarIndex()">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

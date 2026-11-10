@@ -58,7 +58,7 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 
 **LinkedIn** (`LinkedInPostRules`): text up to 3,000 characters; up to 20 images, or 1 video, or 1 PDF, or 1 audio file (posted as a video in piece 08), with no mixing; visibility `PUBLIC` (Anyone) or `CONNECTIONS`.
 
-**Time:** the form sends local time + timezone; `PostService` converts it to UTC for `scheduled_at`. The editor and list convert back with the post's own timezone.
+**Time:** the form sends local time + timezone; `PostService` converts it to UTC for `scheduled_at`, and the `Post::scheduledAt()` mutator also forces UTC on every write (see `knowledge-base/calendar/README.md`). The editor and list convert back with the post's own timezone.
 
 **In-use guards (approved 2026-11-10):**
 

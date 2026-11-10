@@ -11,6 +11,11 @@
         "types:check": "vue-tsc --noEmit"
     },
     "dependencies": {
+        "@fullcalendar/core": "^6.1.22",
+        "@fullcalendar/daygrid": "^6.1.22",
+        "@fullcalendar/interaction": "^6.1.22",
+        "@fullcalendar/timegrid": "^6.1.22",
+        "@fullcalendar/vue3": "^6.1.22",
         "@inertiajs/vite": "^3.0.0",
         "@inertiajs/vue3": "^3.0.0",
         "@laravel/passkeys": "^0.2.0",

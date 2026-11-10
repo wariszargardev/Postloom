@@ -29,5 +29,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | LinkedIn connect and posting  | `linkedin`            | `knowledge-base/linkedin/README.md`            |
 | Media library, uploads        | `media`               | `knowledge-base/media/README.md`               |
 | Posts, editor, platform rules | `posts`               | `knowledge-base/posts/README.md`               |
+| Calendar, drag to reschedule  | `calendar`            | `knowledge-base/calendar/README.md`            |
 
 Add a row here whenever a piece adds a new skill.
