@@ -24,5 +24,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | -------------------------- | --------------------- | ---------------------------------------- |
 | Setup, processes, database | `postloom` (this one) | `knowledge-base/project-setup/README.md` |
 | Logging                    | `logging`             | `knowledge-base/logging/README.md`       |
+| Login, owner account       | `auth`                | `knowledge-base/auth/README.md`          |
 
 Add a row here whenever a piece adds a new skill.

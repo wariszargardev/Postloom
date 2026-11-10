@@ -6,3 +6,4 @@ One folder per feature. Each `README.md` follows the sections in `.claude/rules/
 | ------------- | ---------------------------------------- | ---------- | ----- |
 | Project setup | [project-setup](project-setup/README.md) | `postloom` | 00    |
 | Logging       | [logging](logging/README.md)             | `logging`  | 00    |
+| Auth          | [auth](auth/README.md)                   | `auth`     | 01    |
