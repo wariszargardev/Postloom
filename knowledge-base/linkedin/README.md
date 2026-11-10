@@ -6,6 +6,8 @@ Connect one or more **personal LinkedIn profiles** to a workspace (piece 03) and
 
 ## LinkedIn app setup (one time)
 
+Step-by-step guide with screenshots and video: `docs/guides/linkedin/README.md`. Short version:
+
 1. Open <https://www.linkedin.com/developers/apps> → **Create app**. LinkedIn asks for a Company Page to link the app to (any Page you admin, even a dummy one) and a logo. Verify the app from that Page when asked.
 2. **Products** tab: add **Sign In with LinkedIn using OpenID Connect** and **Share on LinkedIn**. Both are self-serve and approved immediately.
 3. **Auth** tab → **Authorized redirect URLs for your app**: add exactly `http://localhost:8000/accounts/linkedin/callback`.
