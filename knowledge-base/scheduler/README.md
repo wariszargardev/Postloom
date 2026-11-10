@@ -26,21 +26,23 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
 
 ## Entry points
 
-| What       | Where                                                                                                                                                                      |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Command    | `posts:dispatch-due` (`app/Console/Commands/DispatchDuePosts.php`), scheduled in `routes/console.php`                                                                      |
-| Dispatcher | `app/Services/Publishing/PostDispatcher.php` (`dispatchDue`, `dispatchPost`, `isEnabled`)                                                                                  |
-| Job        | `app/Jobs/PublishPostTargetJob.php`                                                                                                                                        |
-| Status     | `app/Services/Publishing/PostStatusResolver.php`                                                                                                                           |
-| Contract   | `app/Services/Publishing/Publisher.php`, `PublishResult.php`, `PublishException.php`, `PublisherRegistry.php` (bound in `AppServiceProvider` with `LinkedInPublisher`)     |
-| Routes     | `POST /posts` and `PUT /posts/{post}` with `intent=publish_now`; `POST /posts/{post}/retry` (`posts.retry`)                                                                |
-| UI         | `resources/js/components/posts/DeliveryPanel.vue` (per account: status, tries, last error, try history, View post link), Publish now and Retry buttons in `posts/Form.vue` |
+| What       | Where                                                                                                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Command    | `posts:dispatch-due` (`app/Console/Commands/DispatchDuePosts.php`), scheduled in `routes/console.php`                                                                                      |
+| Dispatcher | `app/Services/Publishing/PostDispatcher.php` (`dispatchDue`, `dispatchPost`, `isEnabled`)                                                                                                  |
+| Job        | `app/Jobs/PublishPostTargetJob.php`                                                                                                                                                        |
+| Status     | `app/Services/Publishing/PostStatusResolver.php`                                                                                                                                           |
+| Contract   | `app/Services/Publishing/Publisher.php`, `PublishResult.php`, `PublishException.php`, `PublisherRegistry.php` (bound in `AppServiceProvider` with `LinkedInPublisher`, `YouTubePublisher`) |
+| Routes     | `POST /posts` and `PUT /posts/{post}` with `intent=publish_now`; `POST /posts/{post}/retry` (`posts.retry`)                                                                                |
+| UI         | `resources/js/components/posts/DeliveryPanel.vue` (per account: status, tries, last error, try history, View post link), Publish now and Retry buttons in `posts/Form.vue`                 |
 
 ## Data
 
 **`publish_attempts`**: `post_target_id`, `attempt`, `status` (`running`, `succeeded`, `failed`), `retryable`, `error_message`, `error_class`, `external_id`, `started_at`, `finished_at`, `duration_ms`.
 
 `post_targets` gets filled in here: `status`, `attempts`, `last_error`, `external_id`, `external_url`, `published_at`.
+
+`PublishResult` can carry a `notice` (for example a YouTube thumbnail that was refused). The job saves it in `last_error` on a **published** account, so the Delivery panel shows "Published, but …".
 
 ## Rules
 

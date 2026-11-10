@@ -1,6 +1,6 @@
 ---
 name: youtube
-description: Postloom YouTube integration — use when setting up the Google Cloud project / OAuth client, changing the YouTube Connect or Reconnect flow, the google Socialite driver, scopes (youtube.upload, youtube.readonly), the channels.list lookup, multiple channels per workspace, or token renewal (YouTubeTokenService, refresh tokens, invalid_grant, the daily accounts:check-tokens refresh). Also for "Connect YouTube is disabled", "Google did not allow uploading", "no refresh token", "no YouTube channel", "Could not connect YouTube", "Google hasn't verified this app", logins dying after 7 days, and later for uploading videos to YouTube (piece 11).
+description: Postloom YouTube integration — use when setting up the Google Cloud project / OAuth client, changing the YouTube Connect or Reconnect flow, the google Socialite driver, scopes (youtube.upload, youtube.readonly), the channels.list lookup, multiple channels per workspace, or token renewal (YouTubeTokenService, refresh tokens, invalid_grant, the daily accounts:check-tokens refresh). Also for "Connect YouTube is disabled", "Google did not allow uploading", "no refresh token", "no YouTube channel", "Could not connect YouTube", "Google hasn't verified this app", logins dying after 7 days. Also for uploading videos: YouTubePublisher, YouTubeUploader (resumable chunks, 308 Range, resume), YouTubePostRules (title, tags, Short/long, privacy, made for kids, thumbnail), the YouTube settings panel, and errors like quotaExceeded, uploadLimitExceeded, invalidTitle, "thumbnail was refused", or a video stuck or missing on YouTube.
 ---
 
 # YouTube
@@ -14,6 +14,7 @@ KB: `knowledge-base/youtube/README.md`. Setup guide: `docs/guides/youtube/README
 - `app/Exceptions/YouTubeConnectException.php`
 - `app/Console/Commands/CheckAccountTokens.php` (daily refresh check)
 - `app/Models/SocialAccount.php` (`canRefreshToken()`), `config/services.php` (`google`)
+- Publishing: `app/Services/YouTube/YouTubePublisher.php`, `YouTubeUploader.php`, `YouTubeApiException.php`; `app/Services/Posts/Rules/YouTubePostRules.php`; `resources/js/components/posts/PlatformSettings.vue`, YouTube card in `PostPreview.vue`
 
 ## Debugging
 
@@ -29,4 +30,11 @@ KB: `knowledge-base/youtube/README.md`. Setup guide: `docs/guides/youtube/README
 | Channel shows Reconnect needed       | `YouTube access was revoked or expired` with `reason` `invalid_grant`: revoked, password changed, or Testing-mode 7-day expiry; Reconnect |
 | Every channel fails to refresh       | `Google refused to refresh` with `error` `invalid_client`: the `.env` keys don't match the Cloud project                                  |
 
-Logs: `storage/logs/postloom-*.log`, filter `extra.feature` = `youtube` (connect) or `accounts` (daily check), then follow the `trace_id`.
+| Post failed: "upload limit is reached" | `reason` quotaExceeded / uploadLimitExceeded: 100 uploads per day per project; retry after midnight Pacific |
+| Post failed: "rejected the video (400, invalidTitle…)" | Fix the title/tags in the YouTube settings, then Retry |
+| "upload kept failing" / "session expired" | Network or YouTube trouble mid-upload; the job retries from the start. Check `YouTube upload chunk lost` lines |
+| Published, but "thumbnail was refused" | Channel not phone-verified (youtube.com/verify) or image too big; set it in YouTube Studio |
+| Video is a Short when it shouldn't be | Format Auto + vertical/square + up to 3 min; pick "Regular video" |
+| Video stays private | Privacy setting, or YouTube locked it for an unverified API project: check YouTube Studio |
+
+Logs: `storage/logs/postloom-*.log`, filter `extra.feature` = `youtube` (connect), `accounts` (daily check) or `publishing` (uploads), then follow the `trace_id`.

@@ -141,19 +141,19 @@ it('allows 20 images on LinkedIn', function () {
 
 it('refuses accounts that need reconnecting or cannot post yet', function () {
     $expired = SocialAccount::factory()->for($this->workspace)->expired()->create(['name' => 'Old profile']);
-    $youtube = SocialAccount::factory()->for($this->workspace)->create(['name' => 'My channel', 'provider' => SocialProvider::YouTube]);
+    $tikTok = SocialAccount::factory()->for($this->workspace)->create(['name' => 'My channel', 'provider' => SocialProvider::TikTok]);
 
     $this->actingAs($this->user)
         ->post(route('posts.store'), postPayload([
             'intent' => 'schedule',
             'targets' => [
                 ['social_account_id' => $expired->id, 'settings' => ['visibility' => 'PUBLIC']],
-                ['social_account_id' => $youtube->id],
+                ['social_account_id' => $tikTok->id],
             ],
         ]))
         ->assertSessionHasErrors([
             "targets.{$expired->id}" => 'Old profile (LinkedIn): reconnect this account first.',
-            "targets.{$youtube->id}" => 'My channel (YouTube): posting is not available yet.',
+            "targets.{$tikTok->id}" => 'My channel (TikTok): posting is not available yet.',
         ]);
 });
 

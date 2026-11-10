@@ -2,7 +2,7 @@
 import { FileText, Globe, Music, Play, Users } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { EditorAccount, LibraryMedia } from '@/types/posts';
+import type { EditorAccount, LibraryMedia, SettingValue } from '@/types/posts';
 
 const SEE_MORE_AFTER = 210;
 
@@ -10,10 +10,30 @@ const props = defineProps<{
     account: EditorAccount;
     text: string;
     media: LibraryMedia[];
-    visibility: string | undefined;
+    settings: Record<string, SettingValue>;
+    library: LibraryMedia[];
 }>();
 
 const isExpanded = ref(false);
+
+const visibility = computed(() => String(props.settings.visibility ?? ''));
+const isYouTube = computed(() => props.account.provider === 'youtube');
+const youTubeTitle = computed(
+    () => String(props.settings.title ?? '').trim() || 'Untitled video',
+);
+const youTubeThumbnail = computed(() => {
+    const chosen = props.library.find(
+        (item) => item.id === Number(props.settings.thumbnail_media_id),
+    );
+
+    return chosen?.thumbnail_url ?? firstOther.value?.thumbnail_url ?? null;
+});
+const privacyLabel = computed(
+    () =>
+        props.account.rules?.settings.privacy?.options?.[
+            String(props.settings.privacy ?? 'public')
+        ] ?? 'Public',
+);
 
 const isLong = computed(() => props.text.length > SEE_MORE_AFTER);
 const shownText = computed(() =>
@@ -41,6 +61,55 @@ const initials = computed(() =>
 
 <template>
     <article
+        v-if="isYouTube"
+        class="overflow-hidden rounded-xl border bg-card text-card-foreground"
+        :data-test="`preview-${account.id}`"
+    >
+        <div class="relative aspect-video bg-black">
+            <img
+                v-if="youTubeThumbnail"
+                :src="youTubeThumbnail"
+                alt=""
+                class="h-full w-full object-cover"
+            />
+            <div
+                v-else
+                class="flex h-full items-center justify-center text-xs text-white/70"
+            >
+                {{ firstOther ? 'YouTube picks a frame' : 'Add a video' }}
+            </div>
+            <span
+                v-if="settings.format === 'short'"
+                class="absolute top-2 left-2 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold text-white"
+                >SHORT</span
+            >
+        </div>
+        <div class="flex gap-3 p-3">
+            <Avatar class="size-9">
+                <AvatarImage
+                    v-if="account.avatar_url"
+                    :src="account.avatar_url"
+                    :alt="account.name"
+                />
+                <AvatarFallback>{{ initials }}</AvatarFallback>
+            </Avatar>
+            <div class="flex min-w-0 flex-col">
+                <span class="line-clamp-2 text-sm font-semibold">{{
+                    youTubeTitle
+                }}</span>
+                <span class="text-xs text-muted-foreground"
+                    >{{ account.name }} · {{ privacyLabel }}</span
+                >
+                <span
+                    v-if="text"
+                    class="mt-1 line-clamp-2 text-xs text-muted-foreground"
+                    >{{ text }}</span
+                >
+            </div>
+        </div>
+    </article>
+    <article
+        v-else
         class="overflow-hidden rounded-xl border bg-card text-card-foreground"
         :data-test="`preview-${account.id}`"
     >

@@ -51,6 +51,7 @@ return [
         'redirect' => env('YOUTUBE_REDIRECT_URI', '/accounts/youtube/callback'),
         'token_url' => env('GOOGLE_TOKEN_URL', 'https://oauth2.googleapis.com/token'),
         'youtube_api_base_url' => env('YOUTUBE_API_BASE_URL', 'https://www.googleapis.com/youtube/v3'),
+        'upload_chunk_bytes' => (int) env('YOUTUBE_UPLOAD_CHUNK_BYTES', 8 * 1024 * 1024),
     ],
 
 ];

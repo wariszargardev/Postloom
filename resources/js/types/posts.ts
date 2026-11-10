@@ -9,10 +9,15 @@ export type LibraryMedia = {
     duration_seconds: number | null;
 };
 
+export type SettingValue = string | number | boolean | null;
+
 export type PlatformSetting = {
+    type?: 'select' | 'text' | 'tags' | 'boolean' | 'image';
     label: string;
-    options: Record<string, string>;
-    default: string;
+    options?: Record<string, string>;
+    default: SettingValue;
+    max_length?: number;
+    required?: boolean;
 };
 
 export type PlatformRules = {
@@ -34,7 +39,7 @@ export type EditorAccount = {
 export type TargetForm = {
     social_account_id: number;
     content_override: string | null;
-    settings: Record<string, string>;
+    settings: Record<string, SettingValue>;
 };
 
 export type EditorPost = {

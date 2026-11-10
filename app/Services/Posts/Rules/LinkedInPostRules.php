@@ -68,6 +68,11 @@ class LinkedInPostRules implements PlatformPostRules
         };
     }
 
+    public function targetErrors(string $text, Collection $media, array $settings): array
+    {
+        return [];
+    }
+
     public function describe(): array
     {
         return [
@@ -75,6 +80,7 @@ class LinkedInPostRules implements PlatformPostRules
             'media_rules' => 'Up to '.self::MAX_IMAGES.' images, or 1 video, or 1 PDF, or 1 audio file. No mixing.',
             'settings' => [
                 'visibility' => [
+                    'type' => 'select',
                     'label' => 'Who can see it',
                     'options' => self::VISIBILITY_OPTIONS,
                     'default' => 'PUBLIC',
