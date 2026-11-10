@@ -52,7 +52,7 @@ If ffmpeg or ffprobe is missing or fails, the upload still succeeds; only durati
 
 - Limits live in `config/postloom.php` → `media.kinds`; max 10 files per upload (`media.max_files_per_upload`).
 - Files are never public. `media.show` and `media.thumbnail` check `MediaPolicy::view`.
-- Platform limits are checked when posting (piece 08), not here. LinkedIn: video 3 s–30 min and up to 5 GB, documents up to 100 MB / 300 pages; it has no audio posts, so audio is turned into a video there.
+- Platform limits are checked by the platform when posting, not here (see `knowledge-base/linkedin/README.md` → Publishing). LinkedIn: video 3 s–30 min and up to 500 MB, documents up to 100 MB / 300 pages; it has no audio posts, so audio is turned into a video there.
 - **Upload size on this PC:** Herd's `php.ini` allows 2 MB per file. `start.ps1` runs the web server as `php -d upload_max_filesize=512M -d post_max_size=520M -d memory_limit=512M -S localhost:8000 -t public …/server.php`, so the bigger limits apply to Postloom only. Running `php artisan serve` by hand brings back the 2 MB limit.
 
 ## Logging

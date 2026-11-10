@@ -32,7 +32,7 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
 | Dispatcher | `app/Services/Publishing/PostDispatcher.php` (`dispatchDue`, `dispatchPost`, `isEnabled`)                                                                                  |
 | Job        | `app/Jobs/PublishPostTargetJob.php`                                                                                                                                        |
 | Status     | `app/Services/Publishing/PostStatusResolver.php`                                                                                                                           |
-| Contract   | `app/Services/Publishing/Publisher.php`, `PublishResult.php`, `PublishException.php`, `PublisherRegistry.php` (bound in `AppServiceProvider`, empty until piece 08)        |
+| Contract   | `app/Services/Publishing/Publisher.php`, `PublishResult.php`, `PublishException.php`, `PublisherRegistry.php` (bound in `AppServiceProvider` with `LinkedInPublisher`)     |
 | Routes     | `POST /posts` and `PUT /posts/{post}` with `intent=publish_now`; `POST /posts/{post}/retry` (`posts.retry`)                                                                |
 | UI         | `resources/js/components/posts/DeliveryPanel.vue` (per account: status, tries, last error, try history, View post link), Publish now and Retry buttons in `posts/Form.vue` |
 
@@ -54,6 +54,9 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
 1. Create a class implementing `Publisher` (`provider()`, `publish(PostTarget): PublishResult`).
 2. Add it to the array in `AppServiceProvider::register()`.
 3. Throw `PublishException::retryable()` for network, 5xx and 429 errors, and `permanent()` for the rest.
+4. Don't call `LogService::startFeatureLogging()` inside it; log on the job's trace.
+
+Example: `app/Services/LinkedIn/LinkedInPublisher.php` (see `knowledge-base/linkedin/README.md` → Publishing).
 
 ## Logging
 
@@ -74,7 +77,7 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
 
 ## Config (`.env`)
 
-- `POSTLOOM_PUBLISHING_ENABLED=false`: keep off until a publisher exists (piece 08 turns it on).
+- `POSTLOOM_PUBLISHING_ENABLED=true`: set `false` to pause all sending (due posts stay scheduled).
 - `POSTLOOM_CATCH_UP_HOURS=6`, `POSTLOOM_STUCK_MINUTES=30`
 - `DB_QUEUE_RETRY_AFTER=600`
 
@@ -88,4 +91,4 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
 ## Known limits
 
 - Posts only go out while `start.ps1` (scheduler + queue worker) is running.
-- No real publisher yet (piece 08), so publishing stays turned off.
+- Only LinkedIn has a publisher; other platforms fail with "Posting to … is not available yet."

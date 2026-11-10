@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Services\LinkedIn\LinkedInPublisher;
 use App\Services\Publishing\PublisherRegistry;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(PublisherRegistry::class, fn (): PublisherRegistry => new PublisherRegistry([]));
+        $this->app->singleton(PublisherRegistry::class, fn (Application $app): PublisherRegistry => new PublisherRegistry([
+            $app->make(LinkedInPublisher::class),
+        ]));
     }
 
     /**

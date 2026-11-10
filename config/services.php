@@ -39,6 +39,10 @@ return [
         'client_id' => env('LINKEDIN_CLIENT_ID'),
         'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
         'redirect' => env('LINKEDIN_REDIRECT_URI', '/accounts/linkedin/callback'),
+        'api_base_url' => env('LINKEDIN_API_BASE_URL', 'https://api.linkedin.com/rest'),
+        'api_version' => env('LINKEDIN_API_VERSION', '202610'),
+        'video_wait_seconds' => (int) env('LINKEDIN_VIDEO_WAIT_SECONDS', 300),
+        'video_poll_seconds' => (int) env('LINKEDIN_VIDEO_POLL_SECONDS', 5),
     ],
 
 ];
