@@ -114,6 +114,14 @@ class MediaController extends Controller
     {
         Gate::authorize('delete', $media);
 
+        $blockReason = $this->mediaService->deletionBlockReason($media);
+
+        if ($blockReason !== null) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $blockReason]);
+
+            return back();
+        }
+
         $this->mediaService->delete($media);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Media deleted.')]);
