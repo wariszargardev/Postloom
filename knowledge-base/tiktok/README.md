@@ -18,14 +18,14 @@ Setup guide for the TikTok developer app: `docs/guides/tiktok/README.md`.
     - `POST https://open.tiktokapis.com/v2/oauth/token/` (form: `client_key`, `client_secret`, `code`, `grant_type=authorization_code`, `redirect_uri`) returns `access_token`, `refresh_token`, `expires_in`, `refresh_expires_in`, `open_id`, `scope`.
     - If neither `video.publish` nor `video.upload` is in `scope`, the connection is refused.
 4. `GET https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,username` with the Bearer token. TikTok answers with `data.user` and `error.code` (`ok` on success).
-5. `SocialAccountService::saveConnectedAccount()` saves it: provider `tiktok`, type `profile`, `provider_account_id` = `open_id`, `name` = `display_name`, `handle` = `username`, avatar, both tokens encrypted, `token_expires_at` = now + `expires_in` (about 2 hours), `scopes` = granted scopes.
+5. `SocialAccountService::saveConnectedAccount()` saves it: provider `tiktok`, type `profile`, `provider_account_id` = `open_id`, `name` = `display_name`, `handle` = `username`, avatar, both tokens encrypted, `token_expires_at` = now + `expires_in` (24 hours on the first real connect, 2026-11-11), `scopes` = granted scopes.
 6. Back to Accounts: "<name> is connected."
 
 Connecting the same TikTok login again updates it in place (same `open_id`). Another login adds a new account.
 
 ### Token renewal
 
-TikTok access tokens last about **2 hours**; refresh tokens about **180 days**. Every refresh returns a **new refresh token** and the old one stops working, so both are saved every time.
+TikTok access tokens last up to **24 hours** (the docs say 2 hours; the first real connect on 2026-11-11 returned 24 hours, and Postloom always uses `expires_in`); refresh tokens about **180 days**. Every refresh returns a **new refresh token** and the old one stops working, so both are saved every time.
 
 - `TikTokTokenService::accessTokenFor($account)` returns the saved token if it is valid for 5 more minutes, otherwise calls `refresh()`. Piece 17's publisher will call it before each upload.
 - `refresh()` posts `grant_type=refresh_token` to `/v2/oauth/token/` and saves the new access token, refresh token and expiry.
@@ -50,11 +50,11 @@ TikTok access tokens last about **2 hours**; refresh tokens about **180 days**. 
 
 ## Data
 
-`social_accounts` (see `knowledge-base/workspaces-accounts/README.md`). TikTok rows: `account_type = profile`, `provider_account_id` = `open_id` (unique per app and user), `handle` = username, `refresh_token` set, `token_expires_at` about 2 hours ahead and moved forward on each refresh. No new columns.
+`social_accounts` (see `knowledge-base/workspaces-accounts/README.md`). TikTok rows: `account_type = profile`, `provider_account_id` = `open_id` (unique per app and user), `handle` = username, `refresh_token` set, `token_expires_at` = now + `expires_in` and moved forward on each refresh. No new columns.
 
 ## Rules
 
-- **Redirect URI must be https and registered in Login Kit exactly** (no `http://localhost`, no query string). Use Herd's `https://postloom.test/accounts/tiktok/callback` (`herd secure postloom`). If TikTok refuses that domain, use a tunnel (Cloudflare Tunnel / ngrok) and set `TIKTOK_REDIRECT_URI` and `APP_URL` to it.
+- **Redirect URI must be https and registered in Login Kit exactly** (no `http://localhost`, no query string). Use Herd's `https://postloom.test/accounts/tiktok/callback` (`herd secure postloom`). TikTok accepted this `.test` URL on 2026-11-11 (sandbox). If it ever refuses it, use a tunnel (Cloudflare Tunnel / ngrok) and set `TIKTOK_REDIRECT_URI` and `APP_URL` to it.
 - The app stays in **Sandbox** (or unaudited production) for personal use: only TikTok accounts added as target users can log in, and unaudited apps can only post **privately** (`SELF_ONLY`) to **private** accounts, at most 5 posting users per 24 hours. "Send to inbox" (piece 17) is the way to post publicly without an audit.
 - Never ask for more than the four scopes above.
 - No PKCE: TikTok's web Login Kit uses `state` only.
@@ -98,3 +98,4 @@ Feature `tiktok` for the connect flow; token messages run on the caller's trace 
 - Connect only; publishing comes in piece 17.
 - TikTok's token, refresh and revoke reference pages could not be read during research (403); field names follow the OAuth guide and TikTok's v2 conventions. Check `log_id` and `error` in the logs if a real connect fails.
 - Disconnecting in Postloom does not revoke the token at TikTok; remove the app in TikTok → Settings → Security → Manage app permissions.
+- Sandbox only lets **target users** log in. Any other TikTok account gets TikTok's "Something went wrong … non_sandbox_target" page before Postloom is reached; add it under Sandbox settings → Target Users, or log in as a listed account.

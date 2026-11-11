@@ -21,7 +21,7 @@ KB: `knowledge-base/tiktok/README.md`. Setup guide: `docs/guides/tiktok/README.m
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Connect button disabled               | `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET` empty, or config cached: `php artisan config:clear`                                  |
 | TikTok shows a redirect_uri error     | Login Kit's Redirect URI must equal `TIKTOK_REDIRECT_URI` exactly and be https; open Postloom on that same https host             |
-| TikTok says the account can't log in  | App in Sandbox and that TikTok account isn't a target user: add it under Sandbox settings                                         |
+| TikTok page "non_sandbox_target"      | The TikTok account used isn't a Sandbox target user: log in as a listed one, or add it under Sandbox settings → Target Users      |
 | "The TikTok login expired"            | `state` mismatch: the session was lost (different host than `APP_URL`, cookies blocked, or callback opened twice). Connect again  |
 | "did not allow posting videos"        | `video.publish` / `video.upload` not granted: add Content Posting API to the app and tick every permission                        |
 | "TikTok did not accept the login (…)" | Log `TikTok code exchange failed`: `invalid_client` = wrong keys, `invalid_grant` = code reused or redirect URI differs           |

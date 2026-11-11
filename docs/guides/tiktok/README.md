@@ -28,7 +28,7 @@ Then open `https://postloom.test` and set in `.env`:
 APP_URL=https://postloom.test
 ```
 
-If TikTok later refuses the `.test` domain on the redirect URL screen, use a tunnel instead (for example `cloudflared tunnel --url http://localhost:8000`) and use the tunnel's https URL everywhere below.
+TikTok accepted `https://postloom.test` on 2026-11-11. If it ever refuses the `.test` domain on the redirect URL screen, use a tunnel instead (for example `cloudflared tunnel --url http://localhost:8000`) and use the tunnel's https URL everywhere below.
 
 ![https](images/02-https-postloom-test.png)
 
