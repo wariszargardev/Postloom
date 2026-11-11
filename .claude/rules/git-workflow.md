@@ -11,9 +11,15 @@
 
 Promotion (only when Waris says): `develop → test → stage → main`, each through a PR.
 
+## Where to work and one piece at a time (Waris, 2026-11-11)
+
+- Always work in the main folder `D:\Afia Insurance\Projects\Personal\postloom`. Never create a git worktree or a second checkout for Postloom; switch branches in this folder (`git checkout <branch>`).
+- After switching branches: `composer install` if `composer.lock` changed, `npm run build`, `php artisan config:clear`, then ask Waris to restart with `stop.ps1` + `start.ps1` (queue workers keep the old code in memory until restarted).
+- One piece at a time: the previous piece's PR must be **merged** before a new piece starts. If it is still open, finish or fix it on its own branch first and wait for Waris to merge; only then cut the next branch from the updated `develop`.
+
 ## Piece branches
 
-- Cut from the latest `develop`.
+- Cut from the latest `develop`, after the previous piece's PR is merged.
 - Name: `<type>/<NN>-<short-kebab-name>`. Types: `feat`, `fix`, `chore`, `docs`. `NN` = the piece number from `docs/roadmap.md` (fixes use the piece they fix).
   Examples: `chore/00-project-setup`, `feat/03-linkedin-connect`, `fix/07-scheduler-double-post`.
 - PR title: `[NN] <Title from roadmap>`.
