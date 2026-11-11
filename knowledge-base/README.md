@@ -15,3 +15,4 @@ One folder per feature. Each `README.md` follows the sections in `.claude/rules/
 | Scheduler and publish queue    | [scheduler](scheduler/README.md)                     | `scheduler`           | 07    |
 | YouTube                        | [youtube](youtube/README.md)                         | `youtube`             | 10    |
 | Design system                  | [design](design/README.md)                           | `design`              | 12    |
+| Facebook                       | [facebook](facebook/README.md)                       | `facebook`            | 13    |

@@ -16,8 +16,9 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 09  | `docs/09-platform-setup-guides` | Platform setup guides                    | Step-by-step LinkedIn app guide with screenshots and video; template and video builder for future platforms                    | merged    |
 | 10  | `feat/10-youtube-connect`       | Connect a YouTube channel                | Google OAuth with offline access, one account per channel, automatic token renewal, setup guide                                | merged    |
 | 11  | `feat/11-youtube-publish`       | Publish to YouTube                       | Resumable video upload, title/privacy/made-for-kids settings, audio as video, quota-aware errors                               | merged    |
-| 12  | `feat/12-design-refresh`        | Design refresh                           | Build Real Code look: navy, green and amber tokens, Inter + JetBrains Mono, status colours, platform icons, dashboard counters | in review |
-| 13  | `feat/13-facebook-connect`      | Connect a Facebook Page                  | Meta app, Pages as accounts, setup guide (plan first)                                                                          | planned   |
+| 12  | `feat/12-design-refresh`        | Design refresh                           | Build Real Code look: navy, green and amber tokens, Inter + JetBrains Mono, status colours, platform icons, dashboard counters | merged    |
+| 13  | `feat/13-facebook-connect`      | Connect Facebook Pages                   | Meta app in Development mode, every shared Page as its own account, non-expiring Page tokens, daily check, setup guide         | in review |
+| 14  | `feat/14-facebook-publish`      | Publish to a Facebook Page               | Text/link, photos, multi-photo, video and Reels; Facebook settings and preview                                                 | planned   |
 
 ## Later
 

@@ -10,6 +10,7 @@ enum LogFeature: string
     case Accounts = 'accounts';
     case LinkedIn = 'linkedin';
     case YouTube = 'youtube';
+    case Facebook = 'facebook';
     case Media = 'media';
     case Posts = 'posts';
     case Calendar = 'calendar';

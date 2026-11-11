@@ -9,7 +9,7 @@ Workspaces group social accounts (for example "Personal", "Build Real Code"). A 
 1. Every logged-in request runs `EnsureCurrentWorkspace`. If the owner has no workspace, a **Personal** workspace is created and made current. If the current workspace is missing, the oldest one becomes current.
 2. The sidebar's workspace switcher lists all workspaces. Choosing one calls `POST /workspaces/{id}/switch` and stores it in `users.current_workspace_id`.
 3. **Workspaces page** (`/workspaces`): add (and switch to it), rename, switch, delete. Delete is blocked while the workspace has accounts, and for the last workspace.
-4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03, YouTube since piece 10).
+4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03, YouTube since piece 10, Facebook Pages since piece 13).
 5. A platform's OAuth callback (piece 03 onward) calls `SocialAccountService::saveConnectedAccount()`. Reconnecting the same account updates the existing row instead of adding a duplicate.
 
 ## Entry points

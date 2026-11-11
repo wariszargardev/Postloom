@@ -1,0 +1,11 @@
+# One slide per line: image file (in images/) | caption shown in the video.
+# A missing image becomes a text slide, so the video always builds. Add the screenshot later with the same name.
+01-connect-disabled-no-keys.png | 1. Before setup: Facebook Connect is disabled until the Meta app keys are in .env
+02-create-app.png | 2. developers.facebook.com/apps > Create app: Postloom, use case "Manage everything on your Page", no business portfolio
+03-permissions.png | 3. Use cases > Customize: add pages_show_list, pages_read_engagement, pages_manage_posts
+04-redirect-url.png | 4. Facebook Login > Settings: redirect URI localhost:8000/accounts/facebook/callback
+05-app-id-secret.png | 5. App settings > Basic: copy App ID and App secret into .env (never share the secret)
+06-development-mode.png | 6. Keep the app in Development mode: as its admin you need no App Review for your own Pages
+07-accounts-connect-ready.png | 7. php artisan config:clear, restart: Facebook Connect is now active
+08-choose-pages.png | 8. Connect: tick the Pages Postloom may use and keep every permission on
+09-pages-connected.png | 9. Each Page is its own account; the token doesn't expire
