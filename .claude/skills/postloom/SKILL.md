@@ -34,5 +34,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | YouTube connect, token renewal       | `youtube`             | `knowledge-base/youtube/README.md`             |
 | Look and feel, tokens, components    | `design`              | `knowledge-base/design/README.md`              |
 | Facebook Pages connect, Graph errors | `facebook`            | `knowledge-base/facebook/README.md`            |
+| TikTok connect, token renewal        | `tiktok`              | `knowledge-base/tiktok/README.md`              |
 
 Add a row here whenever a piece adds a new skill.
