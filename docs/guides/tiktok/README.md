@@ -12,21 +12,21 @@ What you need: a TikTok account, a TikTok for Developers login (developers.tikto
 
 Everything below is what is configured today, so it can be rebuilt the same way. **No secrets here:** the client key and secret live only in `.env` and on the TikTok portal.
 
-| What                   | Value                                                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Developer portal login | TikTok for Developers account opened in the **Waris** Chrome profile (wariszargardev)                           |
-| App                    | **Postloom Scheduler** (`Postloom` was already taken), ownership Individual, type Other                         |
-| App page               | https://developers.tiktok.com/app/7706809468248672276                                                           |
-| Mode in use            | **Sandbox** "Postloom local": https://developers.tiktok.com/app/7706809468248672276/sandbox/7706807661484099590 |
-| Category / description | Business / "Personal scheduler to plan and post my own videos to TikTok."                                       |
-| Platform               | Web, Web/Desktop URL `https://postloom.test`                                                                    |
-| Terms / Privacy URLs   | `https://postloom.test/terms`, `https://postloom.test/privacy` (placeholders; Sandbox doesn't check them)       |
-| App icon               | Plain 1024×1024 PNG (navy square, green and amber boxes)                                                        |
-| Products               | Login Kit (Web), Content Posting API with **Direct Post** on                                                    |
-| Scopes                 | `user.info.basic`, `user.info.profile`, `video.upload`, `video.publish`                                         |
-| Redirect URI (Web)     | `https://postloom.test/accounts/tiktok/callback`                                                                |
-| Target users           | `waris.zargar2` (connected). Add the Fruitpur TikTok account the same way (see "Add another TikTok account")    |
-| Keys used in `.env`    | The **Sandbox** "Postloom local" Credentials (not the Production tab's)                                         |
+| What                   | Value                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Developer portal login | TikTok for Developers account opened in the **Waris** Chrome profile (wariszargardev)                                                              |
+| App                    | **Postloom Scheduler** (`Postloom` was already taken), ownership Individual, type Other                                                            |
+| App page               | https://developers.tiktok.com/app/7706809468248672276                                                                                              |
+| Mode in use            | **Sandbox** "Postloom local": https://developers.tiktok.com/app/7706809468248672276/sandbox/7706807661484099590                                    |
+| Category / description | Business / "Personal scheduler to plan and post my own videos to TikTok."                                                                          |
+| Platform               | Web, Web/Desktop URL `https://postloom.test`                                                                                                       |
+| Terms / Privacy URLs   | `https://postloom.test/terms`, `https://postloom.test/privacy` (placeholders; Sandbox doesn't check them)                                          |
+| App icon               | Plain 1024×1024 PNG (navy square, green and amber boxes)                                                                                           |
+| Products               | Login Kit (Web), Content Posting API with **Direct Post** on                                                                                       |
+| Scopes                 | `user.info.basic`, `user.info.profile`, `video.upload`, `video.publish`                                                                            |
+| Redirect URI (Web)     | `https://postloom.test/accounts/tiktok/callback`                                                                                                   |
+| Target users           | `waris.zargar2` and `fruitpuraiurdu`, both connected (2026-11-11). Removing one from this list blocks its next login; add it back with Add account |
+| Keys used in `.env`    | The **Sandbox** "Postloom local" Credentials (not the Production tab's)                                                                            |
 
 `.env` lines (values only on your PC):
 
@@ -156,6 +156,7 @@ Done for good: Postloom renews each account's login every day, so you never repe
 - **`non_sandbox_target` on TikTok:** the TikTok account isn't a target user. Add it (section above) or switch to a listed account.
 - **redirect_uri error on TikTok:** the Redirect URI in Login Kit and `TIKTOK_REDIRECT_URI` differ.
 - **"The TikTok login expired":** Connect was started on another address than the callback (use `https://postloom.test`), or the callback was opened twice. Connect again.
+- **A connected account disappeared from Target Users** (removed by mistake): add it back with **Add account**, log in as that account in the popup (Switch account if another one is logged in), approve.
 - **Developer portal shows "No access":** that Chrome profile isn't logged in to TikTok for Developers; use the Waris profile.
 
 More in the `tiktok` skill's debug table (`.claude/skills/tiktok/SKILL.md`).
