@@ -32,5 +32,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | Calendar, drag to reschedule         | `calendar`            | `knowledge-base/calendar/README.md`            |
 | Scheduler, publishing queue, retries | `scheduler`           | `knowledge-base/scheduler/README.md`           |
 | YouTube connect, token renewal       | `youtube`             | `knowledge-base/youtube/README.md`             |
+| Look and feel, tokens, components    | `design`              | `knowledge-base/design/README.md`              |
 
 Add a row here whenever a piece adds a new skill.

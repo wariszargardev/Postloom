@@ -9,3 +9,4 @@
 - Tests: Pest, factories for data, no `DB::` in tests, resolve a service once per file in `beforeEach`.
 - Run `vendor/bin/pint --dirty` after PHP changes.
 - New dependency (Composer or npm) only after Waris agrees.
+- UI: follow `knowledge-base/design/README.md` (the `design` skill). Pages use `.page`/`.page-narrow`, cards `.surface`, statuses `StatusBadge`, platforms `PlatformIcon`, colours from tokens only (no raw hex), and must look right in dark and light mode.

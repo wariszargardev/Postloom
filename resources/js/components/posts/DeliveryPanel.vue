@@ -1,22 +1,13 @@
 <script setup lang="ts">
 import { ExternalLink } from '@lucide/vue';
-import { Badge } from '@/components/ui/badge';
+import PlatformIcon from '@/components/PlatformIcon.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 import type { EditorAccount, TargetDelivery } from '@/types/posts';
 
 const props = defineProps<{
     rows: { account: EditorAccount; delivery: TargetDelivery }[];
     timezone: string;
 }>();
-
-const statusVariant: Record<
-    TargetDelivery['status'],
-    'outline' | 'secondary' | 'default' | 'destructive'
-> = {
-    pending: 'outline',
-    publishing: 'secondary',
-    published: 'default',
-    failed: 'destructive',
-};
 
 function formatTime(value: string): string {
     return new Intl.DateTimeFormat(undefined, {
@@ -29,16 +20,17 @@ function formatTime(value: string): string {
 
 <template>
     <section class="flex flex-col gap-3" data-test="delivery-panel">
-        <h2 class="text-sm font-semibold">Delivery</h2>
+        <h2 class="section-title">Delivery</h2>
         <div
             v-for="row in rows"
             :key="row.account.id"
-            class="flex flex-col gap-2 rounded-lg border p-3"
+            class="surface flex flex-col gap-2 p-4"
         >
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <span class="text-sm font-medium"
-                    >{{ row.account.name }} ·
-                    {{ row.account.provider_label }}</span
+                <span class="flex items-center gap-2 text-sm font-semibold"
+                    ><PlatformIcon :provider="row.account.provider" />{{
+                        row.account.name
+                    }}</span
                 >
                 <div class="flex items-center gap-2">
                     <span
@@ -48,9 +40,10 @@ function formatTime(value: string): string {
                         {{ row.delivery.attempts }}
                         {{ row.delivery.attempts === 1 ? 'try' : 'tries' }}
                     </span>
-                    <Badge :variant="statusVariant[row.delivery.status]">{{
-                        row.delivery.status_label
-                    }}</Badge>
+                    <StatusBadge
+                        :status="row.delivery.status"
+                        :label="row.delivery.status_label"
+                    />
                 </div>
             </div>
 
@@ -59,7 +52,7 @@ function formatTime(value: string): string {
                 :href="row.delivery.external_url"
                 target="_blank"
                 rel="noopener"
-                class="flex items-center gap-1 text-sm underline underline-offset-4"
+                class="flex w-fit items-center gap-1 text-sm font-medium text-brand hover:underline"
             >
                 View post <ExternalLink class="size-3" />
             </a>
@@ -77,7 +70,9 @@ function formatTime(value: string): string {
                     class="flex flex-wrap gap-x-2"
                 >
                     <span class="font-medium">Try {{ attempt.attempt }}</span>
-                    <span>{{ formatTime(attempt.started_at) }}</span>
+                    <span class="font-mono">{{
+                        formatTime(attempt.started_at)
+                    }}</span>
                     <span>{{ attempt.status }}</span>
                     <span v-if="attempt.duration_ms !== null"
                         >{{ (attempt.duration_ms / 1000).toFixed(1) }} s</span

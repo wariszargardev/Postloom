@@ -52,7 +52,7 @@ function destroy(workspace: WorkspaceRow): void {
 <template>
     <Head title="Workspaces" />
 
-    <div class="flex max-w-3xl flex-col gap-6 p-4">
+    <div class="page-narrow">
         <Heading
             title="Workspaces"
             description="Group your social accounts, for example Personal or a brand. Posts and accounts belong to one workspace."
@@ -86,7 +86,7 @@ function destroy(workspace: WorkspaceRow): void {
             <li
                 v-for="workspace in workspaces"
                 :key="workspace.id"
-                class="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+                class="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                 :data-test="`workspace-${workspace.id}`"
             >
                 <Form

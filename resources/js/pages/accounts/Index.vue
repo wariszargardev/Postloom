@@ -3,8 +3,9 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import SocialAccountController from '@/actions/App/Http/Controllers/SocialAccountController';
 import Heading from '@/components/Heading.vue';
+import PlatformIcon from '@/components/PlatformIcon.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { index as accountsIndex } from '@/routes/accounts';
 
@@ -64,15 +65,6 @@ const accountGroups = computed(() =>
         .filter((group) => group.accounts.length > 0),
 );
 
-const statusVariant: Record<
-    AccountRow['status'],
-    'secondary' | 'outline' | 'destructive'
-> = {
-    connected: 'secondary',
-    expiring_soon: 'outline',
-    reconnect_needed: 'destructive',
-};
-
 function formatDate(value: string | null): string {
     return value === null
         ? 'No expiry date'
@@ -106,18 +98,16 @@ function disconnect(account: AccountRow): void {
 <template>
     <Head title="Accounts" />
 
-    <div class="flex max-w-4xl flex-col gap-8 p-4">
+    <div class="page-narrow">
         <Heading
             title="Accounts"
             :description="`Social accounts connected to the ${currentWorkspaceName} workspace. You can connect several accounts per platform.`"
         />
 
-        <section class="flex flex-col gap-4">
-            <p
-                v-if="accounts.length === 0"
-                class="rounded-xl border border-dashed p-6 text-sm text-muted-foreground"
-            >
-                No accounts connected to this workspace yet.
+        <section class="flex flex-col gap-5">
+            <p v-if="accounts.length === 0" class="empty-state">
+                No accounts connected to this workspace yet. Pick a platform
+                below.
             </p>
 
             <div
@@ -125,38 +115,41 @@ function disconnect(account: AccountRow): void {
                 :key="group.provider.value"
                 class="flex flex-col gap-3"
             >
-                <h2 class="text-sm font-semibold">
+                <h2 class="section-title">
+                    <PlatformIcon :provider="group.provider.value" size="md" />
                     {{ group.provider.label }}
                 </h2>
                 <ul class="flex flex-col gap-3">
                     <li
                         v-for="account in group.accounts"
                         :key="account.id"
-                        class="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+                        class="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
                         :data-test="`account-${account.id}`"
                     >
                         <div class="flex items-center gap-3">
-                            <Avatar class="size-10">
+                            <Avatar class="size-11 ring-2 ring-border">
                                 <AvatarImage
                                     v-if="account.avatar_url"
                                     :src="account.avatar_url"
                                     :alt="account.name"
                                 />
-                                <AvatarFallback>{{
+                                <AvatarFallback class="font-mono">{{
                                     initials(account.name)
                                 }}</AvatarFallback>
                             </Avatar>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col gap-0.5">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="font-medium">{{
+                                    <span class="font-semibold">{{
                                         account.name
                                     }}</span>
-                                    <Badge
-                                        :variant="statusVariant[account.status]"
-                                        >{{ account.status_label }}</Badge
-                                    >
+                                    <StatusBadge
+                                        :status="account.status"
+                                        :label="account.status_label"
+                                    />
                                 </div>
-                                <span class="text-sm text-muted-foreground">
+                                <span
+                                    class="font-mono text-xs text-muted-foreground"
+                                >
                                     {{ account.account_type }}
                                     <template v-if="account.handle"
                                         >· @{{ account.handle }}</template
@@ -198,18 +191,24 @@ function disconnect(account: AccountRow): void {
         </section>
 
         <section class="flex flex-col gap-3">
-            <h2 class="text-sm font-semibold">Connect a platform</h2>
+            <h2 class="section-title">Connect a platform</h2>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div
                     v-for="provider in providers"
                     :key="provider.value"
-                    class="flex items-center justify-between gap-3 rounded-xl border p-4"
+                    class="surface flex items-center justify-between gap-3 p-4"
+                    :class="provider.connect_url ? '' : 'opacity-60'"
                 >
-                    <div class="flex flex-col">
-                        <span class="font-medium">{{ provider.label }}</span>
-                        <span class="text-xs text-muted-foreground">{{
-                            provider.availability_note
-                        }}</span>
+                    <div class="flex min-w-0 items-center gap-3">
+                        <PlatformIcon :provider="provider.value" size="md" />
+                        <div class="flex min-w-0 flex-col">
+                            <span class="font-semibold">{{
+                                provider.label
+                            }}</span>
+                            <span class="text-xs text-muted-foreground">{{
+                                provider.availability_note
+                            }}</span>
+                        </div>
                     </div>
                     <Button v-if="provider.connect_url" size="sm" as-child>
                         <a
@@ -218,7 +217,9 @@ function disconnect(account: AccountRow): void {
                             >Connect</a
                         >
                     </Button>
-                    <Button v-else size="sm" disabled>Connect</Button>
+                    <Button v-else size="sm" variant="outline" disabled
+                        >Soon</Button
+                    >
                 </div>
             </div>
         </section>

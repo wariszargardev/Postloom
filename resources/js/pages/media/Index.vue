@@ -151,14 +151,14 @@ function kindHref(kind: MediaItem['kind'] | null): string {
 <template>
     <Head title="Media" />
 
-    <div class="flex flex-col gap-6 p-4">
+    <div class="page">
         <Heading
             title="Media"
             description="Images, videos, audio and PDFs for this workspace. Upload once, use them in any post."
         />
 
         <div
-            class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center transition-colors"
+            class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed bg-card/50 p-10 text-center transition-colors hover:border-brand/40"
             :class="
                 isDragging ? 'border-primary bg-primary/5' : 'border-border'
             "
@@ -244,10 +244,7 @@ function kindHref(kind: MediaItem['kind'] | null): string {
             </Button>
         </nav>
 
-        <p
-            v-if="media.data.length === 0"
-            class="rounded-xl border border-dashed p-6 text-sm text-muted-foreground"
-        >
+        <p v-if="media.data.length === 0" class="empty-state">
             No media here yet.
         </p>
 
@@ -255,7 +252,7 @@ function kindHref(kind: MediaItem['kind'] | null): string {
             <li
                 v-for="item in media.data"
                 :key="item.id"
-                class="flex flex-col overflow-hidden rounded-xl border"
+                class="surface flex flex-col overflow-hidden transition-colors hover:border-brand/40"
                 :data-test="`media-${item.id}`"
             >
                 <a

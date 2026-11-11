@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Image, Plus } from '@lucide/vue';
+import { Clock, Copy, FileText, Image, Plus, Trash2 } from '@lucide/vue';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import Heading from '@/components/Heading.vue';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import PlatformIcon from '@/components/PlatformIcon.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import {
     create as createPost,
@@ -21,6 +21,7 @@ type PostRow = {
     scheduled_at: string | null;
     timezone: string;
     media_count: number;
+    thumbnail_url: string | null;
     accounts: {
         id: number;
         name: string;
@@ -44,26 +45,17 @@ defineOptions({
     },
 });
 
-const statusVariant: Record<
-    string,
-    'default' | 'secondary' | 'outline' | 'destructive'
-> = {
-    draft: 'outline',
-    scheduled: 'default',
-    publishing: 'secondary',
-    published: 'secondary',
-    partly_published: 'destructive',
-    failed: 'destructive',
-};
-
 function formatWhen(post: PostRow): string {
     if (!post.scheduled_at) {
         return 'No time set';
     }
 
     return new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
         timeZone: post.timezone,
     }).format(new Date(post.scheduled_at));
 }
@@ -88,8 +80,8 @@ function destroy(post: PostRow): void {
 <template>
     <Head title="Posts" />
 
-    <div class="flex flex-col gap-6 p-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="page">
+        <div class="flex flex-wrap items-start justify-between gap-3">
             <Heading
                 title="Posts"
                 description="Drafts, scheduled and published posts in this workspace."
@@ -101,103 +93,122 @@ function destroy(post: PostRow): void {
             </Button>
         </div>
 
-        <nav class="flex flex-wrap gap-2">
-            <Button
-                :variant="filters.status === null ? 'default' : 'outline'"
-                size="sm"
-                as-child
+        <nav class="flex flex-wrap gap-2" aria-label="Filter by status">
+            <Link
+                :href="statusHref(null)"
+                preserve-scroll
+                class="filter-chip"
+                :data-active="filters.status === null"
+                >All</Link
             >
-                <Link :href="statusHref(null)" preserve-scroll>All</Link>
-            </Button>
-            <Button
+            <Link
                 v-for="status in statuses.filter(
                     (item) =>
                         item.count > 0 ||
                         ['draft', 'scheduled'].includes(item.value),
                 )"
                 :key="status.value"
-                :variant="
-                    filters.status === status.value ? 'default' : 'outline'
-                "
-                size="sm"
-                as-child
+                :href="statusHref(status.value)"
+                preserve-scroll
+                class="filter-chip"
+                :data-active="filters.status === status.value"
+                >{{ status.label }}
+                <span class="font-mono text-xs opacity-70">{{
+                    status.count
+                }}</span></Link
             >
-                <Link :href="statusHref(status.value)" preserve-scroll
-                    >{{ status.label }} ({{ status.count }})</Link
-                >
-            </Button>
         </nav>
 
-        <p
-            v-if="posts.data.length === 0"
-            class="rounded-xl border border-dashed p-6 text-sm text-muted-foreground"
-        >
-            No posts here yet.
+        <p v-if="posts.data.length === 0" class="empty-state">
+            No posts here yet. Click <strong>New post</strong> to write one.
         </p>
 
         <ul class="flex flex-col gap-3">
             <li
                 v-for="post in posts.data"
                 :key="post.id"
-                class="flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:items-center md:justify-between"
+                class="surface flex flex-col gap-4 p-4 transition-colors hover:border-brand/40 sm:flex-row sm:items-center"
                 :data-test="`post-${post.id}`"
             >
-                <div class="flex min-w-0 flex-col gap-1">
+                <Link
+                    :href="editPost(post.id)"
+                    class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted"
+                    tabindex="-1"
+                >
+                    <img
+                        v-if="post.thumbnail_url"
+                        :src="post.thumbnail_url"
+                        alt=""
+                        class="h-full w-full object-cover"
+                    />
+                    <FileText v-else class="size-6 text-muted-foreground" />
+                </Link>
+
+                <div class="flex min-w-0 flex-1 flex-col gap-1.5">
                     <div class="flex flex-wrap items-center gap-2">
-                        <Badge
-                            :variant="statusVariant[post.status] ?? 'outline'"
-                            >{{ post.status_label }}</Badge
+                        <StatusBadge
+                            :status="post.status"
+                            :label="post.status_label"
+                        />
+                        <span
+                            class="flex items-center gap-1 font-mono text-xs text-muted-foreground"
                         >
-                        <span class="text-sm text-muted-foreground">{{
-                            formatWhen(post)
-                        }}</span>
+                            <Clock class="size-3.5" />
+                            {{ formatWhen(post) }}
+                        </span>
                         <span
                             v-if="post.media_count > 0"
-                            class="flex items-center gap-1 text-xs text-muted-foreground"
+                            class="flex items-center gap-1 font-mono text-xs text-muted-foreground"
                         >
-                            <Image class="size-3" /> {{ post.media_count }}
+                            <Image class="size-3.5" /> {{ post.media_count }}
                         </span>
                     </div>
-                    <span v-if="post.title" class="font-medium">{{
-                        post.title
-                    }}</span>
-                    <p class="line-clamp-2 text-sm text-muted-foreground">
-                        {{ post.excerpt || '(no text)' }}
+                    <Link
+                        :href="editPost(post.id)"
+                        class="line-clamp-1 font-semibold hover:text-brand"
+                        >{{ post.title || post.excerpt || '(no text)' }}</Link
+                    >
+                    <p
+                        v-if="post.title"
+                        class="line-clamp-1 text-sm text-muted-foreground"
+                    >
+                        {{ post.excerpt }}
                     </p>
-                    <div class="flex -space-x-2 pt-1">
-                        <Avatar
+                    <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                        <span
                             v-for="account in post.accounts"
                             :key="account.id"
-                            class="size-7 border-2 border-background"
-                            :title="account.name"
+                            class="inline-flex items-center gap-1.5 rounded-full border bg-background/60 py-0.5 pr-2.5 pl-1 text-xs"
                         >
-                            <AvatarImage
-                                v-if="account.avatar_url"
-                                :src="account.avatar_url"
-                                :alt="account.name"
-                            />
-                            <AvatarFallback class="text-[10px]">{{
-                                account.name.slice(0, 2).toUpperCase()
-                            }}</AvatarFallback>
-                        </Avatar>
+                            <PlatformIcon :provider="account.provider" />
+                            {{ account.name }}
+                        </span>
                     </div>
                 </div>
-                <div class="flex shrink-0 gap-2">
+
+                <div class="flex shrink-0 gap-1">
                     <Button size="sm" variant="outline" as-child>
                         <Link :href="editPost(post.id)">{{
                             post.is_editable ? 'Edit' : 'View'
                         }}</Link>
                     </Button>
-                    <Button size="sm" variant="ghost" @click="duplicate(post)"
-                        >Duplicate</Button
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Duplicate"
+                        @click="duplicate(post)"
+                        ><Copy class="size-4" />
+                        <span class="hidden lg:inline">Duplicate</span></Button
                     >
                     <Button
                         v-if="post.is_editable"
                         size="sm"
                         variant="ghost"
-                        class="text-destructive"
+                        class="text-destructive hover:text-destructive"
+                        title="Delete"
                         @click="destroy(post)"
-                        >Delete</Button
+                        ><Trash2 class="size-4" />
+                        <span class="hidden lg:inline">Delete</span></Button
                     >
                 </div>
             </li>
