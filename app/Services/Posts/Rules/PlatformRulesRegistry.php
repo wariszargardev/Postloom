@@ -9,6 +9,7 @@ class PlatformRulesRegistry
     public function __construct(
         private LinkedInPostRules $linkedInPostRules,
         private YouTubePostRules $youTubePostRules,
+        private FacebookPostRules $facebookPostRules,
     ) {}
 
     public function forProvider(SocialProvider $provider): ?PlatformPostRules
@@ -16,6 +17,7 @@ class PlatformRulesRegistry
         return match ($provider) {
             SocialProvider::LinkedIn => $this->linkedInPostRules,
             SocialProvider::YouTube => $this->youTubePostRules,
+            SocialProvider::Facebook => $this->facebookPostRules,
             default => null,
         };
     }

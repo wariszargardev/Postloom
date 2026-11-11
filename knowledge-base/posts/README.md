@@ -58,6 +58,8 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 
 **LinkedIn** (`LinkedInPostRules`): text up to 3,000 characters; up to 20 images, or 1 video, or 1 PDF, or 1 audio file (posted as a video in piece 08), with no mixing; visibility `PUBLIC` (Anyone) or `CONNECTIONS`.
 
+**Facebook** (`FacebookPostRules`, piece 14): text up to 63,206 characters; text only, up to 10 photos (JPG, PNG, GIF, BMP, TIFF; 10 MB each), 1 video or 1 audio file; no PDFs, no mixing. Settings: `format` (`post` / `reel`), `video_title`. A Reel needs one vertical 9:16 video of 3–90 seconds.
+
 **YouTube** (`YouTubePostRules`, piece 11): exactly 1 video or 1 audio file (no images or PDFs; the thumbnail is a setting). Description = the text, up to 5,000 bytes. Settings: `title` (required, up to 100, no `<` `>`), `format` (`auto`/`short`/`long`), `privacy` (`public`/`unlisted`/`private`), `category` (YouTube id, default `22`), `tags` (comma separated, up to 500 characters counted YouTube's way), `thumbnail_media_id` (an image from the library), `made_for_kids`, `synthetic_media`, `notify_subscribers`. `targetErrors()` checks bytes, tags, a title that is just the tags (blocked), the thumbnail and Short limits (vertical or square, up to 3 minutes). The editor prefills the title with the internal name. Settings can carry a `help` line shown under the field (for example "Made for kids turns off comments and notifications").
 
 **Time:** the form sends local time + timezone; `PostService` converts it to UTC for `scheduled_at`, and the `Post::scheduledAt()` mutator also forces UTC on every write (see `knowledge-base/calendar/README.md`). The editor and list convert back with the post's own timezone.

@@ -127,7 +127,8 @@ const initials = computed(() =>
                 <span
                     class="flex items-center gap-1 text-xs text-muted-foreground"
                 >
-                    {{ account.provider_label }} · Now ·
+                    {{ account.provider_label }} ·
+                    {{ settings.format === 'reel' ? 'Reel' : 'Now' }} ·
                     <Users v-if="visibility === 'CONNECTIONS'" class="size-3" />
                     <Globe v-else class="size-3" />
                 </span>
@@ -213,8 +214,13 @@ const initials = computed(() =>
         <footer
             class="flex justify-around border-t px-4 py-2 text-xs text-muted-foreground"
         >
-            <span>Like</span><span>Comment</span><span>Repost</span
-            ><span>Send</span>
+            <template v-if="account.provider === 'facebook'">
+                <span>Like</span><span>Comment</span><span>Share</span>
+            </template>
+            <template v-else>
+                <span>Like</span><span>Comment</span><span>Repost</span
+                ><span>Send</span>
+            </template>
         </footer>
     </article>
 </template>
