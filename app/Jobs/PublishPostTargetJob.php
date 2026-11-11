@@ -46,7 +46,7 @@ class PublishPostTargetJob implements ShouldBeUnique, ShouldQueue
     {
         $target = PostTarget::query()->with(['post', 'socialAccount'])->find($this->postTargetId);
 
-        if ($target === null || $target->post->status !== PostStatus::Publishing || $target->status === PostTargetStatus::Published) {
+        if ($target === null || $target->post->status !== PostStatus::Publishing || in_array($target->status, [PostTargetStatus::Published, PostTargetStatus::ReadyToPost], true)) {
             return;
         }
 
@@ -81,10 +81,10 @@ class PublishPostTargetJob implements ShouldBeUnique, ShouldQueue
 
             $this->finishAttempt($attempt, PublishAttemptStatus::Succeeded, null, $result->externalId);
             $target->update([
-                'status' => PostTargetStatus::Published,
+                'status' => $result->needsManualPost ? PostTargetStatus::ReadyToPost : PostTargetStatus::Published,
                 'external_id' => $result->externalId,
                 'external_url' => $result->externalUrl,
-                'published_at' => now(),
+                'published_at' => $result->needsManualPost ? null : now(),
                 'last_error' => $result->notice,
             ]);
             $account->update(['last_used_at' => now()]);
@@ -121,7 +121,7 @@ class PublishPostTargetJob implements ShouldBeUnique, ShouldQueue
     {
         $target = PostTarget::query()->with('post')->find($this->postTargetId);
 
-        if ($target === null || $target->status === PostTargetStatus::Published) {
+        if ($target === null || in_array($target->status, [PostTargetStatus::Published, PostTargetStatus::ReadyToPost], true)) {
             return;
         }
 

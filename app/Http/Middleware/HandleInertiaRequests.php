@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\PostTargetStatus;
+use App\Models\PostTarget;
 use App\Models\SocialAccount;
 use App\Models\Workspace;
 use App\Services\RegistrationGate;
@@ -55,6 +57,10 @@ class HandleInertiaRequests extends Middleware
             'accountsNeedingAttention' => fn (): ?int => $request->user() === null ? null : SocialAccount::query()
                 ->ownedBy($request->user())
                 ->needingAttention()
+                ->count(),
+            'postsWaitingForYou' => fn (): ?int => $request->user() === null ? null : PostTarget::query()
+                ->where('status', PostTargetStatus::ReadyToPost)
+                ->whereHas('post.workspace', fn ($query) => $query->where('user_id', $request->user()->id))
                 ->count(),
             'canRegister' => fn (): bool => $request->user() === null && $this->registrationGate->isOpen(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

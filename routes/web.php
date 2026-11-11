@@ -8,6 +8,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\TikTokConnectController;
+use App\Http\Controllers\ToPostController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\YouTubeConnectController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('posts/{post}/duplicate', [PostController::class, 'duplicate'])->name('posts.duplicate');
     Route::post('posts/{post}/retry', [PostController::class, 'retry'])->name('posts.retry');
     Route::delete('posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+    Route::get('to-post', [ToPostController::class, 'index'])->name('to-post.index');
+    Route::get('to-post/{postTarget}/video', [ToPostController::class, 'video'])->name('to-post.video');
+    Route::post('to-post/{postTarget}/posted', [ToPostController::class, 'posted'])->name('to-post.posted');
 
     Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('calendar/events', [CalendarController::class, 'events'])->name('calendar.events');

@@ -14,13 +14,13 @@ When a scheduled post's time comes, send it to each of its accounts **exactly on
     4. **Missed:** if a post is more than `POSTLOOM_CATCH_UP_HOURS` (6) late (the PC was off), it is **not sent**. The post becomes `failed` and its accounts get "Missed: Postloom was off at the scheduled time…".
     5. Otherwise **`dispatchPost()`**: one conditional update `scheduled → publishing` (the lock; if another run already took it, nothing happens), then one **`PublishPostTargetJob`** per `pending` account.
 3. `PublishPostTargetJob` (3 tries, timeout 540 s, unique per account for 15 min):
-    1. Skips if the post isn't publishing anymore or the account is already published (so an account is never sent twice).
+    1. Skips if the post isn't publishing anymore or the account is already published or ready_to_post (so an account is never sent twice).
     2. Sets the account to `publishing`, increments `attempts`, and creates a `publish_attempts` row (`running`).
     3. Fails permanently if the account needs reconnecting, or if no publisher exists for its platform.
-    4. Calls `Publisher::publish()`. Success: saves `external_id`, `external_url`, `published_at` and the account's `last_used_at`.
+    4. Calls `Publisher::publish()`. Success: saves `external_id`, `external_url`, `published_at` and the account's `last_used_at`. If the result has `needsManualPost` (TikTok "I'll post it myself"), the account becomes **`ready_to_post`** ("Ready for you", amber) instead, with no `published_at`; it waits under **To post** until the owner clicks Mark as posted (see `knowledge-base/tiktok/README.md` → Manual hand-off).
     5. `PublishException::retryable()`, or any unexpected error: retried after **60 s**, then **300 s**. After the 3rd try, failed for good. `PublishException::permanent()`: failed at once.
     6. Every try updates its `publish_attempts` row (status, error, duration).
-4. `PostStatusResolver::resolve()`: when no account is pending or publishing, the post becomes **published** (all OK), **failed** (none OK) or **partly published** (some OK).
+4. `PostStatusResolver::resolve()`: when no account is pending or publishing, the post becomes **published** (all OK) (`ready_to_post` counts as OK), **failed** (none OK) or **partly published** (some OK).
 5. **Publish now** (editor): intent `publish_now` saves and schedules the post for the next minute, then calls `dispatchPost()` straight away. If publishing is off, it stays scheduled.
 6. **Retry failed accounts** (editor, for failed or partly published posts): failed accounts go back to `pending`, the post becomes `scheduled` (time = now unless it is still in the future), then it is dispatched. Published accounts are not sent again.
 

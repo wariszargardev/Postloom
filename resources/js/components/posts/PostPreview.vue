@@ -20,8 +20,12 @@ const visibility = computed(() => String(props.settings.visibility ?? ''));
 const isYouTube = computed(() => props.account.provider === 'youtube');
 const isTikTok = computed(() => props.account.provider === 'tiktok');
 const tikTokBadge = computed(() => {
-    if (props.settings.mode !== 'direct') {
+    if (props.settings.mode === 'inbox') {
         return 'Inbox draft';
+    }
+
+    if (props.settings.mode !== 'direct') {
+        return 'You post it';
     }
 
     return (
@@ -122,7 +126,7 @@ const initials = computed(() =>
     </article>
     <article
         v-else-if="isTikTok"
-        class="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-xl border bg-black text-white"
+        class="relative mx-auto aspect-[9/16] w-full max-w-[220px] overflow-hidden rounded-xl border bg-black text-white"
         :data-test="`preview-${account.id}`"
     >
         <img
@@ -156,7 +160,7 @@ const initials = computed(() =>
         >
             <span class="text-sm font-semibold">{{ account.name }}</span>
             <p
-                v-if="text && settings.mode === 'direct'"
+                v-if="text && settings.mode !== 'inbox'"
                 class="mt-1 line-clamp-3 text-xs whitespace-pre-wrap"
             >
                 {{ text }}

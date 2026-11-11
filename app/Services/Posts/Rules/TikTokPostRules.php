@@ -27,8 +27,9 @@ class TikTokPostRules implements PlatformPostRules
      * @var array<string, string>
      */
     public const MODE_OPTIONS = [
-        'inbox' => 'Send to TikTok inbox (finish in the app)',
-        'direct' => 'Post directly',
+        'manual' => 'I\'ll post it myself (public)',
+        'direct' => 'Post directly (Only me until TikTok reviews the app)',
+        'inbox' => 'Send to TikTok inbox (doesn\'t arrive in sandbox)',
     ];
 
     /**
@@ -63,7 +64,7 @@ class TikTokPostRules implements PlatformPostRules
     public function defaultSettings(): array
     {
         return [
-            'mode' => 'inbox',
+            'mode' => 'manual',
             'privacy' => 'SELF_ONLY',
             'allow_comments' => false,
             'allow_duet' => false,
@@ -130,7 +131,11 @@ class TikTokPostRules implements PlatformPostRules
 
     public function targetErrors(string $text, Collection $media, array $settings): array
     {
-        if (($settings['mode'] ?? 'inbox') === 'direct'
+        if (($settings['mode'] ?? 'manual') === 'manual' && $media->first()?->kind === MediaKind::Audio) {
+            return ['"I\'ll post it myself" needs a video file you can upload to TikTok; use a video instead of audio.'];
+        }
+
+        if (($settings['mode'] ?? 'manual') === 'direct'
             && ($settings['commercial'] ?? 'none') === 'branded'
             && ($settings['privacy'] ?? 'SELF_ONLY') === 'SELF_ONLY') {
             return ['branded content can\'t be "Only me" on TikTok. Pick Friends, Followers or Everyone.'];
@@ -149,15 +154,15 @@ class TikTokPostRules implements PlatformPostRules
                     'type' => 'select',
                     'label' => 'How to post',
                     'options' => self::MODE_OPTIONS,
-                    'default' => 'inbox',
-                    'help' => 'Inbox puts the video in your TikTok app as a draft; tap Post there (public is allowed). Direct posts stay "Only me" until TikTok reviews the app.',
+                    'default' => 'manual',
+                    'help' => '"Post it myself": at the time, the video and caption wait under To post for you to upload in TikTok Studio.',
                 ],
                 'privacy' => [
                     'type' => 'select',
                     'label' => 'Who can see it (direct posts)',
                     'options' => self::PRIVACY_OPTIONS,
                     'default' => 'SELF_ONLY',
-                    'help' => 'Until TikTok reviews the app, only "Only me" works and the TikTok account must be private.',
+                    'help' => 'Direct posts: only "Only me" works for now, and the account must be private.',
                 ],
                 'allow_comments' => ['type' => 'boolean', 'label' => 'Allow comments', 'default' => false],
                 'allow_duet' => ['type' => 'boolean', 'label' => 'Allow Duet', 'default' => false],
@@ -173,7 +178,7 @@ class TikTokPostRules implements PlatformPostRules
                     'label' => 'Commercial content',
                     'options' => self::COMMERCIAL_OPTIONS,
                     'default' => 'none',
-                    'help' => 'By posting, you agree to TikTok\'s Music Usage Confirmation (and Branded Content Policy for branded content).',
+                    'help' => 'Direct posts agree to TikTok\'s Music Usage Confirmation.',
                 ],
             ],
         ];

@@ -63,7 +63,25 @@ TikTok access tokens last up to **24 hours** (the docs say 2 hours; the first re
 
 `TikTokPublisher` is the `Publisher` for TikTok (piece 17); the scheduler job calls it once per account. Editor rules and settings: `knowledge-base/posts/README.md` → TikTok.
 
-### Flow
+**How to post** (`mode`), decided 2026-11-11 after real tests:
+
+| Mode                                     | What happens                                                                                                                                  | Use                                |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `manual` (default) "I'll post it myself" | No TikTok call. The account becomes **Ready for you** and the post waits under **To post** (see Manual hand-off)                              | Public posts with full reach       |
+| `direct`                                 | API direct post. Unaudited app: only `SELF_ONLY`, and the TikTok account must be **private** at posting time (`unaudited_client_…` otherwise) | Private test posts                 |
+| `inbox`                                  | API inbox upload. TikTok reports `SEND_TO_USER_INBOX`, but in Sandbox the draft never reached the TikTok app (post 21, 2026-11-11)            | Only after TikTok approves the app |
+
+TikTok's audit can't lift these limits for Postloom: the Content Sharing Guidelines list "a utility tool to help upload contents to the account(s) you or your team manages" as not acceptable.
+
+### Manual hand-off
+
+1. At the post time the job calls `TikTokPublisher`, which for `manual` returns `PublishResult(needsManualPost: true)` without any API call. The job sets the account to `ready_to_post` ("Ready for you"), no `published_at`; `PostStatusResolver` counts it as delivered.
+2. **To post** (`GET /to-post`, sidebar item with a count badge, plus a banner on every page) lists the workspace's `ready_to_post` accounts (`ManualHandoffService::waiting()`), oldest first: video thumbnail, account, due time, caption.
+3. Buttons: **Download video** (`GET /to-post/{postTarget}/video`, file named from the post title, e.g. `kela-kaala-kyun.mp4`), **Copy caption**, **Open TikTok Studio** (`https://www.tiktok.com/tiktokstudio/upload`).
+4. The owner uploads it in TikTok Studio on the PC (the phone can't open `localhost`), then **Mark as posted** (`POST /to-post/{postTarget}/posted`, optional TikTok link validated by `MarkPostedRequest`). The account becomes **Published** with that link (`ManualHandoffService::markPosted()`), and the post status is resolved again.
+5. Only the workspace owner can download or mark (`PostPolicy` view / update); an account that isn't waiting gives 409.
+
+### Flow (direct and inbox)
 
 1. Check the media and settings (`TikTokPostRules::mediaErrors()` + `targetErrors()`): exactly one video or audio file.
 2. **Direct post only:** `POST /v2/post/publish/creator_info/query/`. The chosen privacy must be in `privacy_level_options` (else a permanent error listing the allowed ones) and the video no longer than `max_video_post_duration_sec`. Then `post_info` is built: `title` (the caption), `privacy_level`, `disable_comment` / `disable_duet` / `disable_stitch` (off unless the setting allows it and TikTok doesn't disable it), `brand_organic_toggle` (Your brand), `brand_content_toggle` (Branded), `is_aigc`.
@@ -129,6 +147,9 @@ Feature `tiktok` for the connect flow; token messages run on the caller's trace 
 | `TikTok returned an error`                                    | warning | `action`, `status`, `error_code`, `tiktok_message`, `log_id` |
 | `TikTok could not be reached`                                 | warning | `action`, `account_id`, exception                            |
 | `TikTok rejected the token, refreshing once`                  | info    | `action`                                                     |
+| `TikTok post handed off to you`                               | info    | `media_id`                                                   |
+| `Hand-off video downloaded`                                   | info    | `media_id`                                                   |
+| `Hand-off marked as posted`                                   | info    | `account_id`, `has_link`                                     |
 
 `log_id` is TikTok's request id; quote it to TikTok support. Tokens and codes are never logged.
 
@@ -145,7 +166,8 @@ Feature `tiktok` for the connect flow; token messages run on the caller's trace 
 - `tests/Feature/TikTok/TikTokConnectTest.php`: redirect URL (client key, scopes, redirect URI, state in session), missing keys, connect into the starting workspace, reconnect updates the same account, forged state, cancel, missing video scope, refused code exchange, provider availability.
 - `tests/Feature/TikTok/TikTokTokenServiceTest.php`: refresh saves the new refresh token, valid token reused, `invalid_grant` marks reconnect, 5xx is retryable, the daily check refreshes TikTok and counts a dead login.
 - `tests/Feature/TikTok/TikTokPostRulesTest.php`: video and audio allowed; text only, photos, PDFs, two videos, AVI, too short / long refused; branded + Only me refused; caption over 2,200; editor props.
-- `tests/Feature/TikTok/TikTokPublisherTest.php`: inbox upload (no `post_info`, Content-Range, caption in the note, one poll), direct post (`post_info` fields), public post link, privacy not allowed by creator info, `FAILED`, still processing, unaudited private-account error, 429/5xx retryable, token refresh and repeat, `scope_not_authorized` marks reconnect, audio to video, chunk plan, end to end through the job.
+- `tests/Feature/Posts/ToPostTest.php`: To post lists only this workspace's waiting accounts, download with a clean name, another owner gets 403, Mark as posted with a link, without a link, a non-TikTok link refused, 409 when not waiting.
+- `tests/Feature/TikTok/TikTokPublisherTest.php`: manual mode (no API call, Ready for you, post counted as delivered), inbox upload (no `post_info`, Content-Range, caption in the note, one poll), direct post (`post_info` fields), public post link, privacy not allowed by creator info, `FAILED`, still processing, unaudited private-account error, 429/5xx retryable, token refresh and repeat, `scope_not_authorized` marks reconnect, audio to video, chunk plan, end to end through the job.
 
 ## Known limits
 

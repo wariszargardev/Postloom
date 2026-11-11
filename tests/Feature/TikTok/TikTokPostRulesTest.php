@@ -100,7 +100,15 @@ it('shows the TikTok settings in the editor', function () {
         ->assertInertia(fn ($page) => $page
             ->where('accounts.0.provider', 'tiktok')
             ->where('accounts.0.rules.max_text_length', 2200)
-            ->where('accounts.0.rules.settings.mode.default', 'inbox')
+            ->where('accounts.0.rules.settings.mode.default', 'manual')
             ->where('accounts.0.rules.settings.privacy.options.SELF_ONLY', 'Only me')
             ->where('accounts.0.rules.settings.ai_generated.type', 'boolean'));
+});
+
+it('refuses audio when you post it yourself', function () {
+    $audio = Media::factory()->for($this->workspace)->create(['kind' => MediaKind::Audio, 'mime_type' => 'audio/mpeg']);
+
+    scheduleTikTok(['mode' => 'manual'], [$audio->id])->assertSessionHasErrors();
+
+    expect(tikTokError())->toContain('use a video instead of audio');
 });

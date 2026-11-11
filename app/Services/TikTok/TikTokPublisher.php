@@ -44,6 +44,18 @@ class TikTokPublisher implements Publisher
 
         /** @var Media $video */
         $video = $media->first();
+
+        if ($settings['mode'] === 'manual') {
+            LogService::info('TikTok post handed off to you', ['media_id' => $video->id]);
+
+            return new PublishResult(
+                "manual-{$target->id}",
+                null,
+                'Ready for you: download the video and copy the caption under To post, upload it in TikTok Studio, then click Mark as posted.',
+                needsManualPost: true,
+            );
+        }
+
         $isDirect = $settings['mode'] === 'direct';
         $postInfo = $isDirect ? $this->postInfo($account, $video, $caption, $settings) : null;
 

@@ -253,3 +253,28 @@ it('publishes end to end through the job and keeps the inbox note', function () 
         ->and($target->last_error)->toContain('Sent to your TikTok inbox')
         ->and($this->post->fresh()->status)->toBe(PostStatus::Published);
 });
+
+it('hands the post to you without calling TikTok when you post it yourself', function () {
+    Http::fake();
+    $this->target->update(['settings' => ['mode' => 'manual']]);
+
+    $result = $this->publisher->publish($this->target->fresh());
+
+    expect($result->needsManualPost)->toBeTrue()
+        ->and($result->externalUrl)->toBeNull()
+        ->and($result->notice)->toContain('To post');
+    Http::assertNothingSent();
+});
+
+it('marks a hand-off as Ready for you and counts the post as delivered', function () {
+    Http::fake();
+    $this->target->update(['settings' => ['mode' => 'manual']]);
+
+    $job = (new PublishPostTargetJob($this->target->id))->withFakeQueueInteractions();
+    $job->handle(app(PublisherRegistry::class), app(PostStatusResolver::class));
+
+    $target = $this->target->fresh();
+    expect($target->status)->toBe(PostTargetStatus::ReadyToPost)
+        ->and($target->published_at)->toBeNull()
+        ->and($this->post->fresh()->status)->toBe(PostStatus::Published);
+});

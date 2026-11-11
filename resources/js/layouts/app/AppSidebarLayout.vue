@@ -4,6 +4,7 @@ import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import ToPostBanner from '@/components/ToPostBanner.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItem } from '@/types';
 
@@ -22,6 +23,7 @@ withDefaults(defineProps<Props>(), {
         <AppContent variant="sidebar" class="bg-grid min-w-0 overflow-x-clip">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <AccountsAttentionBanner />
+            <ToPostBanner />
             <slot />
         </AppContent>
         <Toaster />

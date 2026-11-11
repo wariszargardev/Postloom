@@ -8,5 +8,6 @@ final readonly class PublishResult
         public string $externalId,
         public ?string $externalUrl = null,
         public ?string $notice = null,
+        public bool $needsManualPost = false,
     ) {}
 }

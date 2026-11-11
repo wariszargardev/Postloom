@@ -15,6 +15,7 @@ KB: `knowledge-base/tiktok/README.md`. Setup guide: `docs/guides/tiktok/README.m
 - `app/Console/Commands/CheckAccountTokens.php` (daily refresh)
 - `app/Enums/SocialProvider.php`, `config/services.php` (`tiktok`), `database/factories/SocialAccountFactory.php` (`tikTok()` state)
 - Publishing: `app/Services/TikTok/TikTokPublisher.php`, `TikTokUploader.php`, `TikTokApiClient.php`, `TikTokApiException.php`; `app/Services/Posts/Rules/TikTokPostRules.php`; TikTok card in `resources/js/components/posts/PostPreview.vue`
+- Manual hand-off (default mode): `app/Services/Publishing/ManualHandoffService.php`, `app/Http/Controllers/ToPostController.php`, `app/Http/Requests/Posts/MarkPostedRequest.php`, routes `to-post.*`, `resources/js/pages/to-post/Index.vue`, `ToPostBanner.vue`, sidebar badge (`postsWaitingForYou` shared prop), status `PostTargetStatus::ReadyToPost`
 
 ## Debugging
 
@@ -30,6 +31,9 @@ KB: `knowledge-base/tiktok/README.md`. Setup guide: `docs/guides/tiktok/README.m
 | Account shows Reconnect needed        | `TikTok access was revoked or expired` with `reason` `invalid_grant`: app removed in TikTok, or refresh token older than 180 days |
 | Every account fails to refresh        | `TikTok refused to refresh a token` with `error` `invalid_client`: the `.env` keys don't match the app                            |
 
+| TikTok account shows "Ready for you" | Expected for "I'll post it myself": upload it from **To post**, then Mark as posted |
+| Nothing under To post at the time | Mode wasn't `manual`, or the scheduler/queue isn't running (`start.ps1`); check `TikTok post handed off to you` |
+| "Mark as posted" refuses the link | Only https tiktok.com links (www, m, vm or vt), or leave it empty |
 | Post failed: "only allows direct posts to a private account" | `unaudited_client_can_only_post_to_private_accounts`: set the TikTok account private, or use "Send to TikTok inbox" |
 | Post failed: "doesn't allow … Allowed: Only me" | Creator info says that privacy isn't allowed (unaudited app): pick Only me, or use inbox |
 | Post failed: "daily post limit" / "limit of accounts" | `spam_risk_too_many_posts` (~15 a day) / `reached_active_user_cap` (5 users a day): retry tomorrow |
