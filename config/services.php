@@ -72,6 +72,9 @@ return [
         'redirect' => env('TIKTOK_REDIRECT_URI', '/accounts/tiktok/callback'),
         'authorize_url' => env('TIKTOK_AUTHORIZE_URL', 'https://www.tiktok.com/v2/auth/authorize/'),
         'api_base_url' => env('TIKTOK_API_BASE_URL', 'https://open.tiktokapis.com/v2'),
+        'upload_chunk_bytes' => (int) env('TIKTOK_UPLOAD_CHUNK_BYTES', 10 * 1024 * 1024),
+        'status_wait_seconds' => (int) env('TIKTOK_STATUS_WAIT_SECONDS', 180),
+        'status_poll_seconds' => (int) env('TIKTOK_STATUS_POLL_SECONDS', 10),
     ],
 
 ];

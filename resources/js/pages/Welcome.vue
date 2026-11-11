@@ -22,7 +22,7 @@ const platforms = [
     { provider: 'youtube', label: 'YouTube', live: true },
     { provider: 'facebook', label: 'Facebook', live: true },
     { provider: 'instagram', label: 'Instagram', live: false },
-    { provider: 'tiktok', label: 'TikTok', live: false },
+    { provider: 'tiktok', label: 'TikTok', live: true },
     { provider: 'whatsapp', label: 'WhatsApp', live: false },
 ];
 

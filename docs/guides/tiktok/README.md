@@ -144,10 +144,11 @@ Done for good: Postloom renews each account's login every day, so you never repe
 
 ---
 
-## Good to know before posting (piece 17)
+## Posting to TikTok
 
 - Until TikTok audits the app, direct posts are **private (only you)** and the TikTok account must be set to **private**. At most 5 accounts can post per 24 hours.
-- "Send to TikTok inbox" uploads the video as a draft; you finish and post it publicly in the TikTok app.
+- In the post editor, tick the TikTok account and set **How to post** under Per account → TikTok. **Send to TikTok inbox** (default) uploads the video as a draft; open the TikTok app, paste the caption from the post's Delivery note (inbox uploads can't carry one) and post it, publicly if you want.
+- **Post directly** posts straight to the profile with the caption; until TikTok reviews the app only "Only me" works.
 - Photo posts need a public, verified domain, so Postloom posts videos only for now.
 - Getting rid of the target-user list and the private-only rule needs TikTok's app review (public website with real Terms and Privacy pages). Not worth it for a few own accounts.
 

@@ -20,8 +20,8 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 13  | `feat/13-facebook-connect`      | Connect Facebook Pages                   | Meta app in Development mode, every shared Page as its own account, non-expiring Page tokens, daily check, setup guide         | merged    |
 | 14  | `feat/14-facebook-publish`      | Publish to a Facebook Page               | Text/link, photos, multi-photo, video and Reels; Facebook settings and preview                                                 | merged    |
 | 15  | `feat/15-home-page`             | Home page                                | Postloom landing page in the design system: hero, sample post card, platforms, features                                        | merged    |
-| 16  | `feat/16-tiktok-connect`        | Connect a TikTok account                 | Login Kit with state check, open_id per account, 2-hour tokens with rotating refresh tokens, daily refresh, setup guide        | in review |
-| 17  | `feat/17-tiktok-publish`        | Publish to TikTok                        | Direct post (private until audit) or send to inbox; chunked video upload, creator info, status polling, TikTok settings        | planned   |
+| 16  | `feat/16-tiktok-connect`        | Connect a TikTok account                 | Login Kit with state check, open_id per account, 2-hour tokens with rotating refresh tokens, daily refresh, setup guide        | merged    |
+| 17  | `feat/17-tiktok-publish`        | Publish to TikTok                        | Direct post (private until audit) or send to inbox; chunked video upload, creator info, status polling, TikTok settings        | in review |
 
 ## Later
 

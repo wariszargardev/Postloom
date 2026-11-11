@@ -10,6 +10,7 @@ class PlatformRulesRegistry
         private LinkedInPostRules $linkedInPostRules,
         private YouTubePostRules $youTubePostRules,
         private FacebookPostRules $facebookPostRules,
+        private TikTokPostRules $tikTokPostRules,
     ) {}
 
     public function forProvider(SocialProvider $provider): ?PlatformPostRules
@@ -18,6 +19,7 @@ class PlatformRulesRegistry
             SocialProvider::LinkedIn => $this->linkedInPostRules,
             SocialProvider::YouTube => $this->youTubePostRules,
             SocialProvider::Facebook => $this->facebookPostRules,
+            SocialProvider::TikTok => $this->tikTokPostRules,
             default => null,
         };
     }
