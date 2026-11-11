@@ -66,6 +66,7 @@ class CalendarController extends Controller
                 'edit_url' => route('posts.edit', $post),
                 'accounts' => $post->targets->map(fn (PostTarget $target): array => [
                     'name' => $target->socialAccount->name,
+                    'provider' => $target->socialAccount->provider->value,
                     'avatar_url' => $target->socialAccount->avatar_url,
                 ])->values(),
             ],

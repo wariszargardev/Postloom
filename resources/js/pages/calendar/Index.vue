@@ -161,41 +161,43 @@ const options = computed<CalendarOptions>(() => ({
 <template>
     <Head title="Calendar" />
 
-    <div class="flex flex-col gap-4 p-4">
+    <div
+        class="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 md:px-8 md:py-8"
+    >
         <div class="flex flex-wrap items-end justify-between gap-3">
             <Heading
                 title="Calendar"
                 description="Click an empty time to start a post there. Drag a draft or scheduled post to move it."
             />
             <span
-                class="text-xs text-muted-foreground"
+                class="rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground"
                 data-test="calendar-timezone"
                 >Times in {{ timezone }}</span
             >
         </div>
 
-        <div class="flex flex-wrap gap-3 text-xs text-muted-foreground">
-            <span class="flex items-center gap-1"
-                ><span class="legend legend--scheduled" />Scheduled</span
-            >
-            <span class="flex items-center gap-1"
+        <div class="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <span class="flex items-center gap-1.5"
                 ><span class="legend legend--draft" />Draft</span
             >
-            <span class="flex items-center gap-1"
+            <span class="flex items-center gap-1.5"
+                ><span class="legend legend--scheduled" />Scheduled</span
+            >
+            <span class="flex items-center gap-1.5"
                 ><span class="legend legend--publishing" />Publishing</span
             >
-            <span class="flex items-center gap-1"
+            <span class="flex items-center gap-1.5"
                 ><span class="legend legend--published" />Published</span
             >
-            <span class="flex items-center gap-1"
+            <span class="flex items-center gap-1.5"
+                ><span class="legend legend--partly" />Partly published</span
+            >
+            <span class="flex items-center gap-1.5"
                 ><span class="legend legend--failed" />Failed</span
             >
         </div>
 
-        <div
-            class="postloom-calendar rounded-xl border p-3"
-            data-test="calendar"
-        >
+        <div class="postloom-calendar surface p-4" data-test="calendar">
             <FullCalendar ref="calendar" :options="options">
                 <template #eventContent="arg">
                     <PostEventContent :arg="arg" />
@@ -215,7 +217,7 @@ const options = computed<CalendarOptions>(() => ({
         var(--color-primary) 8%,
         transparent
     );
-    --fc-now-indicator-color: #ef4444;
+    --fc-now-indicator-color: var(--amber);
     --fc-button-bg-color: transparent;
     --fc-button-border-color: var(--color-border);
     --fc-button-text-color: var(--color-foreground);
@@ -235,41 +237,42 @@ const options = computed<CalendarOptions>(() => ({
     font-weight: 600;
 }
 
+/* Event colours follow the status tokens in app.css: tinted fill, coloured left edge, readable text. */
 .postloom-event {
+    --event-color: var(--status-draft);
     border-radius: 6px;
-    border-width: 1px;
+    border: 1px solid color-mix(in oklab, var(--event-color) 45%, transparent);
+    border-left: 3px solid var(--event-color);
+    background: color-mix(in oklab, var(--event-color) 16%, var(--card));
+    color: var(--foreground);
     cursor: pointer;
     overflow: hidden;
 }
 
-.postloom-event--scheduled {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #fff;
+.postloom-event--draft {
+    --event-color: var(--status-draft);
+    border-style: dashed;
+    border-left-style: solid;
 }
 
-.postloom-event--draft {
-    background: color-mix(in oklab, var(--color-muted) 80%, transparent);
-    border: 1px dashed var(--color-muted-foreground);
-    color: var(--color-foreground);
+.postloom-event--scheduled {
+    --event-color: var(--status-scheduled);
 }
 
 .postloom-event--publishing {
-    background: #d97706;
-    border-color: #d97706;
-    color: #fff;
+    --event-color: var(--status-publishing);
 }
 
 .postloom-event--published {
-    background: #16a34a;
-    border-color: #16a34a;
-    color: #fff;
+    --event-color: var(--status-published);
+}
+
+.postloom-event--partly {
+    --event-color: var(--status-partly);
 }
 
 .postloom-event--failed {
-    background: #dc2626;
-    border-color: #dc2626;
-    color: #fff;
+    --event-color: var(--status-failed);
 }
 
 .postloom-event .fc-event-main {
@@ -283,23 +286,27 @@ const options = computed<CalendarOptions>(() => ({
     border-radius: 3px;
 }
 
-.legend--scheduled {
-    background: #2563eb;
+.legend--draft {
+    border: 1px dashed var(--status-draft);
 }
 
-.legend--draft {
-    border: 1px dashed currentColor;
+.legend--scheduled {
+    background: var(--status-scheduled);
 }
 
 .legend--publishing {
-    background: #d97706;
+    background: var(--status-publishing);
 }
 
 .legend--published {
-    background: #16a34a;
+    background: var(--status-published);
+}
+
+.legend--partly {
+    background: var(--status-partly);
 }
 
 .legend--failed {
-    background: #dc2626;
+    background: var(--status-failed);
 }
 </style>

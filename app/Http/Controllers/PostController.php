@@ -53,6 +53,7 @@ class PostController extends Controller
                 'scheduled_at' => $post->scheduled_at?->toIso8601String(),
                 'timezone' => $post->timezone,
                 'media_count' => $post->media->count(),
+                'thumbnail_url' => $this->thumbnailUrl($post->media->first()),
                 'accounts' => $post->targets->map(fn (PostTarget $target): array => [
                     'id' => $target->social_account_id,
                     'name' => $target->socialAccount->name,
@@ -214,7 +215,7 @@ class PostController extends Controller
                 'kind' => $media->kind->value,
                 'original_name' => $media->original_name,
                 'url' => route('media.show', $media),
-                'thumbnail_url' => $media->kind === MediaKind::Image || $media->thumbnail_path !== null ? route('media.thumbnail', $media) : null,
+                'thumbnail_url' => $this->thumbnailUrl($media),
                 'duration_seconds' => $media->duration_seconds === null ? null : (float) $media->duration_seconds,
             ]);
 
@@ -259,5 +260,14 @@ class PostController extends Controller
             'timezones' => DateTimeZone::listIdentifiers(),
             'publishingEnabled' => PostDispatcher::isEnabled(),
         ];
+    }
+
+    private function thumbnailUrl(?Media $media): ?string
+    {
+        if ($media === null) {
+            return null;
+        }
+
+        return $media->kind === MediaKind::Image || $media->thumbnail_path !== null ? route('media.thumbnail', $media) : null;
     }
 }

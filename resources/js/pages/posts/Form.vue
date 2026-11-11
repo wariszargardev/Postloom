@@ -10,7 +10,8 @@ import PlatformSettings from '@/components/posts/PlatformSettings.vue';
 import PostPreview from '@/components/posts/PostPreview.vue';
 import ScheduleTimePicker from '@/components/posts/ScheduleTimePicker.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import PlatformIcon from '@/components/PlatformIcon.vue';
+import StatusBadge from '@/components/StatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -252,16 +253,20 @@ const initials = (name: string): string =>
 <template>
     <Head :title="post ? 'Edit post' : 'New post'" />
 
-    <div class="grid gap-6 p-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+    <div
+        class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-8 md:py-8 xl:grid-cols-[minmax(0,1fr)_400px]"
+    >
         <form class="flex flex-col gap-6" @submit.prevent="submit('draft')">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <Heading
                     :title="post ? 'Edit post' : 'New post'"
                     description="Write once, choose accounts, then save a draft or schedule it."
                 />
-                <Badge v-if="post" variant="secondary">{{
-                    post.status_label
-                }}</Badge>
+                <StatusBadge
+                    v-if="post"
+                    :status="post.status"
+                    :label="post.status_label"
+                />
             </div>
 
             <p
@@ -283,8 +288,10 @@ const initials = (name: string): string =>
                 />
             </div>
 
-            <section class="flex flex-col gap-3">
-                <h2 class="text-sm font-semibold">1. Accounts</h2>
+            <section class="surface flex flex-col gap-3 p-5">
+                <h2 class="section-title">
+                    <span class="step-number">1</span> Accounts
+                </h2>
                 <p
                     v-if="accounts.length === 0"
                     class="rounded-lg border border-dashed p-4 text-sm text-muted-foreground"
@@ -304,8 +311,8 @@ const initials = (name: string): string =>
                         class="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors"
                         :class="
                             isSelected(account.id)
-                                ? 'border-primary bg-primary/5'
-                                : ''
+                                ? 'border-brand/60 bg-brand/10'
+                                : 'bg-background/40 hover:border-brand/30'
                         "
                         :disabled="!isEditable"
                         :data-test="`account-toggle-${account.id}`"
@@ -326,7 +333,10 @@ const initials = (name: string): string =>
                                 account.name
                             }}</span>
                             <span class="text-xs text-muted-foreground">
-                                {{ account.provider_label }}
+                                <PlatformIcon
+                                    :provider="account.provider"
+                                    class="mr-1 align-[-2px]"
+                                />{{ account.provider_label }}
                                 <template
                                     v-if="account.status === 'reconnect_needed'"
                                     >· needs reconnect</template
@@ -349,10 +359,10 @@ const initials = (name: string): string =>
                 </div>
             </section>
 
-            <section class="flex flex-col gap-2">
+            <section class="surface flex flex-col gap-3 p-5">
                 <div class="flex items-center justify-between">
-                    <Label for="content" class="text-sm font-semibold"
-                        >2. Text</Label
+                    <Label for="content" class="section-title"
+                        ><span class="step-number">2</span> Text</Label
                     >
                     <span
                         class="text-xs"
@@ -369,15 +379,17 @@ const initials = (name: string): string =>
                     id="content"
                     v-model="form.content"
                     rows="10"
-                    class="w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                    class="field-input h-auto min-h-56 py-3 text-[0.95rem] leading-relaxed"
                     placeholder="What do you want to share?"
                     :disabled="!isEditable"
                 />
                 <InputError :message="form.errors.content" />
             </section>
 
-            <section class="flex flex-col gap-2">
-                <h2 class="text-sm font-semibold">3. Media</h2>
+            <section class="surface flex flex-col gap-3 p-5">
+                <h2 class="section-title">
+                    <span class="step-number">3</span> Media
+                </h2>
                 <p
                     v-for="account in selectedAccounts.filter(
                         (item) => item.rules,
@@ -398,13 +410,15 @@ const initials = (name: string): string =>
 
             <section
                 v-if="selectedAccounts.length > 0"
-                class="flex flex-col gap-3"
+                class="surface flex flex-col gap-3 p-5"
             >
-                <h2 class="text-sm font-semibold">4. Per account</h2>
+                <h2 class="section-title">
+                    <span class="step-number">4</span> Per account
+                </h2>
                 <div
                     v-for="account in selectedAccounts"
                     :key="account.id"
-                    class="flex flex-col gap-3 rounded-lg border p-3"
+                    class="flex flex-col gap-3 rounded-lg border bg-background/40 p-4"
                 >
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-sm font-medium"
@@ -469,7 +483,7 @@ const initials = (name: string): string =>
                                     targetFor(account.id)!.content_override
                                 "
                                 rows="6"
-                                class="w-full rounded-md border bg-transparent px-3 py-2 text-sm"
+                                class="field-input h-auto py-3 leading-relaxed"
                                 :disabled="!isEditable"
                             />
                             <span
@@ -502,8 +516,10 @@ const initials = (name: string): string =>
                 </div>
             </section>
 
-            <section class="flex flex-col gap-3">
-                <h2 class="text-sm font-semibold">5. When</h2>
+            <section class="surface flex flex-col gap-3 p-5">
+                <h2 class="section-title">
+                    <span class="step-number">5</span> When
+                </h2>
                 <ScheduleTimePicker
                     v-model="form.scheduled_at"
                     :timezone="form.timezone"
@@ -516,7 +532,7 @@ const initials = (name: string): string =>
                         <select
                             id="timezone"
                             v-model="form.timezone"
-                            class="h-9 rounded-md border bg-transparent px-3 text-sm"
+                            class="field-input"
                             :disabled="!isEditable"
                         >
                             <option
@@ -542,7 +558,9 @@ const initials = (name: string): string =>
                 </div>
             </section>
 
-            <div class="flex flex-wrap gap-2 border-t pt-4">
+            <div
+                class="surface sticky bottom-4 z-10 flex flex-wrap items-center gap-2 bg-card/95 p-3 backdrop-blur"
+            >
                 <Button
                     type="button"
                     variant="outline"
@@ -605,17 +623,14 @@ const initials = (name: string): string =>
             </div>
         </form>
 
-        <aside class="flex flex-col gap-4 xl:sticky xl:top-4 xl:self-start">
+        <aside class="flex flex-col gap-4 xl:sticky xl:top-20 xl:self-start">
             <DeliveryPanel
                 v-if="showDelivery"
                 :rows="deliveryRows"
                 :timezone="form.timezone"
             />
-            <h2 class="text-sm font-semibold">Preview</h2>
-            <p
-                v-if="selectedAccounts.length === 0"
-                class="rounded-lg border border-dashed p-4 text-sm text-muted-foreground"
-            >
+            <h2 class="section-title">Preview</h2>
+            <p v-if="selectedAccounts.length === 0" class="empty-state">
                 Pick an account to see the preview.
             </p>
             <PostPreview

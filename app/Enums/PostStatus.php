@@ -46,7 +46,8 @@ enum PostStatus: string
             self::Scheduled => 'scheduled',
             self::Publishing => 'publishing',
             self::Published => 'published',
-            self::PartlyPublished, self::Failed => 'failed',
+            self::PartlyPublished => 'partly',
+            self::Failed => 'failed',
         };
     }
 

@@ -7,15 +7,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+  Postloom design tokens, taken from the Build Real Code content style:
+  deep navy surfaces, green as the main colour, amber as the accent,
+  Inter for text and JetBrains Mono for numbers, handles and times.
+  Rules for using them: knowledge-base/design/README.md.
+*/
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
+        monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
+    --radius-xl: calc(var(--radius) + 4px);
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -59,15 +68,26 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-brand: var(--brand);
+    --color-amber: var(--amber);
+    --color-code-blue: var(--code-blue);
+
+    --color-status-draft: var(--status-draft);
+    --color-status-scheduled: var(--status-scheduled);
+    --color-status-publishing: var(--status-publishing);
+    --color-status-published: var(--status-published);
+    --color-status-partly: var(--status-partly);
+    --color-status-failed: var(--status-failed);
+
+    --color-linkedin: #0a66c2;
+    --color-youtube: #ff0033;
 }
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
 */
 @layer base {
     *,
@@ -79,99 +99,157 @@
     }
 }
 
-@layer utilities {
-    body,
-    html {
-        --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
-    }
-}
-
 :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --background: #f5f7fb;
+    --foreground: #0b111c;
+    --card: #ffffff;
+    --card-foreground: #0b111c;
+    --popover: #ffffff;
+    --popover-foreground: #0b111c;
+    --primary: #15924f;
+    --primary-foreground: #ffffff;
+    --secondary: #eaf0f6;
+    --secondary-foreground: #0b111c;
+    --muted: #eef2f7;
+    --muted-foreground: #526077;
+    --accent: #e6f6ed;
+    --accent-foreground: #0b111c;
+    --destructive: #d92d20;
+    --destructive-foreground: #ffffff;
+    --border: #dbe3ee;
+    --input: #cfd9e6;
+    --ring: #15924f;
+    --chart-1: #15924f;
+    --chart-2: #c27510;
+    --chart-3: #2563eb;
+    --chart-4: #d92d20;
+    --chart-5: #64748b;
+    --radius: 0.75rem;
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #1e293b;
+    --sidebar-primary: #15924f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eef6f1;
+    --sidebar-accent-foreground: #0b111c;
+    --sidebar-border: #e3e9f1;
+    --sidebar-ring: #15924f;
+
+    --brand: #15924f;
+    --amber: #c27510;
+    --code-blue: #2563eb;
+    --grid-line: rgb(15 23 42 / 0.035);
+
+    --status-draft: #64748b;
+    --status-scheduled: #c27510;
+    --status-publishing: #2563eb;
+    --status-published: #15924f;
+    --status-partly: #ea580c;
+    --status-failed: #d92d20;
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --background: #0b111c;
+    --foreground: #e5e9f2;
+    --card: #111a2b;
+    --card-foreground: #e5e9f2;
+    --popover: #111a2b;
+    --popover-foreground: #e5e9f2;
+    --primary: #3ddc84;
+    --primary-foreground: #04170c;
+    --secondary: #1a2438;
+    --secondary-foreground: #e5e9f2;
+    --muted: #162033;
+    --muted-foreground: #94a3b8;
+    --accent: #17263a;
+    --accent-foreground: #e5e9f2;
+    --destructive: #f05252;
+    --destructive-foreground: #ffffff;
+    --border: #1f2b40;
+    --input: #26344d;
+    --ring: #3ddc84;
+    --chart-1: #3ddc84;
+    --chart-2: #f5a83a;
+    --chart-3: #60a5fa;
+    --chart-4: #f05252;
+    --chart-5: #94a3b8;
+    --sidebar-background: #0d1422;
+    --sidebar-foreground: #c8d1e0;
+    --sidebar-primary: #3ddc84;
+    --sidebar-primary-foreground: #04170c;
+    --sidebar-accent: #15223a;
+    --sidebar-accent-foreground: #e5e9f2;
+    --sidebar-border: #1a2539;
+    --sidebar-ring: #3ddc84;
+
+    --brand: #3ddc84;
+    --amber: #f5a83a;
+    --code-blue: #60a5fa;
+    --grid-line: rgb(148 163 184 / 0.045);
+
+    --status-draft: #94a3b8;
+    --status-scheduled: #f5a83a;
+    --status-publishing: #60a5fa;
+    --status-published: #3ddc84;
+    --status-partly: #fb923c;
+    --status-failed: #f05252;
 }
 
 @layer base {
     * {
         @apply border-border outline-ring/50;
     }
+    html {
+        /* A slightly larger base size makes every rem-based text and control easier to read. */
+        font-size: 106.25%;
+    }
     body {
         @apply bg-background text-foreground;
+        font-feature-settings: 'cv11', 'ss01';
     }
     /* Native dropdown lists use the browser's own colours; match the theme so options stay readable in dark mode. */
     select option,
     select optgroup {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities {
+    /* The faint grid behind the Build Real Code cards. */
+    .bg-grid {
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+}
+
+/* Shared building blocks so every page looks the same. */
+@layer components {
+    /* Page body: centred, readable width, comfortable padding. */
+    .page {
+        @apply mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8;
+    }
+    .page-narrow {
+        @apply mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8;
+    }
+    /* The navy "terminal" panel from the content cards. */
+    .surface {
+        @apply rounded-xl border bg-card text-card-foreground shadow-xs dark:shadow-[0_1px_0_0_rgb(255_255_255/0.03)_inset];
+    }
+    .section-title {
+        @apply flex items-center gap-2 text-base font-semibold;
+    }
+    /* Amber step number used in the post editor. */
+    .step-number {
+        @apply inline-flex size-6 items-center justify-center rounded-full bg-amber/15 font-mono text-xs font-bold text-amber ring-1 ring-amber/30;
+    }
+    .empty-state {
+        @apply rounded-xl border border-dashed bg-card/40 p-8 text-center text-sm text-muted-foreground;
+    }
+    .filter-chip {
+        @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground data-[active=true]:border-brand/50 data-[active=true]:bg-brand/10 data-[active=true]:text-brand;
+    }
+    .field-input {
+        @apply h-10 w-full rounded-lg border bg-background/60 px-3 text-sm shadow-xs transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none disabled:opacity-50;
     }
 }
