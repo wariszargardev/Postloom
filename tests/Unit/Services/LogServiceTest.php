@@ -4,6 +4,7 @@ use App\Enums\LogFeature;
 use App\Services\LogService;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -50,15 +51,15 @@ it('adds exception details to error messages', function () {
 
 it('writes json lines to the daily postloom log file', function () {
     $logFile = storage_path('logs/postloom-'.now()->format('Y-m-d').'.log');
-    @unlink($logFile);
+    $marker = 'Log file check '.Str::uuid();
 
     LogService::startFeatureLogging(LogFeature::System);
-    LogService::info('Log file check', ['step' => 'test']);
+    LogService::info($marker, ['step' => 'test']);
 
-    $lastLine = collect(file($logFile))->last();
-    $entry = json_decode($lastLine, true);
+    $line = collect(file($logFile))->first(fn (string $line) => str_contains($line, $marker));
+    $entry = json_decode($line, true);
 
-    expect($entry['message'])->toBe('Log file check')
+    expect($entry['message'])->toBe($marker)
         ->and($entry['context']['step'])->toBe('test')
         ->and($entry['extra']['feature'] ?? $entry['context']['feature'] ?? null)->toBe('system');
 });

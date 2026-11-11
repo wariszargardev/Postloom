@@ -87,6 +87,12 @@ it('rejects angle brackets in the title and too many tags', function () {
     expect(session('errors')->first("targets.{$this->channel->id}"))->toContain('YouTube allows 500');
 });
 
+it('refuses a title that is just the tags', function () {
+    scheduleYouTube(['title' => 'Laravel, PHP, Eloquent', 'tags' => 'laravel, php, eloquent'], [$this->video->id])->assertSessionHasErrors();
+
+    expect(session('errors')->first("targets.{$this->channel->id}"))->toContain('same as the tags');
+});
+
 it('only accepts an image as the thumbnail', function () {
     $otherVideo = Media::factory()->video()->for($this->workspace)->create();
 

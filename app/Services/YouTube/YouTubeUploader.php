@@ -70,6 +70,51 @@ class YouTubeUploader
     }
 
     /**
+     * Poll videos.list until YouTube has processed the video (a Short's cover can only be set after that).
+     * Returns false when processing failed or didn't finish in time; never throws.
+     */
+    public function waitUntilProcessed(SocialAccount $account, string $videoId): bool
+    {
+        $waitSeconds = (int) config('services.google.processing_wait_seconds');
+        $pollSeconds = max(1, (int) config('services.google.processing_poll_seconds'));
+        $checks = max(1, intdiv($waitSeconds, $pollSeconds));
+
+        for ($check = 1; $check <= $checks; $check++) {
+            try {
+                $response = $this->authorized($account)
+                    ->timeout(30)
+                    ->get(config('services.google.youtube_api_base_url').'/videos', ['part' => 'processingDetails', 'id' => $videoId]);
+            } catch (ConnectionException|YouTubeTokenException $exception) {
+                LogService::warning('YouTube processing check failed', ['video_id' => $videoId], $exception);
+
+                return false;
+            }
+
+            $status = (string) $response->json('items.0.processingDetails.processingStatus');
+
+            if ($status === 'succeeded') {
+                LogService::info('YouTube finished processing the video', ['video_id' => $videoId, 'checks' => $check]);
+
+                return true;
+            }
+
+            if (in_array($status, ['failed', 'terminated'], true)) {
+                LogService::warning('YouTube could not process the video', ['video_id' => $videoId, 'status' => $status]);
+
+                return false;
+            }
+
+            if ($check < $checks) {
+                Sleep::for($pollSeconds)->seconds();
+            }
+        }
+
+        LogService::warning('YouTube is still processing the video, cover not set', ['video_id' => $videoId, 'waited_seconds' => $waitSeconds]);
+
+        return false;
+    }
+
+    /**
      * Set a custom thumbnail. Returns null when it worked, otherwise a short reason; a failed thumbnail never fails the post.
      */
     public function setThumbnail(SocialAccount $account, string $videoId, string $bytes, string $mimeType): ?string

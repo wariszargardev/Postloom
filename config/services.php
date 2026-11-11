@@ -52,6 +52,8 @@ return [
         'token_url' => env('GOOGLE_TOKEN_URL', 'https://oauth2.googleapis.com/token'),
         'youtube_api_base_url' => env('YOUTUBE_API_BASE_URL', 'https://www.googleapis.com/youtube/v3'),
         'upload_chunk_bytes' => (int) env('YOUTUBE_UPLOAD_CHUNK_BYTES', 8 * 1024 * 1024),
+        'processing_wait_seconds' => (int) env('YOUTUBE_PROCESSING_WAIT_SECONDS', 120),
+        'processing_poll_seconds' => (int) env('YOUTUBE_PROCESSING_POLL_SECONDS', 10),
     ],
 
 ];

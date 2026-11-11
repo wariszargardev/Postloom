@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Input } from '@/components/ui/input';
+import { Upload } from '@lucide/vue';
+import { computed, ref } from 'vue';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useMediaUpload } from '@/composables/useMediaUpload';
 import type {
     EditorAccount,
     LibraryMedia,
     PlatformSetting,
     SettingValue,
 } from '@/types/posts';
+
+const IMAGE_ACCEPT = '.jpg,.jpeg,.png';
 
 const props = defineProps<{
     account: EditorAccount;
@@ -31,6 +35,10 @@ const images = computed(() =>
     props.library.filter((item) => item.kind === 'image'),
 );
 
+const imageInput = ref<HTMLInputElement | null>(null);
+const uploadingKey = ref<string | null>(null);
+const uploader = useMediaUpload();
+
 function update(key: string, value: SettingValue): void {
     settings.value = { ...settings.value, [key]: value };
 }
@@ -48,27 +56,69 @@ function textValue(key: string): string {
 function selectedThumbnail(key: string): LibraryMedia | undefined {
     return images.value.find((item) => item.id === Number(settings.value[key]));
 }
+
+function chooseImage(key: string): void {
+    uploadingKey.value = key;
+    imageInput.value?.click();
+}
+
+function uploadImage(files: FileList | null): void {
+    const key = uploadingKey.value;
+
+    if (key === null) {
+        return;
+    }
+
+    uploader.upload(files, (mediaIds) => {
+        if (mediaIds.length > 0) {
+            update(key, mediaIds[0]);
+        }
+    });
+
+    if (imageInput.value) {
+        imageInput.value.value = '';
+    }
+}
 </script>
 
 <template>
     <div class="grid gap-3 sm:grid-cols-2">
+        <input
+            ref="imageInput"
+            type="file"
+            class="hidden"
+            :accept="IMAGE_ACCEPT"
+            @change="uploadImage(($event.target as HTMLInputElement).files)"
+        />
+
         <template v-for="[key, setting] in entries" :key="key">
-            <label
+            <div
                 v-if="setting.type === 'boolean'"
-                class="flex items-center gap-2 text-sm sm:col-span-2"
+                class="flex flex-col gap-0.5 sm:col-span-2"
             >
-                <input
-                    :id="fieldId(key)"
-                    type="checkbox"
-                    :checked="Boolean(settings[key])"
-                    :disabled="disabled"
-                    :data-test="fieldId(key)"
-                    @change="
-                        update(key, ($event.target as HTMLInputElement).checked)
-                    "
-                />
-                {{ setting.label }}
-            </label>
+                <label class="flex items-center gap-2 text-sm">
+                    <input
+                        :id="fieldId(key)"
+                        :name="fieldId(key)"
+                        type="checkbox"
+                        :checked="Boolean(settings[key])"
+                        :disabled="disabled"
+                        :data-test="fieldId(key)"
+                        @change="
+                            update(
+                                key,
+                                ($event.target as HTMLInputElement).checked,
+                            )
+                        "
+                    />
+                    {{ setting.label }}
+                </label>
+                <span
+                    v-if="setting.help"
+                    class="pl-6 text-xs text-muted-foreground"
+                    >{{ setting.help }}</span
+                >
+            </div>
 
             <div
                 v-else
@@ -91,9 +141,13 @@ function selectedThumbnail(key: string): LibraryMedia | undefined {
                 <template
                     v-if="setting.type === 'text' || setting.type === 'tags'"
                 >
-                    <Input
+                    <input
                         :id="fieldId(key)"
-                        :model-value="textValue(key)"
+                        :name="fieldId(key)"
+                        type="text"
+                        autocomplete="off"
+                        class="h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50"
+                        :value="textValue(key)"
                         :maxlength="
                             setting.type === 'text'
                                 ? setting.max_length
@@ -106,7 +160,12 @@ function selectedThumbnail(key: string): LibraryMedia | undefined {
                         "
                         :disabled="disabled"
                         :data-test="fieldId(key)"
-                        @update:model-value="update(key, String($event))"
+                        @input="
+                            update(
+                                key,
+                                ($event.target as HTMLInputElement).value,
+                            )
+                        "
                     />
                     <span
                         v-if="setting.max_length"
@@ -116,55 +175,79 @@ function selectedThumbnail(key: string): LibraryMedia | undefined {
                     >
                 </template>
 
-                <div
-                    v-else-if="setting.type === 'image'"
-                    class="flex items-center gap-3"
-                >
-                    <img
-                        v-if="selectedThumbnail(key)?.thumbnail_url"
-                        :src="selectedThumbnail(key)!.thumbnail_url!"
-                        alt=""
-                        class="aspect-video w-28 rounded border object-cover"
-                    />
-                    <select
-                        :id="fieldId(key)"
-                        :value="settings[key] ?? ''"
-                        class="h-9 flex-1 rounded-md border bg-transparent px-3 text-sm"
-                        :disabled="disabled"
-                        :data-test="fieldId(key)"
-                        @change="
-                            update(
-                                key,
-                                ($event.target as HTMLSelectElement).value ===
-                                    ''
-                                    ? null
-                                    : Number(
-                                          ($event.target as HTMLSelectElement)
-                                              .value,
-                                      ),
-                            )
-                        "
-                    >
-                        <option value="">
-                            {{
-                                images.length === 0
-                                    ? 'Upload an image in Media first'
-                                    : 'YouTube picks a frame'
-                            }}
-                        </option>
-                        <option
-                            v-for="image in images"
-                            :key="image.id"
-                            :value="image.id"
+                <template v-else-if="setting.type === 'image'">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <img
+                            v-if="selectedThumbnail(key)?.thumbnail_url"
+                            :src="selectedThumbnail(key)!.thumbnail_url!"
+                            alt=""
+                            class="aspect-video w-28 rounded border object-cover"
+                        />
+                        <select
+                            :id="fieldId(key)"
+                            :name="fieldId(key)"
+                            :value="settings[key] ?? ''"
+                            class="h-9 min-w-48 flex-1 rounded-md border bg-transparent px-3 text-sm"
+                            :disabled="disabled"
+                            :data-test="fieldId(key)"
+                            @change="
+                                update(
+                                    key,
+                                    ($event.target as HTMLSelectElement)
+                                        .value === ''
+                                        ? null
+                                        : Number(
+                                              (
+                                                  $event.target as HTMLSelectElement
+                                              ).value,
+                                          ),
+                                )
+                            "
                         >
-                            {{ image.original_name }}
-                        </option>
-                    </select>
-                </div>
+                            <option value="">
+                                {{
+                                    images.length === 0
+                                        ? 'No images yet'
+                                        : 'YouTube picks a frame'
+                                }}
+                            </option>
+                            <option
+                                v-for="image in images"
+                                :key="image.id"
+                                :value="image.id"
+                            >
+                                {{ image.original_name }}
+                            </option>
+                        </select>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            :disabled="disabled || uploader.form.processing"
+                            :data-test="`${fieldId(key)}-upload`"
+                            @click="chooseImage(key)"
+                        >
+                            <Upload class="size-4" />
+                            {{
+                                uploader.form.processing && uploadingKey === key
+                                    ? `Uploading… ${uploader.form.progress?.percentage ?? 0}%`
+                                    : 'Upload image'
+                            }}
+                        </Button>
+                    </div>
+                    <p
+                        v-for="message in uploader.errors.value"
+                        :key="message"
+                        class="text-xs text-destructive"
+                    >
+                        {{ message }}
+                    </p>
+                </template>
 
                 <select
                     v-else
                     :id="fieldId(key)"
+                    :name="fieldId(key)"
                     :value="settings[key]"
                     class="h-9 rounded-md border bg-transparent px-3 text-sm"
                     :disabled="disabled"
@@ -181,6 +264,12 @@ function selectedThumbnail(key: string): LibraryMedia | undefined {
                         {{ label }}
                     </option>
                 </select>
+
+                <span
+                    v-if="setting.help"
+                    class="text-xs text-muted-foreground"
+                    >{{ setting.help }}</span
+                >
             </div>
         </template>
     </div>

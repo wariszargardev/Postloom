@@ -71,7 +71,7 @@ Google access tokens last about an hour; the refresh token keeps working until t
     - `POST https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status&notifySubscribers=…` with the resource as JSON and `X-Upload-Content-Length` / `X-Upload-Content-Type`; the `Location` header is the session URL. The token comes from `YouTubeTokenService::accessTokenFor()` (refreshed when under 5 minutes left). A 401 refreshes once and retries.
     - `PUT` the file in chunks of `YOUTUBE_UPLOAD_CHUNK_BYTES` (8 MB, rounded to 256 KB) with `Content-Range: bytes a-b/total`. `308` + `Range: bytes=0-n` → continue from `n+1`; `200`/`201` → the video id.
     - A lost or 5xx chunk: wait 2, 4, 8 s (`Sleep`), ask `Content-Range: bytes */total` what arrived, resume. After 3 failures, or on `404` (session expired), the job retries later from the start.
-6. **Thumbnail** (if `thumbnail_media_id` is an image of the same workspace): `POST /upload/youtube/v3/thumbnails/set?videoId=…` with the image bytes. If it fails the video still counts as published; the reason is saved as a notice in `post_targets.last_error` ("Published, but …") and shown in the Delivery panel.
+6. **Thumbnail / Short cover** (if `thumbnail_media_id` is an image of the same workspace): `POST /upload/youtube/v3/thumbnails/set?videoId=…` with the image bytes. For a **Short**, YouTube only accepts the cover once processing is done, so `YouTubeUploader::waitUntilProcessed()` first polls `GET /videos?part=processingDetails` every `YOUTUBE_PROCESSING_POLL_SECONDS` (10) for up to `YOUTUBE_PROCESSING_WAIT_SECONDS` (120) until `processingStatus = succeeded`. If the cover can't be set the video still counts as published; the reason is saved as a notice in `post_targets.last_error` ("Published, but …") and shown in the Delivery panel.
 7. Link: `https://www.youtube.com/watch?v=<id>` or `https://www.youtube.com/shorts/<id>`.
 
 ### Errors (`YouTubeApiException`: `statusCode`, `reason`)
@@ -122,6 +122,7 @@ Tokens and emails are never logged.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_REDIRECT_URI=http://localhost:8000/accounts/youtube/callback` (`config/services.php` → `google`)
 - `GOOGLE_TOKEN_URL`, `YOUTUBE_API_BASE_URL`: defaults are Google's; only change for tests.
 - `YOUTUBE_UPLOAD_CHUNK_BYTES=8388608` (rounded down to a multiple of 256 KB).
+- `YOUTUBE_PROCESSING_WAIT_SECONDS=120`, `YOUTUBE_PROCESSING_POLL_SECONDS=10`: how long to wait for a Short to finish processing before setting its cover.
 - `FFMPEG_PATH` (`config/postloom.php`): audio to video.
 
 ## Tests

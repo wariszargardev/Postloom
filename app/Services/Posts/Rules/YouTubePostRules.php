@@ -118,6 +118,13 @@ class YouTubePostRules implements PlatformPostRules
             $errors[] = 'the description is '.number_format(strlen($text)).' bytes; YouTube allows '.number_format(self::MAX_DESCRIPTION_BYTES).'.';
         }
 
+        $title = mb_strtolower(trim((string) ($settings['title'] ?? '')));
+        $tags = mb_strtolower(trim((string) ($settings['tags'] ?? '')));
+
+        if ($title !== '' && $title === $tags) {
+            $errors[] = 'the video title is the same as the tags. Write a real title.';
+        }
+
         $tagsLength = self::tagsLength(self::parseTags((string) ($settings['tags'] ?? '')));
 
         if ($tagsLength > self::MAX_TAGS_LENGTH) {
@@ -154,13 +161,13 @@ class YouTubePostRules implements PlatformPostRules
             'media_rules' => 'Exactly 1 video (or 1 audio file, posted as a video). Pick an image as the thumbnail in the YouTube settings.',
             'settings' => [
                 'title' => ['type' => 'text', 'label' => 'Video title', 'max_length' => self::MAX_TITLE_LENGTH, 'required' => true, 'default' => ''],
-                'format' => ['type' => 'select', 'label' => 'Format', 'options' => self::FORMAT_OPTIONS, 'default' => 'auto'],
+                'format' => ['type' => 'select', 'label' => 'Format', 'options' => self::FORMAT_OPTIONS, 'default' => 'auto', 'help' => 'Auto: a vertical or square video up to 3 minutes becomes a Short.'],
                 'privacy' => ['type' => 'select', 'label' => 'Privacy', 'options' => self::PRIVACY_OPTIONS, 'default' => 'public'],
                 'category' => ['type' => 'select', 'label' => 'Category', 'options' => self::CATEGORY_OPTIONS, 'default' => '22'],
-                'tags' => ['type' => 'tags', 'label' => 'Tags (comma separated)', 'max_length' => self::MAX_TAGS_LENGTH, 'default' => ''],
-                'thumbnail_media_id' => ['type' => 'image', 'label' => 'Thumbnail (optional)', 'default' => null],
-                'made_for_kids' => ['type' => 'boolean', 'label' => 'Made for kids', 'default' => false],
-                'synthetic_media' => ['type' => 'boolean', 'label' => 'Contains realistic AI or altered content', 'default' => false],
+                'tags' => ['type' => 'tags', 'label' => 'Tags (comma separated)', 'max_length' => self::MAX_TAGS_LENGTH, 'default' => '', 'help' => 'Search keywords, not shown on the video. Hashtags go in the text.'],
+                'thumbnail_media_id' => ['type' => 'image', 'label' => 'Thumbnail / Short cover (optional)', 'default' => null, 'help' => 'JPG or PNG. Regular video: 1280×720 (16:9). Short: a vertical 9:16 image. Custom thumbnails need a phone-verified channel.'],
+                'made_for_kids' => ['type' => 'boolean', 'label' => 'Made for kids', 'default' => false, 'help' => 'YouTube turns off comments and notifications for kids content.'],
+                'synthetic_media' => ['type' => 'boolean', 'label' => 'Contains realistic AI or altered content', 'default' => false, 'help' => 'YouTube shows an "altered or synthetic content" label.'],
                 'notify_subscribers' => ['type' => 'boolean', 'label' => 'Notify subscribers', 'default' => true],
             ],
         ];

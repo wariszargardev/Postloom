@@ -35,6 +35,9 @@ KB: `knowledge-base/youtube/README.md`. Setup guide: `docs/guides/youtube/README
 | "upload kept failing" / "session expired" | Network or YouTube trouble mid-upload; the job retries from the start. Check `YouTube upload chunk lost` lines |
 | Published, but "thumbnail was refused" | Channel not phone-verified (youtube.com/verify) or image too big; set it in YouTube Studio |
 | Video is a Short when it shouldn't be | Format Auto + vertical/square + up to 3 min; pick "Regular video" |
+| Published, but "Short cover wasn't set" | YouTube took longer than `YOUTUBE_PROCESSING_WAIT_SECONDS` to process the Short; set the cover in YouTube Studio or raise the wait |
+| "video title is the same as the tags" | The title field held the tag list; write a real title (blocked on purpose) |
+| Comments / notifications off on YouTube | "Made for kids" was ticked; YouTube turns them off for kids content |
 | Video stays private | Privacy setting, or YouTube locked it for an unverified API project: check YouTube Studio |
 
 Logs: `storage/logs/postloom-*.log`, filter `extra.feature` = `youtube` (connect), `accounts` (daily check) or `publishing` (uploads), then follow the `trace_id`.

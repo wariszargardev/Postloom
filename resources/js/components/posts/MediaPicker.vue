@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import {
     ArrowDown,
     ArrowUp,
     Check,
     FileText,
     Music,
+    Upload,
     Video,
     X,
 } from '@lucide/vue';
@@ -20,11 +20,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { index as mediaIndex } from '@/routes/media';
-import type { LibraryMedia } from '@/types/posts';
+import { useMediaUpload } from '@/composables/useMediaUpload';
+import type { LibraryMedia, UploadSettings } from '@/types/posts';
 
 const props = defineProps<{
     library: LibraryMedia[];
+    upload: UploadSettings;
     disabled?: boolean;
 }>();
 
@@ -32,6 +33,27 @@ const selectedIds = defineModel<number[]>({ required: true });
 
 const isOpen = ref(false);
 const draftIds = ref<number[]>([]);
+const fileInput = ref<HTMLInputElement | null>(null);
+const isDragging = ref(false);
+const uploader = useMediaUpload();
+
+function uploadFiles(files: FileList | File[] | null): void {
+    uploader.upload(files, (mediaIds) => {
+        draftIds.value = [
+            ...draftIds.value,
+            ...mediaIds.filter((id) => !draftIds.value.includes(id)),
+        ];
+    });
+
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+}
+
+function drop(event: DragEvent): void {
+    isDragging.value = false;
+    uploadFiles(event.dataTransfer?.files ?? null);
+}
 
 const selectedMedia = computed(() =>
     selectedIds.value
@@ -158,20 +180,77 @@ function remove(id: number): void {
                 <DialogHeader>
                     <DialogTitle>Choose media</DialogTitle>
                     <DialogDescription>
-                        Click to select, in the order you want them shown.
-                        <Link
-                            :href="mediaIndex()"
-                            class="underline underline-offset-4"
-                            >Upload new files in Media</Link
-                        >.
+                        Click to select, in the order you want them shown. New
+                        uploads are selected for you; your post stays as it is.
                     </DialogDescription>
                 </DialogHeader>
+
+                <div
+                    class="flex flex-col items-center gap-2 rounded-lg border border-dashed p-4 text-sm text-muted-foreground"
+                    :class="isDragging ? 'border-primary bg-primary/5' : ''"
+                    data-test="media-picker-upload"
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="drop"
+                >
+                    <div class="flex items-center gap-2">
+                        <Upload class="size-4" />
+                        Drag files here, or
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            :disabled="uploader.form.processing"
+                            @click="fileInput?.click()"
+                            >upload from your computer</Button
+                        >
+                    </div>
+                    <span class="text-xs"
+                        >Up to {{ upload.max_files }} files at a time.</span
+                    >
+                    <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        class="hidden"
+                        :accept="upload.accept"
+                        @change="
+                            uploadFiles(
+                                ($event.target as HTMLInputElement).files,
+                            )
+                        "
+                    />
+                    <div
+                        v-if="uploader.form.processing"
+                        class="w-full max-w-sm"
+                    >
+                        <div class="h-2 overflow-hidden rounded bg-muted">
+                            <div
+                                class="h-full bg-primary transition-all"
+                                :style="{
+                                    width: `${uploader.form.progress?.percentage ?? 0}%`,
+                                }"
+                            />
+                        </div>
+                        <p class="mt-1 text-center text-xs">
+                            Uploading…
+                            {{ uploader.form.progress?.percentage ?? 0 }}%
+                        </p>
+                    </div>
+                    <p
+                        v-for="message in uploader.errors.value"
+                        :key="message"
+                        class="text-xs text-destructive"
+                    >
+                        {{ message }}
+                    </p>
+                </div>
 
                 <p
                     v-if="library.length === 0"
                     class="rounded-lg border border-dashed p-6 text-sm text-muted-foreground"
                 >
-                    The library is empty. Upload files on the Media page first.
+                    The library is empty. Upload your first file above.
                 </p>
 
                 <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4">

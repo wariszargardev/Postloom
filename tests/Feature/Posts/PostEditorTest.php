@@ -257,5 +257,7 @@ it('shows the editor with accounts, rules and the media library', function () {
             ->where('post', null)
             ->where('accounts.0.rules.max_text_length', 3000)
             ->has('library', 1)
+            ->where('upload.max_files', 10)
+            ->where('upload.accept', fn (string $accept) => str_contains($accept, '.mp4') && str_contains($accept, '.png'))
             ->where('defaultTimezone', 'Asia/Karachi'));
 });

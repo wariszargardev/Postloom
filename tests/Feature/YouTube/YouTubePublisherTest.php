@@ -192,6 +192,39 @@ it('still publishes when YouTube refuses the custom thumbnail, with a notice', f
         ->and($result->notice)->toContain('Verify the channel with a phone number');
 });
 
+it('waits until YouTube has processed a Short before setting its cover', function () {
+    $cover = Media::factory()->for($this->workspace)->create(['mime_type' => 'image/png']);
+    Storage::disk('local')->put($cover->path, 'cover');
+    $this->target->update(['settings' => [...$this->target->settings, 'format' => 'short', 'thumbnail_media_id' => $cover->id]]);
+    fakeYouTube([
+        'https://www.googleapis.com/youtube/v3/videos*' => Http::sequence()
+            ->push(['items' => [['processingDetails' => ['processingStatus' => 'processing']]]])
+            ->push(['items' => [['processingDetails' => ['processingStatus' => 'succeeded']]]]),
+        YT_THUMBNAIL => Http::response(['items' => []]),
+    ]);
+
+    $result = $this->publisher->publish($this->target->fresh());
+
+    expect($result->notice)->toBeNull();
+    Sleep::assertSleptTimes(1);
+    Http::assertSent(fn (Request $request) => str_starts_with($request->url(), 'https://www.googleapis.com/youtube/v3/videos?part=processingDetails&id=vid123'));
+    Http::assertSent(fn (Request $request) => str_starts_with($request->url(), 'https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=vid123'));
+});
+
+it('publishes a Short without its cover when YouTube is still processing, with a notice', function () {
+    config(['services.google.processing_wait_seconds' => 20, 'services.google.processing_poll_seconds' => 10]);
+    $cover = Media::factory()->for($this->workspace)->create();
+    Storage::disk('local')->put($cover->path, 'cover');
+    $this->target->update(['settings' => [...$this->target->settings, 'format' => 'short', 'thumbnail_media_id' => $cover->id]]);
+    fakeYouTube(['https://www.googleapis.com/youtube/v3/videos*' => Http::response(['items' => [['processingDetails' => ['processingStatus' => 'processing']]]])]);
+
+    $result = $this->publisher->publish($this->target->fresh());
+
+    expect($result->externalUrl)->toBe('https://www.youtube.com/shorts/vid123')
+        ->and($result->notice)->toContain('Short cover wasn\'t set');
+    Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'thumbnails/set'));
+});
+
 it('turns audio into a video and uploads that', function () {
     Process::fake(function ($process) {
         file_put_contents(end($process->command), 'mp4');

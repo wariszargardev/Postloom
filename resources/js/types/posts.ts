@@ -18,6 +18,12 @@ export type PlatformSetting = {
     default: SettingValue;
     max_length?: number;
     required?: boolean;
+    help?: string;
+};
+
+export type UploadSettings = {
+    accept: string;
+    max_files: number;
 };
 
 export type PlatformRules = {

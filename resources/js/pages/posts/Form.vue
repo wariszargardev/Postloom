@@ -20,6 +20,7 @@ import type {
     EditorAccount,
     EditorPost,
     LibraryMedia,
+    UploadSettings,
     TargetForm,
 } from '@/types/posts';
 
@@ -27,6 +28,7 @@ const props = defineProps<{
     post: EditorPost | null;
     accounts: EditorAccount[];
     library: LibraryMedia[];
+    upload: UploadSettings;
     defaultTimezone: string;
     timezones: string[];
     prefillScheduledAt?: string | null;
@@ -389,6 +391,7 @@ const initials = (name: string): string =>
                 <MediaPicker
                     v-model="form.media_ids"
                     :library="library"
+                    :upload="upload"
                     :disabled="!isEditable"
                 />
             </section>

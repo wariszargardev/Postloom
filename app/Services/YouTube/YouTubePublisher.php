@@ -82,7 +82,7 @@ class YouTubePublisher implements Publisher
             ? $this->uploadAudio($target, $video, $metadata, (bool) $settings['notify_subscribers'])
             : $this->uploader->upload($account, Storage::disk($video->disk)->path($video->path), $video->mime_type, $metadata, (bool) $settings['notify_subscribers']);
 
-        $notice = $this->setThumbnail($target, $videoId, $settings['thumbnail_media_id'] ?? null);
+        $notice = $this->setThumbnail($target, $videoId, $settings['thumbnail_media_id'] ?? null, $isShort);
 
         LogService::info('YouTube video created', ['external_id' => $videoId, 'short' => $isShort]);
 
@@ -109,7 +109,7 @@ class YouTubePublisher implements Publisher
         }
     }
 
-    private function setThumbnail(PostTarget $target, string $videoId, mixed $thumbnailMediaId): ?string
+    private function setThumbnail(PostTarget $target, string $videoId, mixed $thumbnailMediaId, bool $isShort): ?string
     {
         if ($thumbnailMediaId === null || $thumbnailMediaId === '') {
             return null;
@@ -127,6 +127,10 @@ class YouTubePublisher implements Publisher
             LogService::warning('YouTube thumbnail image is missing', ['thumbnail_media_id' => $thumbnailMediaId]);
 
             return 'the thumbnail image is missing from the media library.';
+        }
+
+        if ($isShort && ! $this->uploader->waitUntilProcessed($target->socialAccount, $videoId)) {
+            return 'the Short cover wasn\'t set because YouTube was still processing the video. Set it in YouTube Studio.';
         }
 
         return $this->uploader->setThumbnail($target->socialAccount, $videoId, $bytes, $thumbnail->mime_type);
