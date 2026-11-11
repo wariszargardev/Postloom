@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Connect one or more **Facebook Pages** to a workspace (piece 13). Each Page is its own account. Posting to Pages comes in piece 14 (`feat/14-facebook-publish`). Facebook doesn't allow apps to post to personal profiles, so only Pages are supported.
+Connect one or more **Facebook Pages** to a workspace (piece 13) and post to them (piece 14, see [Publishing](#publishing)). Each Page is its own account. Facebook doesn't allow apps to post to personal profiles, so only Pages are supported.
 
 Setup guide for the Meta app: `docs/guides/facebook/README.md`.
 
@@ -45,6 +45,24 @@ A Page token from a long-lived user token **doesn't expire** on a timer (Meta do
 - The Meta app stays in **Development mode**; app admins/developers/testers can use the Page permissions on Pages they manage without App Review. Serving other people's Pages would need App Review, Advanced Access and business verification.
 - Graph error mapping (`FacebookGraphClient`): **190** → invalid login (reconnect); **4, 17, 32, 613, 80001** → rate limit (retryable); **10, 200** → permission (permanent); **368** → blocked as abusive (permanent, no blind retries); 5xx → retryable; other 4xx → permanent with Facebook's message.
 
+## Publishing
+
+`FacebookPublisher` is the `Publisher` for Facebook (piece 14); the scheduler job calls it once per Page. Editor rules: `knowledge-base/posts/README.md` → Facebook.
+
+| Post        | Graph calls (Page token)                                                                                                                                                                                                                                                                               | Saved id / link                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Text / link | `POST /{page}/feed` `message` (links get a preview)                                                                                                                                                                                                                                                    | post id → `permalink_url`                                                  |
+| 1 photo     | `POST /{page}/photos` multipart `source` + `caption`, `published=true`                                                                                                                                                                                                                                 | `post_id` → `permalink_url`                                                |
+| 2–10 photos | each `POST /{page}/photos` with `published=false`, then `POST /{page}/feed` with `message` + `attached_media[i]={"media_fbid":…}`                                                                                                                                                                      | post id → `permalink_url`                                                  |
+| Video       | `POST graph-video.facebook.com/{v}/{page}/videos` multipart `source` + `description` (+ `title`)                                                                                                                                                                                                       | video id → `permalink_url` (relative links get `https://www.facebook.com`) |
+| Reel        | `POST /{page}/video_reels` `upload_phase=start` → `video_id`; `POST rupload.facebook.com/video-upload/{v}/{video_id}` with `Authorization: OAuth <token>`, `offset: 0`, `file_size`, binary body; `POST /{page}/video_reels` `upload_phase=finish`, `video_state=PUBLISHED`, `description` (+ `title`) | video id → `https://www.facebook.com/reel/{id}`                            |
+| Audio       | turned into an MP4 (`AudioToVideoConverter`), then posted as a video or Reel; temp file deleted                                                                                                                                                                                                        | as video                                                                   |
+
+- The text is the account's text (or the main text). Settings: `format` (`post` / `reel`), `video_title` (optional, up to 255).
+- If the permalink lookup fails, the link falls back to `https://www.facebook.com/{id}` (videos: `/{page}/videos/{id}/`).
+- A 190 error during publishing also marks the Page `needs_reconnect`.
+- Reels are published straight away; Facebook processes them afterwards, so the link can take a minute to work.
+
 ## Logging
 
 Feature `facebook` for the connect flow; the daily check runs on the `accounts` trace.
@@ -75,9 +93,16 @@ Tokens are never logged.
 
 - `tests/Feature/Facebook/FacebookConnectTest.php`: redirect with only the Page scopes; every shared Page saved with its token; reconnect updates in place; Pages without CREATE_CONTENT skipped; posting permission switched off; no Page shared; token exchange error; cancel; expired state; disabled without keys; daily check marks a 190 Page for reconnect; rate limit during the check keeps the Page connected.
 
-Facebook is faked with a mocked Socialite provider and `Http::fake()`.
+- `tests/Feature/Facebook/FacebookPublisherTest.php`: text post with Page token and permalink; 1 photo with caption; 3 photos unpublished then attached; video to graph-video with title and description; Reel start / binary upload / finish; landscape or long Reel refused before any call; audio as video; 190 marks reconnect; 32 / 80001 / 5xx retryable, 200 / 368 permanent; permalink fallback; end to end through the job.
+- `tests/Feature/Facebook/FacebookPostRulesTest.php`: text-only and photo posts schedule; PDFs, mixed media, 11 photos, WebP and photos over 10 MB refused; Reel needs a vertical 3–90 s video; settings in the editor; audio accepted.
+
+Facebook is faked with a mocked Socialite provider, `Http::fake()` and `Process::fake()` (ffmpeg).
 
 ## Known limits
+
+- Photos must be JPG, PNG, GIF, BMP or TIFF and at most 10 MB; WebP is refused.
+- Page videos are sent in one upload (fine for the 500 MB library limit on a normal line); there is no resumable upload yet.
+- A Page can publish at most 30 Reels per 24 hours through the API.
 
 - Disconnect in Postloom doesn't remove the app from Facebook; do that at facebook.com → Settings → Business integrations.
 - Pages shared in one Connect all land in the current workspace; disconnect the ones you don't want there.
