@@ -144,12 +144,20 @@ Done for good: Postloom renews each account's login every day, so you never repe
 
 ---
 
-## Good to know before posting (piece 17)
+## Posting to TikTok
 
-- Until TikTok audits the app, direct posts are **private (only you)** and the TikTok account must be set to **private**. At most 5 accounts can post per 24 hours.
-- "Send to TikTok inbox" uploads the video as a draft; you finish and post it publicly in the TikTok app.
-- Photo posts need a public, verified domain, so Postloom posts videos only for now.
-- Getting rid of the target-user list and the private-only rule needs TikTok's app review (public website with real Terms and Privacy pages). Not worth it for a few own accounts.
+**Use "I'll post it myself (public)"** (the default under Per account → TikTok → How to post):
+
+1. Schedule the post in Postloom as usual (one video, caption, time).
+2. At the time, the TikTok account shows **Ready for you** and the post appears under **To post** (sidebar badge and a banner).
+3. On the PC: **Download video**, **Copy caption**, **Open TikTok Studio** → Upload → pick the file → paste the caption → choose Everyone → Post. You can also use TikTok Studio's own schedule there.
+4. Back in Postloom: paste the TikTok link (optional) → **Mark as posted**. The account becomes Published with that link.
+
+Why not automatic: until TikTok audits the app, direct posts are private only (and the account must be private), and inbox drafts from the Sandbox never reached the TikTok app in our test. TikTok's guidelines reject "a utility tool to help upload contents to the account(s) you or your team manages", so an audit won't fix it for Postloom. The other modes stay for tests:
+
+- **Post directly**: "Only me" only, TikTok account set to private first.
+- **Send to TikTok inbox**: TikTok says "sent", but nothing arrives while the app is in Sandbox.
+- Photo posts need a public, verified domain, so TikTok is video only.
 
 ## If something goes wrong
 

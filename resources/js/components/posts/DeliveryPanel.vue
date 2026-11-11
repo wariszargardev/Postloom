@@ -56,7 +56,23 @@ function formatTime(value: string): string {
             >
                 View post <ExternalLink class="size-3" />
             </a>
-            <p v-if="row.delivery.last_error" class="text-sm text-destructive">
+            <a
+                v-if="row.delivery.status === 'ready_to_post'"
+                href="/to-post"
+                class="flex w-fit items-center gap-1 text-sm font-medium text-brand hover:underline"
+                data-test="open-to-post"
+            >
+                Open To post to upload it
+            </a>
+            <p
+                v-if="row.delivery.last_error"
+                class="text-sm"
+                :class="
+                    row.delivery.status === 'failed'
+                        ? 'text-destructive'
+                        : 'text-muted-foreground'
+                "
+            >
                 {{ row.delivery.last_error }}
             </p>
 

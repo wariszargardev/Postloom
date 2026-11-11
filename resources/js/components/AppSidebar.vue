@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     CalendarDays,
+    Hand,
     Images,
     Layers,
     LayoutGrid,
     PenSquare,
     Share2,
 } from '@lucide/vue';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -29,7 +31,9 @@ import { index as postsIndex } from '@/routes/posts';
 import { index as workspacesIndex } from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const page = usePage();
+
+const mainNavItems = computed<NavItem[]>(() => [
     {
         title: 'Calendar',
         href: calendarIndex(),
@@ -46,6 +50,12 @@ const mainNavItems: NavItem[] = [
         icon: PenSquare,
     },
     {
+        title: 'To post',
+        href: '/to-post',
+        icon: Hand,
+        badge: page.props.postsWaitingForYou ?? 0,
+    },
+    {
         title: 'Accounts',
         href: accountsIndex(),
         icon: Share2,
@@ -60,7 +70,7 @@ const mainNavItems: NavItem[] = [
         href: workspacesIndex(),
         icon: Layers,
     },
-];
+]);
 </script>
 
 <template>

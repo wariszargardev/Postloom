@@ -71,7 +71,7 @@ export type PublishAttemptRow = {
 };
 
 export type TargetDelivery = {
-    status: 'pending' | 'publishing' | 'published' | 'failed';
+    status: 'pending' | 'publishing' | 'published' | 'ready_to_post' | 'failed';
     status_label: string;
     attempts: number;
     last_error: string | null;

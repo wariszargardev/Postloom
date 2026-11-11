@@ -254,7 +254,7 @@ const initials = (name: string): string =>
     <Head :title="post ? 'Edit post' : 'New post'" />
 
     <div
-        class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-8 md:py-8 xl:grid-cols-[minmax(0,1fr)_400px]"
+        class="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 md:px-8 md:py-8 2xl:grid-cols-[minmax(0,1fr)_380px]"
     >
         <form class="flex flex-col gap-6" @submit.prevent="submit('draft')">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -559,7 +559,7 @@ const initials = (name: string): string =>
             </section>
 
             <div
-                class="surface sticky bottom-4 z-10 flex flex-wrap items-center gap-2 bg-card/95 p-3 backdrop-blur"
+                class="surface sticky bottom-4 z-10 flex flex-wrap items-center gap-2 bg-card/95 p-2 backdrop-blur"
             >
                 <Button
                     type="button"
@@ -623,7 +623,7 @@ const initials = (name: string): string =>
             </div>
         </form>
 
-        <aside class="flex flex-col gap-4 xl:sticky xl:top-20 xl:self-start">
+        <aside class="flex flex-col gap-4 2xl:sticky 2xl:top-20 2xl:self-start">
             <DeliveryPanel
                 v-if="showDelivery"
                 :rows="deliveryRows"

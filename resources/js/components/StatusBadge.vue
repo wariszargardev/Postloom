@@ -23,6 +23,8 @@ const tones: Record<string, string> = {
         'text-status-published bg-status-published/10 ring-status-published/30',
     partly_published:
         'text-status-partly bg-status-partly/10 ring-status-partly/30',
+    ready_to_post:
+        'text-status-scheduled bg-status-scheduled/10 ring-status-scheduled/30',
     expiring_soon:
         'text-status-scheduled bg-status-scheduled/10 ring-status-scheduled/30',
     failed: 'text-status-failed bg-status-failed/10 ring-status-failed/30',

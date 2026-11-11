@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Facebook\FacebookPublisher;
 use App\Services\LinkedIn\LinkedInPublisher;
 use App\Services\Publishing\PublisherRegistry;
+use App\Services\TikTok\TikTokPublisher;
 use App\Services\YouTube\YouTubePublisher;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
             $app->make(LinkedInPublisher::class),
             $app->make(YouTubePublisher::class),
             $app->make(FacebookPublisher::class),
+            $app->make(TikTokPublisher::class),
         ]));
     }
 

@@ -26,7 +26,7 @@ class PostStatusResolver
             return $post->status;
         }
 
-        $publishedCount = $statuses->filter(fn (PostTargetStatus $status): bool => $status === PostTargetStatus::Published)->count();
+        $publishedCount = $statuses->filter(fn (PostTargetStatus $status): bool => in_array($status, [PostTargetStatus::Published, PostTargetStatus::ReadyToPost], true))->count();
 
         $newStatus = match (true) {
             $statuses->isEmpty(), $publishedCount === 0 => PostStatus::Failed,

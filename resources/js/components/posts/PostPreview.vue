@@ -18,6 +18,22 @@ const isExpanded = ref(false);
 
 const visibility = computed(() => String(props.settings.visibility ?? ''));
 const isYouTube = computed(() => props.account.provider === 'youtube');
+const isTikTok = computed(() => props.account.provider === 'tiktok');
+const tikTokBadge = computed(() => {
+    if (props.settings.mode === 'inbox') {
+        return 'Inbox draft';
+    }
+
+    if (props.settings.mode !== 'direct') {
+        return 'You post it';
+    }
+
+    return (
+        props.account.rules?.settings.privacy?.options?.[
+            String(props.settings.privacy ?? 'SELF_ONLY')
+        ] ?? 'Only me'
+    );
+});
 const youTubeTitle = computed(
     () => String(props.settings.title ?? '').trim() || 'Untitled video',
 );
@@ -106,6 +122,52 @@ const initials = computed(() =>
                     >{{ text }}</span
                 >
             </div>
+        </div>
+    </article>
+    <article
+        v-else-if="isTikTok"
+        class="relative mx-auto aspect-[9/16] w-full max-w-[220px] overflow-hidden rounded-xl border bg-black text-white"
+        :data-test="`preview-${account.id}`"
+    >
+        <img
+            v-if="firstOther?.thumbnail_url"
+            :src="firstOther.thumbnail_url"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div
+            v-else
+            class="absolute inset-0 flex items-center justify-center text-xs text-white/70"
+        >
+            {{ firstOther ? 'Video preview' : 'Add a video' }}
+        </div>
+        <span
+            class="absolute top-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold"
+            >{{ tikTokBadge }}</span
+        >
+        <div
+            v-if="firstOther"
+            class="absolute inset-0 flex items-center justify-center"
+        >
+            <span
+                class="flex size-12 items-center justify-center rounded-full bg-black/50"
+            >
+                <Play class="size-5" />
+            </span>
+        </div>
+        <div
+            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3"
+        >
+            <span class="text-sm font-semibold">{{ account.name }}</span>
+            <p
+                v-if="text && settings.mode !== 'inbox'"
+                class="mt-1 line-clamp-3 text-xs whitespace-pre-wrap"
+            >
+                {{ text }}
+            </p>
+            <p v-else-if="text" class="mt-1 text-[11px] text-white/70">
+                Caption is pasted in the TikTok app
+            </p>
         </div>
     </article>
     <article
