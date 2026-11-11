@@ -62,6 +62,8 @@ return [
         'redirect' => env('FACEBOOK_REDIRECT_URI', '/accounts/facebook/callback'),
         'graph_version' => env('FACEBOOK_GRAPH_VERSION', 'v27.0'),
         'graph_base_url' => env('FACEBOOK_GRAPH_BASE_URL', 'https://graph.facebook.com'),
+        'graph_video_base_url' => env('FACEBOOK_GRAPH_VIDEO_BASE_URL', 'https://graph-video.facebook.com'),
+        'rupload_base_url' => env('FACEBOOK_RUPLOAD_BASE_URL', 'https://rupload.facebook.com/video-upload'),
     ],
 
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Facebook\FacebookPublisher;
 use App\Services\LinkedIn\LinkedInPublisher;
 use App\Services\Publishing\PublisherRegistry;
 use App\Services\YouTube\YouTubePublisher;
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PublisherRegistry::class, fn (Application $app): PublisherRegistry => new PublisherRegistry([
             $app->make(LinkedInPublisher::class),
             $app->make(YouTubePublisher::class),
+            $app->make(FacebookPublisher::class),
         ]));
     }
 

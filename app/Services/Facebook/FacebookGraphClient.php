@@ -3,6 +3,7 @@
 namespace App\Services\Facebook;
 
 use App\Services\LogService;
+use GuzzleHttp\Psr7\Utils;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -28,11 +29,63 @@ class FacebookGraphClient
 
     public const BLOCKED_CODE = 368;
 
-    public function url(string $path): string
+    public function url(string $path, string $baseKey = 'graph_base_url'): string
     {
-        return rtrim((string) config('services.facebook.graph_base_url'), '/')
+        return rtrim((string) config("services.facebook.{$baseKey}"), '/')
             .'/'.config('services.facebook.graph_version')
             .'/'.ltrim($path, '/');
+    }
+
+    /**
+     * Multipart upload of one file (photos to graph.facebook.com, videos to graph-video.facebook.com).
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws FacebookApiException
+     */
+    public function upload(string $url, array $data, string $absolutePath, string $fileName, string $accessToken, string $action): Response
+    {
+        $stream = fopen($absolutePath, 'rb');
+
+        if ($stream === false) {
+            throw new FacebookApiException("The file {$fileName} could not be opened.", false);
+        }
+
+        try {
+            return $this->send($action, fn (): Response => Http::acceptJson()
+                ->timeout(300)
+                ->connectTimeout(10)
+                ->attach('source', $stream, $fileName)
+                ->post($url, array_map(fn (mixed $value): string => (string) $value, [...$data, 'access_token' => $accessToken])));
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+    }
+
+    /**
+     * Raw binary upload used by Reels (rupload.facebook.com).
+     *
+     * @throws FacebookApiException
+     */
+    public function uploadBinary(string $url, string $absolutePath, string $accessToken, string $action): Response
+    {
+        $size = (int) filesize($absolutePath);
+        $stream = fopen($absolutePath, 'rb');
+
+        if ($stream === false) {
+            throw new FacebookApiException('The video file could not be opened.', false);
+        }
+
+        $body = Utils::streamFor($stream);
+
+        return $this->send($action, fn (): Response => Http::acceptJson()
+            ->timeout(300)
+            ->connectTimeout(10)
+            ->withHeaders(['Authorization' => "OAuth {$accessToken}", 'offset' => '0', 'file_size' => (string) $size])
+            ->withBody($body, 'application/octet-stream')
+            ->post($url));
     }
 
     /**
