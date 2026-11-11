@@ -1,18 +1,34 @@
-# Stops the processes started by start.ps1. MySQL keeps running unless -WithMySql is passed (other projects share it).
+# Stops the processes started by start.ps1 (their tabs or windows close). MySQL keeps running unless -WithMySql is passed (other projects share it).
 param([switch]$WithMySql)
 
 $root = $PSScriptRoot
-$pidFile = Join-Path $root 'storage\app\postloom-pids.txt'
+$pidDir = Join-Path $root 'storage\app\postloom-pids'
+$legacyPidFile = Join-Path $root 'storage\app\postloom-pids.txt'
 
-if (Test-Path $pidFile) {
-    foreach ($line in Get-Content $pidFile) {
-        $name, $processId = $line -split '='
-        taskkill /PID $processId /T /F *> $null
-        "Stopped $name"
+$entries = @()
+
+if (Test-Path $pidDir) {
+    $entries += Get-ChildItem $pidDir -Filter *.pid | ForEach-Object {
+        [pscustomobject]@{ Name = $_.BaseName; ProcessId = (Get-Content $_.FullName -Raw).Trim(); File = $_.FullName }
     }
-    Remove-Item $pidFile
+}
+
+if (Test-Path $legacyPidFile) {
+    $entries += Get-Content $legacyPidFile | ForEach-Object {
+        $name, $processId = $_ -split '='
+        [pscustomobject]@{ Name = $name; ProcessId = $processId; File = $null }
+    }
+}
+
+if ($entries.Count -eq 0) {
+    'Postloom is not running (no PID files).'
 } else {
-    'Postloom is not running (no PID file).'
+    foreach ($entry in $entries) {
+        taskkill /PID $entry.ProcessId /T /F *> $null
+        "Stopped $($entry.Name)"
+        if ($entry.File) { Remove-Item $entry.File -ErrorAction SilentlyContinue }
+    }
+    Remove-Item $legacyPidFile -ErrorAction SilentlyContinue
 }
 
 if ($WithMySql) {

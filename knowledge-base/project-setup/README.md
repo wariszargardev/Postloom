@@ -8,13 +8,17 @@ How Postloom runs locally: the stack, the database, the processes and the folder
 
 `start.ps1` starts:
 
-1. MySQL (shared portable server, port 3307) if it is not already running.
+1. MySQL (shared portable server, port 3307) if nothing answers on 3307. It may already run as the `MySQL-BRC` Windows service; `start.ps1` checks by connecting to the port, because the shared `start-mysql.ps1` can't always see a service's port and would try a second server (`ibdata1 must be writable` in `mysqld.err`).
 2. The web server on `http://localhost:8000` (the URL platform OAuth callbacks use): PHP's built-in server with `upload_max_filesize=512M` and `post_max_size=520M` for this project only (see `knowledge-base/media/README.md`).
 3. `php artisan schedule:work`: runs scheduled commands every minute (the publisher check arrives in piece 07).
 4. `php artisan queue:work`: runs queued jobs from the `jobs` table.
 5. `npm run dev` (Vite) for the Vue pages.
 
-Each process opens in its own PowerShell window so its output is visible. `stop.ps1` stops the PHP and Node processes started from this folder. It does not stop MySQL because other projects share it; pass `-WithMySql` to stop it too.
+With Windows Terminal (`wt.exe`) the four processes open as **tabs in one window** ("Postloom web", "scheduler", "queue", "vite"); without it, each opens its own PowerShell window. Each process runs from a generated script in `storage/app/postloom-run/<name>.ps1` that writes its own process id to `storage/app/postloom-pids/<name>.pid` (running a file keeps Windows Terminal from treating `;` as "next tab").
+
+`stop.ps1` stops each saved process with its child processes (`taskkill /T`), so the tabs or windows close, and deletes the pid files. It also understands the old single `postloom-pids.txt`. It does not stop MySQL because other projects share it; pass `-WithMySql` to stop it too.
+
+If `start.ps1` says "already running" but nothing is open (for example after a reboot), run `stop.ps1` once; it clears the stale pid files.
 
 ## Entry points
 
