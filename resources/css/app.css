@@ -169,4 +169,9 @@
     body {
         @apply bg-background text-foreground;
     }
+    /* Native dropdown lists use the browser's own colours; match the theme so options stay readable in dark mode. */
+    select option,
+    select optgroup {
+        @apply bg-background text-foreground;
+    }
 }
