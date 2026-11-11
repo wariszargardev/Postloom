@@ -6,6 +6,7 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import DeliveryPanel from '@/components/posts/DeliveryPanel.vue';
 import MediaPicker from '@/components/posts/MediaPicker.vue';
+import PlatformSettings from '@/components/posts/PlatformSettings.vue';
 import PostPreview from '@/components/posts/PostPreview.vue';
 import ScheduleTimePicker from '@/components/posts/ScheduleTimePicker.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +20,7 @@ import type {
     EditorAccount,
     EditorPost,
     LibraryMedia,
+    UploadSettings,
     TargetForm,
 } from '@/types/posts';
 
@@ -26,6 +28,7 @@ const props = defineProps<{
     post: EditorPost | null;
     accounts: EditorAccount[];
     library: LibraryMedia[];
+    upload: UploadSettings;
     defaultTimezone: string;
     timezones: string[];
     prefillScheduledAt?: string | null;
@@ -125,7 +128,9 @@ function toggleAccount(account: EditorAccount): void {
     const defaults = Object.fromEntries(
         Object.entries(account.rules?.settings ?? {}).map(([key, setting]) => [
             key,
-            setting.default,
+            key === 'title' && setting.default === ''
+                ? form.title
+                : setting.default,
         ]),
     );
 
@@ -386,6 +391,7 @@ const initials = (name: string): string =>
                 <MediaPicker
                     v-model="form.media_ids"
                     :library="library"
+                    :upload="upload"
                     :disabled="!isEditable"
                 />
             </section>
@@ -425,6 +431,13 @@ const initials = (name: string): string =>
                     </div>
                     <InputError
                         :message="form.errors[`targets.${account.id}`]"
+                    />
+                    <PlatformSettings
+                        v-if="account.rules && targetFor(account.id)"
+                        v-model:settings="targetFor(account.id)!.settings"
+                        :account="account"
+                        :library="library"
+                        :disabled="!isEditable"
                     />
 
                     <template
@@ -484,31 +497,6 @@ const initials = (name: string): string =>
                                     }}</template
                                 >
                             </span>
-                        </div>
-
-                        <div
-                            v-for="(setting, key) in account.rules?.settings ??
-                            {}"
-                            :key="key"
-                            class="flex flex-col gap-1"
-                        >
-                            <Label :for="`setting-${account.id}-${key}`">{{
-                                setting.label
-                            }}</Label>
-                            <select
-                                :id="`setting-${account.id}-${key}`"
-                                v-model="targetFor(account.id)!.settings[key]"
-                                class="h-9 rounded-md border bg-transparent px-3 text-sm"
-                                :disabled="!isEditable"
-                            >
-                                <option
-                                    v-for="(label, value) in setting.options"
-                                    :key="value"
-                                    :value="value"
-                                >
-                                    {{ label }}
-                                </option>
-                            </select>
                         </div>
                     </template>
                 </div>
@@ -636,7 +624,8 @@ const initials = (name: string): string =>
                 :account="account"
                 :text="textFor(account.id)"
                 :media="selectedMedia"
-                :visibility="targetFor(account.id)?.settings.visibility"
+                :settings="targetFor(account.id)?.settings ?? {}"
+                :library="library"
             />
         </aside>
     </div>

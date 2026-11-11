@@ -251,6 +251,10 @@ class PostController extends Controller
             ],
             'accounts' => $accounts,
             'library' => $library,
+            'upload' => [
+                'accept' => collect(MediaKind::allExtensions())->map(fn (string $extension): string => ".{$extension}")->implode(','),
+                'max_files' => (int) config('postloom.media.max_files_per_upload'),
+            ],
             'defaultTimezone' => config('postloom.timezone'),
             'timezones' => DateTimeZone::listIdentifiers(),
             'publishingEnabled' => PostDispatcher::isEnabled(),

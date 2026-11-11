@@ -31,6 +31,15 @@ interface PlatformPostRules
     public function mediaErrors(Collection $media): array;
 
     /**
+     * Checks that need the text, media and settings together (run after the settings rules pass).
+     *
+     * @param  Collection<int, Media>  $media
+     * @param  array<string, mixed>  $settings
+     * @return array<int, string>
+     */
+    public function targetErrors(string $text, Collection $media, array $settings): array;
+
+    /**
      * What the editor shows about this platform.
      *
      * @return array{max_text_length: int, media_rules: string, settings: array<string, mixed>}

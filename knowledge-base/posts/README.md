@@ -58,6 +58,8 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 
 **LinkedIn** (`LinkedInPostRules`): text up to 3,000 characters; up to 20 images, or 1 video, or 1 PDF, or 1 audio file (posted as a video in piece 08), with no mixing; visibility `PUBLIC` (Anyone) or `CONNECTIONS`.
 
+**YouTube** (`YouTubePostRules`, piece 11): exactly 1 video or 1 audio file (no images or PDFs; the thumbnail is a setting). Description = the text, up to 5,000 bytes. Settings: `title` (required, up to 100, no `<` `>`), `format` (`auto`/`short`/`long`), `privacy` (`public`/`unlisted`/`private`), `category` (YouTube id, default `22`), `tags` (comma separated, up to 500 characters counted YouTube's way), `thumbnail_media_id` (an image from the library), `made_for_kids`, `synthetic_media`, `notify_subscribers`. `targetErrors()` checks bytes, tags, a title that is just the tags (blocked), the thumbnail and Short limits (vertical or square, up to 3 minutes). The editor prefills the title with the internal name. Settings can carry a `help` line shown under the field (for example "Made for kids turns off comments and notifications").
+
 **Time:** the form sends local time + timezone; `PostService` converts it to UTC for `scheduled_at`, and the `Post::scheduledAt()` mutator also forces UTC on every write (see `knowledge-base/calendar/README.md`). The editor and list convert back with the post's own timezone.
 
 **In-use guards (approved 2026-11-10):**
@@ -65,7 +67,7 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 - Disconnecting an account with a scheduled or publishing post is blocked (`SocialAccountService::disconnectBlockReason()`). Used only in drafts: it's disconnected and removed from those drafts.
 - Deleting media used by a scheduled or publishing post is blocked (`MediaService::deletionBlockReason()`). Used only in drafts: it's deleted and removed from those drafts.
 
-**Adding a platform:** add a class implementing `PlatformPostRules`, return it from `PlatformRulesRegistry::forProvider()`. The editor (counter, media hint, settings fields, validation) picks it up from `describe()`.
+**Adding a platform:** add a class implementing `PlatformPostRules`, return it from `PlatformRulesRegistry::forProvider()`. The editor (counter, media hint, settings fields, validation) picks it up from `describe()`. Each setting has a `type` that `resources/js/components/posts/PlatformSettings.vue` renders: `select` (with `options`), `text` (`max_length`, `required`), `tags`, `boolean`, `image` (pick from the library). Settings are shown under each account in "Per account" (no need to open Customize). Checks that need text, media and settings together go in `targetErrors()`.
 
 ## Logging
 

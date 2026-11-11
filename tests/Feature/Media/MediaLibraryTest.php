@@ -57,6 +57,18 @@ it('uploads an image and reads its size', function () {
     Storage::disk('local')->assertExists($media->path);
 });
 
+it('returns to the page it came from with the uploaded ids, so the post editor keeps its state', function () {
+    $existing = UploadedFile::fake()->image('same.jpg', 10, 10);
+    uploadMedia([$existing])->assertRedirect();
+    $existingId = Media::query()->sole()->id;
+
+    $this->actingAs($this->user)
+        ->from(route('posts.create'))
+        ->post(route('media.store'), ['files' => [UploadedFile::fake()->image('new.png', 20, 20), $existing]])
+        ->assertRedirect(route('posts.create'))
+        ->assertSessionHas('inertia.flash_data.uploaded_media_ids', fn (array $ids) => count($ids) === 2 && $ids[1] === $existingId && $ids[0] !== $existingId);
+});
+
 it('uploads a video with its length, size and thumbnail', function () {
     uploadMedia([UploadedFile::fake()->create('clip.mp4', 2048, 'video/mp4')])->assertRedirect();
 

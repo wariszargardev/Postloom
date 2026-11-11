@@ -14,8 +14,8 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 07  | `feat/07-scheduler`             | Scheduler and publish queue              | Every-minute due check, one job per target, lock, retries, `publish_attempts`, catch-up for missed posts                     | merged    |
 | 08  | `feat/08-linkedin-publish`      | Publish to LinkedIn                      | Text, multi-image, video and document posts to the personal profile; audio converted to video                                | merged    |
 | 09  | `docs/09-platform-setup-guides` | Platform setup guides                    | Step-by-step LinkedIn app guide with screenshots and video; template and video builder for future platforms                  | merged    |
-| 10  | `feat/10-youtube-connect`       | Connect a YouTube channel                | Google OAuth with offline access, one account per channel, automatic token renewal, setup guide                              | in review |
-| 11  | `feat/11-youtube-publish`       | Publish to YouTube                       | Resumable video upload, title/privacy/made-for-kids settings, audio as video, quota-aware errors                             | planned   |
+| 10  | `feat/10-youtube-connect`       | Connect a YouTube channel                | Google OAuth with offline access, one account per channel, automatic token renewal, setup guide                              | merged    |
+| 11  | `feat/11-youtube-publish`       | Publish to YouTube                       | Resumable video upload, title/privacy/made-for-kids settings, audio as video, quota-aware errors                             | in review |
 
 ## Later
 

@@ -78,6 +78,8 @@ class PostValidator
             return "{$prefix} ".$settingsValidator->errors()->first();
         }
 
-        return null;
+        $targetErrors = $rules->targetErrors($target->contentFor($post), $post->media, $target->settings ?? []);
+
+        return $targetErrors === [] ? null : "{$prefix} {$targetErrors[0]}";
     }
 }

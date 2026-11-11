@@ -7,6 +7,7 @@ Each workspace has a library of images, videos, audio and PDFs. Files are upload
 ## Flow
 
 1. **Media page** (`/media`): drag files onto the drop zone or click "choose files". Up to 10 files per upload, with a progress bar.
+   The same upload also runs from the **post editor** ("Add media" / "Change media" popup, and "Upload image" next to a YouTube thumbnail): the same upload, sent with Inertia `preserveState` + `only: ['library']`, so an unsaved post keeps everything. `MediaController@store` returns `back()` and flashes `uploaded_media_ids` (new and duplicate files), which the editor selects automatically (`resources/js/composables/useMediaUpload.ts`).
 2. `StoreMediaRequest` checks each file: allowed extension, real content type matches the kind (`image/…`, `video/…`, `audio/…`, `application/pdf`), and size under that kind's limit.
 3. `MediaService::upload()` per file:
     1. Works out the kind from the extension (`MediaKind::fromExtension`).

@@ -69,6 +69,7 @@ class MediaController extends Controller
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
+        Inertia::flash('uploaded_media_ids', $results->map(fn (array $result): int => $result['media']->id)->values()->all());
 
         return back();
     }

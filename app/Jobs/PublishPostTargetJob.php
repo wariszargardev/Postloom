@@ -85,7 +85,7 @@ class PublishPostTargetJob implements ShouldBeUnique, ShouldQueue
                 'external_id' => $result->externalId,
                 'external_url' => $result->externalUrl,
                 'published_at' => now(),
-                'last_error' => null,
+                'last_error' => $result->notice,
             ]);
             $account->update(['last_used_at' => now()]);
 

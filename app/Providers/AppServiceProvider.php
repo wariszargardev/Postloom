@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\LinkedIn\LinkedInPublisher;
 use App\Services\Publishing\PublisherRegistry;
+use App\Services\YouTube\YouTubePublisher;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Date;
@@ -20,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(PublisherRegistry::class, fn (Application $app): PublisherRegistry => new PublisherRegistry([
             $app->make(LinkedInPublisher::class),
+            $app->make(YouTubePublisher::class),
         ]));
     }
 
