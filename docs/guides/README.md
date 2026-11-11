@@ -9,7 +9,7 @@ One folder per platform with a step-by-step guide, its screenshots and a short v
 | YouTube (channels)          | [youtube/README.md](youtube/README.md)   | [youtube-setup.mp4](youtube/youtube-setup.mp4)    | done (7 screenshots still to add) |
 | Facebook (Pages)            | [facebook/README.md](facebook/README.md) | [facebook-setup.mp4](facebook/facebook-setup.mp4) | done (screenshots to add)         |
 | Instagram                   | `instagram/`                             |                                                   | with `feat/instagram`             |
-| TikTok                      | `tiktok/`                                |                                                   | with `feat/tiktok`                |
+| TikTok                      | [tiktok/README.md](tiktok/README.md)     | [tiktok-setup.mp4](tiktok/tiktok-setup.mp4)       | done (screenshots to add)         |
 
 ## Folder layout
 

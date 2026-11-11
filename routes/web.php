@@ -7,6 +7,7 @@ use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
+use App\Http\Controllers\TikTokConnectController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\YouTubeConnectController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('accounts/facebook/redirect', [FacebookConnectController::class, 'redirect'])->name('accounts.facebook.redirect');
     Route::get('accounts/facebook/callback', [FacebookConnectController::class, 'callback'])->name('accounts.facebook.callback');
+
+    Route::get('accounts/tiktok/redirect', [TikTokConnectController::class, 'redirect'])->name('accounts.tiktok.redirect');
+    Route::get('accounts/tiktok/callback', [TikTokConnectController::class, 'callback'])->name('accounts.tiktok.callback');
 
     Route::get('media', [MediaController::class, 'index'])->name('media.index');
     Route::post('media', [MediaController::class, 'store'])->name('media.store');

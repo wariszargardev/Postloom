@@ -63,4 +63,17 @@ class SocialAccountFactory extends Factory
             'scopes' => ['openid', 'profile', 'email', 'https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
         ]);
     }
+
+    public function tikTok(): static
+    {
+        return $this->state(fn () => [
+            'provider' => SocialProvider::TikTok,
+            'account_type' => SocialAccountType::Profile,
+            'provider_account_id' => '-'.fake()->unique()->regexify('[A-Za-z0-9_-]{30}'),
+            'handle' => fake()->userName(),
+            'refresh_token' => fake()->sha256(),
+            'token_expires_at' => now()->addHours(2),
+            'scopes' => ['user.info.basic', 'user.info.profile', 'video.upload', 'video.publish'],
+        ]);
+    }
 }

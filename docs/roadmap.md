@@ -19,14 +19,15 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 12  | `feat/12-design-refresh`        | Design refresh                           | Build Real Code look: navy, green and amber tokens, Inter + JetBrains Mono, status colours, platform icons, dashboard counters | merged    |
 | 13  | `feat/13-facebook-connect`      | Connect Facebook Pages                   | Meta app in Development mode, every shared Page as its own account, non-expiring Page tokens, daily check, setup guide         | merged    |
 | 14  | `feat/14-facebook-publish`      | Publish to a Facebook Page               | Text/link, photos, multi-photo, video and Reels; Facebook settings and preview                                                 | merged    |
-| 15  | `feat/15-home-page`             | Home page                                | Postloom landing page in the design system: hero, sample post card, platforms, features                                        | in review |
+| 15  | `feat/15-home-page`             | Home page                                | Postloom landing page in the design system: hero, sample post card, platforms, features                                        | merged    |
+| 16  | `feat/16-tiktok-connect`        | Connect a TikTok account                 | Login Kit with state check, open_id per account, 2-hour tokens with rotating refresh tokens, daily refresh, setup guide        | in review |
+| 17  | `feat/17-tiktok-publish`        | Publish to TikTok                        | Direct post (private until audit) or send to inbox; chunked video upload, creator info, status polling, TikTok settings        | planned   |
 
 ## Later
 
-| Branch                | Title                                                        |
-| --------------------- | ------------------------------------------------------------ |
-| `feat/linkedin-pages` | LinkedIn company pages + guide `docs/guides/linkedin-pages/` |
-| `feat/csv-import`     | Import posts from CSV                                        |
-| `feat/instagram`      | Instagram (needs a public media link)                        |
-| `feat/tiktok`         | TikTok                                                       |
-| `feat/axiom-logging`  | Send logs to Axiom                                           |
+| Branch                | Title                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feat/linkedin-pages` | LinkedIn company pages + guide `docs/guides/linkedin-pages/`. Publishing stays the same (author `urn:li:organization:<id>` instead of the person); only connect changes: LinkedIn must approve the Community Management API (likely on its own app), scopes `w_organization_social`, `r_organization_social`, `rw_organization_admin`, and a page picker |
+| `feat/csv-import`     | Import posts from CSV                                                                                                                                                                                                                                                                                                                                    |
+| `feat/instagram`      | Instagram (needs a public media link)                                                                                                                                                                                                                                                                                                                    |
+| `feat/axiom-logging`  | Send logs to Axiom                                                                                                                                                                                                                                                                                                                                       |

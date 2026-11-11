@@ -66,4 +66,12 @@ return [
         'rupload_base_url' => env('FACEBOOK_RUPLOAD_BASE_URL', 'https://rupload.facebook.com/video-upload'),
     ],
 
+    'tiktok' => [
+        'client_key' => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+        'redirect' => env('TIKTOK_REDIRECT_URI', '/accounts/tiktok/callback'),
+        'authorize_url' => env('TIKTOK_AUTHORIZE_URL', 'https://www.tiktok.com/v2/auth/authorize/'),
+        'api_base_url' => env('TIKTOK_API_BASE_URL', 'https://open.tiktokapis.com/v2'),
+    ],
+
 ];

@@ -12,6 +12,7 @@ description: Start here for any work in the Postloom repo (personal social media
 
 ## Steps
 
+0. Work only in `D:\Afia Insurance\Projects\Personal\postloom` (no worktrees). Before a new piece, check the previous piece's PR is merged; if not, finish it first and wait for Waris to merge. See "Where to work" in `.claude/rules/git-workflow.md`.
 1. Read `CLAUDE.md` and `docs/roadmap.md` to find the piece, its branch name and title.
 2. Open the feature skill from the table below, then its KB doc.
 3. Plan the piece (files, approach, logging points, tests, KB/skill updates, risks) and wait for "approved".
@@ -34,5 +35,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | YouTube connect, token renewal       | `youtube`             | `knowledge-base/youtube/README.md`             |
 | Look and feel, tokens, components    | `design`              | `knowledge-base/design/README.md`              |
 | Facebook Pages connect, Graph errors | `facebook`            | `knowledge-base/facebook/README.md`            |
+| TikTok connect, token renewal        | `tiktok`              | `knowledge-base/tiktok/README.md`              |
 
 Add a row here whenever a piece adds a new skill.

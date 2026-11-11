@@ -7,6 +7,8 @@ use App\Enums\SocialProvider;
 use App\Models\SocialAccount;
 use App\Services\Facebook\FacebookConnectService;
 use App\Services\LogService;
+use App\Services\TikTok\TikTokTokenException;
+use App\Services\TikTok\TikTokTokenService;
 use App\Services\YouTube\YouTubeTokenException;
 use App\Services\YouTube\YouTubeTokenService;
 use Illuminate\Console\Attributes\Description;
@@ -14,10 +16,10 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('accounts:check-tokens')]
-#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, and test YouTube refresh tokens and Facebook Page tokens')]
+#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, refresh YouTube and TikTok tokens, and test Facebook Page tokens')]
 class CheckAccountTokens extends Command
 {
-    public function handle(YouTubeTokenService $youTubeTokenService, FacebookConnectService $facebookConnectService): int
+    public function handle(YouTubeTokenService $youTubeTokenService, FacebookConnectService $facebookConnectService, TikTokTokenService $tikTokTokenService): int
     {
         LogService::startFeatureLogging(LogFeature::Accounts, ['command' => 'accounts:check-tokens']);
         LogService::info('Checking social account tokens', []);
@@ -62,6 +64,24 @@ class CheckAccountTokens extends Command
                     }
 
                     LogService::warning('YouTube token check failed, will try again tomorrow', ['account_id' => $account->id], $exception);
+                }
+            });
+
+        SocialAccount::query()
+            ->where('provider', SocialProvider::TikTok)
+            ->where('needs_reconnect', false)
+            ->whereNotNull('refresh_token')
+            ->each(function (SocialAccount $account) use ($tikTokTokenService, &$expiredCount): void {
+                try {
+                    $tikTokTokenService->refresh($account);
+                } catch (TikTokTokenException $exception) {
+                    if ($account->needs_reconnect) {
+                        $expiredCount++;
+
+                        return;
+                    }
+
+                    LogService::warning('TikTok token check failed, will try again tomorrow', ['account_id' => $account->id], $exception);
                 }
             });
 

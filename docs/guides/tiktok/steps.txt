@@ -1,0 +1,12 @@
+# One slide per line: image file (in images/) | caption shown in the video.
+# A missing image becomes a text slide, so the video always builds. Add the screenshot later with the same name.
+01-connect-disabled-no-keys.png | 1. Before setup: TikTok Connect is disabled until the TikTok app keys are in .env
+02-https-postloom-test.png | 2. Run "herd secure postloom": TikTok connects only from https://postloom.test (daily use stays on localhost:8000)
+03-create-app.png | 3. developers.tiktok.com > Manage apps > Connect an app: Individual, name Postloom Scheduler, type Other
+04-sandbox.png | 4. Sandbox > Create Sandbox "Postloom local": icon, Business, description, Terms/Privacy URLs, Web + https://postloom.test
+05-products.png | 5. Add products: Login Kit and Content Posting API, turn on Direct Post
+06-scopes.png | 6. Scopes: user.info.basic, video.upload, video.publish + Add scopes user.info.profile
+07-redirect-url.png | 7. Login Kit > Web > Redirect URI https://postloom.test/accounts/tiktok/callback > Apply changes
+08-target-users.png | 8. Sandbox settings > Target Users > Add account: every TikTok account you will connect (up to 10)
+09-keys.png | 9. Sandbox Credentials: Client key and secret into .env yourself; config:clear and restart
+10-connected.png | 10. https://postloom.test/accounts > TikTok > Connect > Continue: Connected, token renews automatically
