@@ -43,12 +43,23 @@ $processes = [ordered]@{
     'vite'      = 'npm run dev'
 }
 
+# Windows Terminal starts tabs with its own environment, which may not include Herd's php or Node.
+# Each tab gets the PATH of the terminal that ran start.ps1, so php, npm and ffmpeg resolve the same way.
+foreach ($tool in 'php', 'npm') {
+    if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
+        "Can't find '$tool' on PATH. Open a terminal where '$tool --version' works and run ./start.ps1 there."
+        return
+    }
+}
+$pathForTabs = $env:Path -replace "'", "''"
+
 # One small script per process: it names the tab, saves its own process id for stop.ps1, then runs the command.
 # Running a file (instead of -Command) keeps Windows Terminal from reading ";" as "next tab".
 $scripts = [ordered]@{}
 foreach ($name in $processes.Keys) {
     $script = Join-Path $runDir "$name.ps1"
     @(
+        "`$env:Path = '$pathForTabs'"
         "`$host.UI.RawUI.WindowTitle = 'Postloom $name'"
         "Set-Location '$root'"
         "Set-Content -Path '$(Join-Path $pidDir "$name.pid")' -Value `$PID -Encoding ascii"

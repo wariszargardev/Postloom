@@ -57,6 +57,17 @@ const boxClass = computed(() =>
         >
             <path d="M8 5.5v13l11-6.5-11-6.5Z" />
         </svg>
+        <svg
+            v-else-if="provider === 'facebook'"
+            viewBox="0 0 24 24"
+            class="size-[75%]"
+            fill="currentColor"
+            aria-hidden="true"
+        >
+            <path
+                d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.87.25-1.46 1.5-1.46h1.6V4.46c-.28-.04-1.22-.12-2.33-.12-2.3 0-3.87 1.4-3.87 3.98v2.18H7.8v3h2.6V21h3.1Z"
+            />
+        </svg>
         <span v-else class="text-[0.55rem] leading-none font-bold">{{
             mark.letter
         }}</span>

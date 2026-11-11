@@ -56,4 +56,12 @@ return [
         'processing_poll_seconds' => (int) env('YOUTUBE_PROCESSING_POLL_SECONDS', 10),
     ],
 
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', '/accounts/facebook/callback'),
+        'graph_version' => env('FACEBOOK_GRAPH_VERSION', 'v27.0'),
+        'graph_base_url' => env('FACEBOOK_GRAPH_BASE_URL', 'https://graph.facebook.com'),
+    ],
+
 ];

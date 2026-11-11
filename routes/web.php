@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FacebookConnectController;
 use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
@@ -29,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('accounts/youtube/redirect', [YouTubeConnectController::class, 'redirect'])->name('accounts.youtube.redirect');
     Route::get('accounts/youtube/callback', [YouTubeConnectController::class, 'callback'])->name('accounts.youtube.callback');
+
+    Route::get('accounts/facebook/redirect', [FacebookConnectController::class, 'redirect'])->name('accounts.facebook.redirect');
+    Route::get('accounts/facebook/callback', [FacebookConnectController::class, 'callback'])->name('accounts.facebook.callback');
 
     Route::get('media', [MediaController::class, 'index'])->name('media.index');
     Route::post('media', [MediaController::class, 'store'])->name('media.store');

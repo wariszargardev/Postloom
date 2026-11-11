@@ -67,7 +67,7 @@ const accountGroups = computed(() =>
 
 function formatDate(value: string | null): string {
     return value === null
-        ? 'No expiry date'
+        ? "doesn't expire"
         : new Date(value).toLocaleDateString();
 }
 

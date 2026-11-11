@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\LogFeature;
 use App\Enums\SocialProvider;
 use App\Models\SocialAccount;
+use App\Services\Facebook\FacebookConnectService;
 use App\Services\LogService;
 use App\Services\YouTube\YouTubeTokenException;
 use App\Services\YouTube\YouTubeTokenService;
@@ -13,10 +14,10 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('accounts:check-tokens')]
-#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, and test the refresh tokens of YouTube channels')]
+#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, and test YouTube refresh tokens and Facebook Page tokens')]
 class CheckAccountTokens extends Command
 {
-    public function handle(YouTubeTokenService $youTubeTokenService): int
+    public function handle(YouTubeTokenService $youTubeTokenService, FacebookConnectService $facebookConnectService): int
     {
         LogService::startFeatureLogging(LogFeature::Accounts, ['command' => 'accounts:check-tokens']);
         LogService::info('Checking social account tokens', []);
@@ -61,6 +62,15 @@ class CheckAccountTokens extends Command
                     }
 
                     LogService::warning('YouTube token check failed, will try again tomorrow', ['account_id' => $account->id], $exception);
+                }
+            });
+
+        SocialAccount::query()
+            ->where('provider', SocialProvider::Facebook)
+            ->where('needs_reconnect', false)
+            ->each(function (SocialAccount $account) use ($facebookConnectService, &$expiredCount): void {
+                if (! $facebookConnectService->checkPageToken($account)) {
+                    $expiredCount++;
                 }
             });
 

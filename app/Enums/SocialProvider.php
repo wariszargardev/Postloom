@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Services\Facebook\FacebookConnectService;
 use App\Services\LinkedIn\LinkedInConnectService;
 use App\Services\YouTube\YouTubeConnectService;
 
@@ -31,6 +32,7 @@ enum SocialProvider: string
         return match ($this) {
             self::LinkedIn => LinkedInConnectService::isConfigured(),
             self::YouTube => YouTubeConnectService::isConfigured(),
+            self::Facebook => FacebookConnectService::isConfigured(),
             default => false,
         };
     }
@@ -44,6 +46,9 @@ enum SocialProvider: string
             self::YouTube => $this->isAvailable()
                 ? 'Channel'
                 : 'Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env',
+            self::Facebook => $this->isAvailable()
+                ? 'Pages you manage'
+                : 'Add FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET to .env',
             default => 'Coming later',
         };
     }
@@ -53,6 +58,7 @@ enum SocialProvider: string
         return match ($this) {
             self::LinkedIn => 'accounts.linkedin.redirect',
             self::YouTube => 'accounts.youtube.redirect',
+            self::Facebook => 'accounts.facebook.redirect',
             default => null,
         };
     }
