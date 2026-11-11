@@ -18,7 +18,8 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 11  | `feat/11-youtube-publish`       | Publish to YouTube                       | Resumable video upload, title/privacy/made-for-kids settings, audio as video, quota-aware errors                               | merged    |
 | 12  | `feat/12-design-refresh`        | Design refresh                           | Build Real Code look: navy, green and amber tokens, Inter + JetBrains Mono, status colours, platform icons, dashboard counters | merged    |
 | 13  | `feat/13-facebook-connect`      | Connect Facebook Pages                   | Meta app in Development mode, every shared Page as its own account, non-expiring Page tokens, daily check, setup guide         | in review |
-| 14  | `feat/14-facebook-publish`      | Publish to a Facebook Page               | Text/link, photos, multi-photo, video and Reels; Facebook settings and preview                                                 | planned   |
+| 14  | `feat/14-facebook-publish`      | Publish to a Facebook Page               | Text/link, photos, multi-photo, video and Reels; Facebook settings and preview                                                 | in review |
+| 15  | `feat/15-home-page`             | Home page                                | Postloom landing page in the design system: hero, sample post card, platforms, features                                        | in review |
 
 ## Later
 

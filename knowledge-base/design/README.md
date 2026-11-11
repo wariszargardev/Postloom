@@ -52,6 +52,7 @@ Logo files: `docs/brand/postloom-logo-green.svg` / `.png`, `public/favicon.svg|i
 
 ## Pages
 
+- **Home** (`/`, `Welcome.vue`): top bar with logo and Log in / Open dashboard (Register only while sign-up is open), hero "Write once, post everywhere." with a sample post card, platforms row (Live / Soon), 4 feature cards, footer. No outside fonts or Laravel artwork.
 - **Sidebar:** logo + tagline, workspace switcher, "Menu" items; the active item is green with a green left bar.
 - **Header:** sticky, blurred background.
 - **Dashboard** (`DashboardController`): 4 counters (scheduled in the next 7 days, published or partly published in the last 30 days, failed + partly published, accounts needing attention), each linking to the matching list, and "Up next" (next 5 scheduled or publishing posts, from an hour ago on).
