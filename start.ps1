@@ -58,16 +58,18 @@ foreach ($name in $processes.Keys) {
 }
 
 $terminal = Get-Command wt.exe -ErrorAction SilentlyContinue
+# Full path: Windows Terminal resolves programs with its own PATH, which may not include Windows PowerShell.
+$powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 
 if ($terminal) {
     $tabs = foreach ($name in $scripts.Keys) {
-        "new-tab --title `"Postloom $name`" --suppressApplicationTitle -d `"$root`" powershell -NoExit -ExecutionPolicy Bypass -File `"$($scripts[$name])`""
+        "new-tab --title `"Postloom $name`" --suppressApplicationTitle -d `"$root`" `"$powershell`" -NoExit -ExecutionPolicy Bypass -File `"$($scripts[$name])`""
     }
     Start-Process $terminal.Source -ArgumentList ('-w new ' + ($tabs -join ' ; '))
     $layout = 'one Windows Terminal window, one tab each'
 } else {
     foreach ($name in $scripts.Keys) {
-        Start-Process powershell -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$($scripts[$name])`""
+        Start-Process $powershell -ArgumentList '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$($scripts[$name])`""
     }
     $layout = 'their own windows (install Windows Terminal to get tabs)'
 }
