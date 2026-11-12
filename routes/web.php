@@ -6,6 +6,7 @@ use App\Http\Controllers\FacebookConnectController;
 use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostImportController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\TikTokConnectController;
 use App\Http\Controllers\ToPostController;
@@ -48,6 +49,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
+    Route::get('posts/import', [PostImportController::class, 'create'])->name('posts.import.create');
+    Route::get('posts/import/template', [PostImportController::class, 'template'])->name('posts.import.template');
+    Route::post('posts/import/preview', [PostImportController::class, 'preview'])->name('posts.import.preview');
+    Route::post('posts/import', [PostImportController::class, 'store'])->name('posts.import.store');
     Route::post('posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::put('posts/{post}', [PostController::class, 'update'])->name('posts.update');

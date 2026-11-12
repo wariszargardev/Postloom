@@ -17,3 +17,4 @@ One folder per feature. Each `README.md` follows the sections in `.claude/rules/
 | Design system                  | [design](design/README.md)                           | `design`              | 12    |
 | Facebook                       | [facebook](facebook/README.md)                       | `facebook`            | 13    |
 | TikTok                         | [tiktok](tiktok/README.md)                           | `tiktok`              | 16    |
+| CSV import                     | [csv-import](csv-import/README.md)                   | `csv-import`          | 18    |

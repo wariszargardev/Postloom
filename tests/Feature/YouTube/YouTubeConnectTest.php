@@ -205,7 +205,7 @@ it('shows the YouTube connect link and an auto-renewing token on the accounts pa
 it('logs the whole connection under one youtube trace id', function () {
     fakeGoogleCallback(fakeGoogleUser());
     fakeChannel();
-    $logFile = storage_path('logs/postloom-'.now()->format('Y-m-d').'.log');
+    $logFile = storage_path('logs/testing/postloom-'.now()->format('Y-m-d').'.log');
     $linesBefore = is_file($logFile) ? count(file($logFile)) : 0;
 
     $this->actingAs($this->user)->get(route('accounts.youtube.callback', ['code' => 'abc']));

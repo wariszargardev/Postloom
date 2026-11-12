@@ -99,4 +99,5 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 
 - The media picker shows the latest 200 files; there is no search yet.
 - Publish now and Retry failed accounts are covered in `knowledge-base/scheduler/README.md`.
+- Many posts at once from a CSV (**Import CSV** on the Posts page, piece 18) are covered in `knowledge-base/csv-import/README.md`. Every row goes through `PostService::save()` and `PostValidator`, so the rules here apply to imported posts too.
 - The LinkedIn preview is close to LinkedIn's layout, not pixel-perfect. "see more" is cut at 210 characters.

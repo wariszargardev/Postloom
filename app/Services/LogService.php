@@ -18,9 +18,9 @@ class LogService
      *
      * @param  array<string, mixed>  $context
      */
-    public static function startFeatureLogging(LogFeature $feature, array $context = []): string
+    public static function startFeatureLogging(LogFeature $feature, array $context = [], ?string $traceId = null): string
     {
-        $traceId = (string) Str::uuid();
+        $traceId ??= (string) Str::uuid();
 
         Context::flush();
         Context::add([

@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Clock, Copy, FileText, Image, Plus, Trash2 } from '@lucide/vue';
+import {
+    Clock,
+    Copy,
+    FileText,
+    Image,
+    Plus,
+    Trash2,
+    Upload,
+} from '@lucide/vue';
 import PostController from '@/actions/App/Http/Controllers/PostController';
+import { create as importPosts } from '@/actions/App/Http/Controllers/PostImportController';
 import Heading from '@/components/Heading.vue';
 import PlatformIcon from '@/components/PlatformIcon.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
@@ -86,11 +95,18 @@ function destroy(post: PostRow): void {
                 title="Posts"
                 description="Drafts, scheduled and published posts in this workspace."
             />
-            <Button as-child>
-                <Link :href="createPost()" data-test="new-post"
-                    ><Plus class="size-4" /> New post</Link
-                >
-            </Button>
+            <div class="flex flex-wrap gap-2">
+                <Button variant="outline" as-child>
+                    <Link :href="importPosts()" data-test="import-csv"
+                        ><Upload class="size-4" /> Import CSV</Link
+                    >
+                </Button>
+                <Button as-child>
+                    <Link :href="createPost()" data-test="new-post"
+                        ><Plus class="size-4" /> New post</Link
+                    >
+                </Button>
+            </div>
         </div>
 
         <nav class="flex flex-wrap gap-2" aria-label="Filter by status">
