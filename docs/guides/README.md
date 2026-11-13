@@ -2,14 +2,14 @@
 
 One folder per platform with a step-by-step guide, its screenshots and a short video built from them. Read the guide before connecting a platform for the first time.
 
-| Platform                    | Guide                                    | Video                                             | Status                            |
-| --------------------------- | ---------------------------------------- | ------------------------------------------------- | --------------------------------- |
-| LinkedIn (personal profile) | [linkedin/README.md](linkedin/README.md) | [linkedin-setup.mp4](linkedin/linkedin-setup.mp4) | done (6 screenshots still to add) |
-| LinkedIn Company Page       | `linkedin-pages/`                        |                                                   | with `feat/linkedin-pages`        |
-| YouTube (channels)          | [youtube/README.md](youtube/README.md)   | [youtube-setup.mp4](youtube/youtube-setup.mp4)    | done (7 screenshots still to add) |
-| Facebook (Pages)            | [facebook/README.md](facebook/README.md) | [facebook-setup.mp4](facebook/facebook-setup.mp4) | done (screenshots to add)         |
-| Instagram                   | `instagram/`                             |                                                   | with `feat/instagram`             |
-| TikTok                      | [tiktok/README.md](tiktok/README.md)     | [tiktok-setup.mp4](tiktok/tiktok-setup.mp4)       | done (screenshots to add)         |
+| Platform                    | Guide                                      | Video                                                | Status                            |
+| --------------------------- | ------------------------------------------ | ---------------------------------------------------- | --------------------------------- |
+| LinkedIn (personal profile) | [linkedin/README.md](linkedin/README.md)   | [linkedin-setup.mp4](linkedin/linkedin-setup.mp4)    | done (6 screenshots still to add) |
+| LinkedIn Company Page       | `linkedin-pages/`                          |                                                      | with `feat/linkedin-pages`        |
+| YouTube (channels)          | [youtube/README.md](youtube/README.md)     | [youtube-setup.mp4](youtube/youtube-setup.mp4)       | done (7 screenshots still to add) |
+| Facebook (Pages)            | [facebook/README.md](facebook/README.md)   | [facebook-setup.mp4](facebook/facebook-setup.mp4)    | done (screenshots to add)         |
+| Instagram (professional)    | [instagram/README.md](instagram/README.md) | [instagram-setup.mp4](instagram/instagram-setup.mp4) | done (screenshots to add)         |
+| TikTok                      | [tiktok/README.md](tiktok/README.md)       | [tiktok-setup.mp4](tiktok/tiktok-setup.mp4)          | done (screenshots to add)         |
 
 ## Folder layout
 

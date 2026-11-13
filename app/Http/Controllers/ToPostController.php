@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\LogFeature;
+use App\Enums\MediaKind;
 use App\Enums\PostTargetStatus;
 use App\Http\Requests\Posts\MarkPostedRequest;
+use App\Models\Media;
 use App\Models\PostTarget;
 use App\Services\LogService;
 use App\Services\Publishing\ManualHandoffService;
@@ -19,8 +21,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ToPostController extends Controller
 {
-    public const TIKTOK_UPLOAD_URL = 'https://www.tiktok.com/tiktokstudio/upload';
-
     public function __construct(
         private ManualHandoffService $handoffs,
         private WorkspaceService $workspaceService,
@@ -31,48 +31,55 @@ class ToPostController extends Controller
         $workspace = $this->workspaceService->ensureCurrent($request->user());
 
         $items = $this->handoffs->waiting($workspace)->map(function (PostTarget $target): array {
-            $video = $this->handoffs->video($target);
+            $account = $target->socialAccount;
+            $destination = $this->handoffs->destination($account->provider);
 
             return [
                 'id' => $target->id,
                 'post_id' => $target->post_id,
                 'account' => [
-                    'name' => $target->socialAccount->name,
-                    'handle' => $target->socialAccount->handle,
-                    'provider' => $target->socialAccount->provider->value,
-                    'provider_label' => $target->socialAccount->provider->label(),
-                    'avatar_url' => $target->socialAccount->avatar_url,
+                    'name' => $account->name,
+                    'handle' => $account->handle,
+                    'provider' => $account->provider->value,
+                    'provider_label' => $account->provider->label(),
+                    'avatar_url' => $account->avatar_url,
                 ],
                 'caption' => $target->contentFor($target->post),
                 'scheduled_at' => $target->post->scheduled_at?->toIso8601String(),
                 'timezone' => $target->post->timezone,
-                'video' => $video === null ? null : [
-                    'name' => $video->original_name,
-                    'size_bytes' => $video->size_bytes,
-                    'thumbnail_url' => $video->thumbnail_path === null ? null : route('media.thumbnail', $video),
-                    'download_url' => route('to-post.video', $target),
+                'notice' => $target->last_error,
+                'destination' => [
+                    'label' => $destination['label'],
+                    'url' => $destination['url'],
+                    'link_example' => $destination['link_example'],
                 ],
+                'files' => $this->handoffs->files($target)->map(fn (Media $media): array => [
+                    'id' => $media->id,
+                    'kind' => $media->kind->value,
+                    'name' => $media->original_name,
+                    'size_bytes' => $media->size_bytes,
+                    'thumbnail_url' => $media->thumbnail_path !== null || $media->kind === MediaKind::Image ? route('media.thumbnail', $media) : null,
+                    'download_url' => route('to-post.media', [$target, $media]),
+                ])->all(),
             ];
         })->values();
 
         return Inertia::render('to-post/Index', [
             'items' => $items,
-            'uploadUrl' => self::TIKTOK_UPLOAD_URL,
         ]);
     }
 
-    public function video(PostTarget $postTarget): StreamedResponse
+    public function media(PostTarget $postTarget, Media $media): StreamedResponse
     {
         Gate::authorize('view', $postTarget->post);
 
-        $video = $this->handoffs->video($postTarget);
-        abort_if($video === null, 404);
+        abort_unless($this->handoffs->files($postTarget)->contains(fn (Media $file): bool => $file->is($media)), 404);
 
         LogService::startFeatureLogging(LogFeature::Publishing, ['post_id' => $postTarget->post_id, 'target_id' => $postTarget->id]);
-        LogService::info('Hand-off video downloaded', ['media_id' => $video->id]);
+        LogService::info('Hand-off file downloaded', ['media_id' => $media->id, 'kind' => $media->kind->value]);
 
-        return Storage::disk($video->disk)->download($video->path, $this->handoffs->downloadName($postTarget, $video), [
-            'Content-Type' => $video->mime_type,
+        return Storage::disk($media->disk)->download($media->path, $this->handoffs->downloadName($postTarget, $media), [
+            'Content-Type' => $media->mime_type,
         ]);
     }
 

@@ -1,0 +1,11 @@
+# One slide per line: image file (in images/) | caption shown in the video.
+# A missing image becomes a text slide, so the video always builds. Add the screenshot later with the same name.
+01-professional-account.png | 1. Instagram app > Account type and tools: switch to a Creator or Business account
+02-link-page.png | 2. Link the Instagram account to a Facebook Page you manage
+03-instagram-permissions.png | 3. Meta app > Use cases: add instagram_basic and instagram_content_publish (same app as Facebook)
+04-redirect-url.png | 4. Facebook Login > Settings: add localhost:8000/accounts/instagram/callback
+05-development-mode.png | 5. Keep Development mode: your own accounts need no App Review
+06-accounts-connect-ready.png | 6. php artisan config:clear, stop.ps1 + start.ps1: Instagram Connect is active
+07-choose-accounts.png | 7. Connect: tick the Pages and their Instagram accounts, keep every permission on
+08-tunnel-tab.png | 8. The Postloom tunnel tab gives Instagram a public link to photos; videos upload directly
+09-first-post.png | 9. New post: choose Post, Reel or Story and schedule it

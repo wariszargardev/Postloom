@@ -21,21 +21,22 @@ description: Start here for any work in the Postloom repo (personal social media
 
 ## Feature skills
 
-| Area                                 | Skill                 | KB                                             |
-| ------------------------------------ | --------------------- | ---------------------------------------------- |
-| Setup, processes, database           | `postloom` (this one) | `knowledge-base/project-setup/README.md`       |
-| Logging                              | `logging`             | `knowledge-base/logging/README.md`             |
-| Login, owner account                 | `auth`                | `knowledge-base/auth/README.md`                |
-| Workspaces, social accounts          | `workspaces-accounts` | `knowledge-base/workspaces-accounts/README.md` |
-| LinkedIn connect and posting         | `linkedin`            | `knowledge-base/linkedin/README.md`            |
-| Media library, uploads               | `media`               | `knowledge-base/media/README.md`               |
-| Posts, editor, platform rules        | `posts`               | `knowledge-base/posts/README.md`               |
-| Calendar, drag to reschedule         | `calendar`            | `knowledge-base/calendar/README.md`            |
-| Scheduler, publishing queue, retries | `scheduler`           | `knowledge-base/scheduler/README.md`           |
-| YouTube connect, token renewal       | `youtube`             | `knowledge-base/youtube/README.md`             |
-| Look and feel, tokens, components    | `design`              | `knowledge-base/design/README.md`              |
-| Facebook Pages connect, Graph errors | `facebook`            | `knowledge-base/facebook/README.md`            |
-| TikTok connect, tokens, publishing   | `tiktok`              | `knowledge-base/tiktok/README.md`              |
-| CSV import, daily content pack       | `csv-import`          | `knowledge-base/csv-import/README.md`          |
+| Area                                  | Skill                 | KB                                             |
+| ------------------------------------- | --------------------- | ---------------------------------------------- |
+| Setup, processes, database            | `postloom` (this one) | `knowledge-base/project-setup/README.md`       |
+| Logging                               | `logging`             | `knowledge-base/logging/README.md`             |
+| Login, owner account                  | `auth`                | `knowledge-base/auth/README.md`                |
+| Workspaces, social accounts           | `workspaces-accounts` | `knowledge-base/workspaces-accounts/README.md` |
+| LinkedIn connect and posting          | `linkedin`            | `knowledge-base/linkedin/README.md`            |
+| Media library, uploads                | `media`               | `knowledge-base/media/README.md`               |
+| Posts, editor, platform rules         | `posts`               | `knowledge-base/posts/README.md`               |
+| Calendar, drag to reschedule          | `calendar`            | `knowledge-base/calendar/README.md`            |
+| Scheduler, publishing queue, retries  | `scheduler`           | `knowledge-base/scheduler/README.md`           |
+| YouTube connect, token renewal        | `youtube`             | `knowledge-base/youtube/README.md`             |
+| Look and feel, tokens, components     | `design`              | `knowledge-base/design/README.md`              |
+| Facebook Pages connect, Graph errors  | `facebook`            | `knowledge-base/facebook/README.md`            |
+| TikTok connect, tokens, publishing    | `tiktok`              | `knowledge-base/tiktok/README.md`              |
+| CSV import, daily content pack        | `csv-import`          | `knowledge-base/csv-import/README.md`          |
+| Instagram connect, publishing, tunnel | `instagram`           | `knowledge-base/instagram/README.md`           |
 
 Add a row here whenever a piece adds a new skill.

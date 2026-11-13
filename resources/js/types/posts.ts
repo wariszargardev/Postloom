@@ -37,6 +37,7 @@ export type EditorAccount = {
     provider: string;
     provider_label: string;
     name: string;
+    handle?: string | null;
     avatar_url: string | null;
     status: 'connected' | 'expiring_soon' | 'reconnect_needed';
     rules: PlatformRules | null;

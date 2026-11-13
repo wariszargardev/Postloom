@@ -31,6 +31,8 @@ if ($entries.Count -eq 0) {
     Remove-Item $legacyPidFile -ErrorAction SilentlyContinue
 }
 
+Remove-Item (Join-Path $root 'storage\app\postloom-run\tunnel-url.txt') -ErrorAction SilentlyContinue
+
 if ($WithMySql) {
     & (Join-Path (Split-Path $root -Parent) '.mysql-brc\stop-mysql.ps1')
 }

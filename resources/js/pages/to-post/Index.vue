@@ -8,6 +8,15 @@ import PlatformIcon from '@/components/PlatformIcon.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+type HandoffFile = {
+    id: number;
+    kind: 'image' | 'video';
+    name: string;
+    size_bytes: number;
+    thumbnail_url: string | null;
+    download_url: string;
+};
+
 type HandoffItem = {
     id: number;
     post_id: number;
@@ -21,17 +30,17 @@ type HandoffItem = {
     caption: string;
     scheduled_at: string | null;
     timezone: string;
-    video: {
-        name: string;
-        size_bytes: number;
-        thumbnail_url: string | null;
-        download_url: string;
-    } | null;
+    notice: string | null;
+    destination: {
+        label: string;
+        url: string;
+        link_example: string;
+    };
+    files: HandoffFile[];
 };
 
 const props = defineProps<{
     items: HandoffItem[];
-    uploadUrl: string;
 }>();
 
 defineOptions({
@@ -74,6 +83,17 @@ function formatTime(item: HandoffItem): string {
 function formatSize(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+function downloadLabel(
+    item: HandoffItem,
+    file: HandoffFile,
+    index: number,
+): string {
+    const what = file.kind === 'image' ? 'photo' : 'video';
+    const number = item.files.length > 1 ? ` ${index + 1}` : '';
+
+    return `Download ${what}${number} (${formatSize(file.size_bytes)})`;
+}
 </script>
 
 <template>
@@ -84,7 +104,7 @@ function formatSize(bytes: number): string {
     >
         <Heading
             title="To post"
-            description="Posts you chose to upload yourself. Download the video, copy the caption, upload it in TikTok Studio, then mark it as posted."
+            description="Posts waiting for you to upload by hand. Download the files, copy the caption, post it on the platform, then mark it as posted."
         />
 
         <p
@@ -92,8 +112,8 @@ function formatSize(bytes: number): string {
             class="surface p-6 text-sm text-muted-foreground"
             data-test="to-post-empty"
         >
-            Nothing is waiting. When a TikTok post set to "I'll post it myself"
-            reaches its time, it shows up here.
+            Nothing is waiting. TikTok posts set to "I'll post it myself", and
+            Instagram photo posts made while the tunnel was off, show up here.
         </p>
 
         <article
@@ -102,20 +122,30 @@ function formatSize(bytes: number): string {
             class="surface flex flex-col gap-4 p-4 md:flex-row"
             :data-test="`to-post-${item.id}`"
         >
-            <div
-                class="relative aspect-[9/16] w-32 shrink-0 self-start overflow-hidden rounded-lg bg-black"
-            >
-                <img
-                    v-if="item.video?.thumbnail_url"
-                    :src="item.video.thumbnail_url"
-                    alt=""
-                    class="h-full w-full object-cover"
-                />
+            <div class="flex shrink-0 gap-2 self-start">
                 <div
-                    v-else
-                    class="flex h-full items-center justify-center text-white/60"
+                    v-for="file in item.files.slice(0, 3)"
+                    :key="file.id"
+                    class="relative w-24 overflow-hidden rounded-lg bg-black"
+                    :class="
+                        item.account.provider === 'tiktok' ||
+                        file.kind === 'video'
+                            ? 'aspect-[9/16]'
+                            : 'aspect-square'
+                    "
                 >
-                    <Video class="size-6" />
+                    <img
+                        v-if="file.thumbnail_url"
+                        :src="file.thumbnail_url"
+                        alt=""
+                        class="h-full w-full object-cover"
+                    />
+                    <div
+                        v-else
+                        class="flex h-full items-center justify-center text-white/60"
+                    >
+                        <Video class="size-6" />
+                    </div>
                 </div>
             </div>
 
@@ -134,20 +164,31 @@ function formatSize(bytes: number): string {
                 </div>
 
                 <p
+                    v-if="item.notice && item.account.provider !== 'tiktok'"
+                    class="text-xs text-muted-foreground"
+                >
+                    {{ item.notice }}
+                </p>
+
+                <p
                     class="max-h-32 overflow-y-auto rounded-md border bg-background/40 p-2 text-sm whitespace-pre-wrap"
                 >
                     {{ item.caption || '(no caption)' }}
                 </p>
 
                 <div class="flex flex-wrap gap-2">
-                    <Button v-if="item.video" as-child size="sm">
+                    <Button
+                        v-for="(file, index) in item.files"
+                        :key="file.id"
+                        as-child
+                        size="sm"
+                    >
                         <a
-                            :href="item.video.download_url"
-                            data-test="download-video"
+                            :href="file.download_url"
+                            :data-test="`download-${file.kind}`"
                         >
-                            <Download class="size-4" /> Download video ({{
-                                formatSize(item.video.size_bytes)
-                            }})
+                            <Download class="size-4" />
+                            {{ downloadLabel(item, file, index) }}
                         </a>
                     </Button>
                     <Button
@@ -161,9 +202,19 @@ function formatSize(bytes: number): string {
                         <Copy v-else class="size-4" />
                         {{ copiedId[item.id] ? 'Copied' : 'Copy caption' }}
                     </Button>
-                    <Button as-child size="sm" variant="outline">
-                        <a :href="uploadUrl" target="_blank" rel="noopener">
-                            <ExternalLink class="size-4" /> Open TikTok Studio
+                    <Button
+                        v-if="item.destination.url"
+                        as-child
+                        size="sm"
+                        variant="outline"
+                    >
+                        <a
+                            :href="item.destination.url"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <ExternalLink class="size-4" /> Open
+                            {{ item.destination.label }}
                         </a>
                     </Button>
                 </div>
@@ -176,7 +227,7 @@ function formatSize(bytes: number): string {
                         <Input
                             v-model="forms[item.id].url"
                             type="url"
-                            placeholder="Paste the TikTok link (optional)"
+                            :placeholder="`Paste the ${item.account.provider_label} link (optional)`"
                             :name="`url-${item.id}`"
                         />
                         <InputError :message="forms[item.id].errors.url" />

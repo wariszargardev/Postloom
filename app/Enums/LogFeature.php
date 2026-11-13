@@ -11,6 +11,7 @@ enum LogFeature: string
     case LinkedIn = 'linkedin';
     case YouTube = 'youtube';
     case Facebook = 'facebook';
+    case Instagram = 'instagram';
     case TikTok = 'tiktok';
     case Media = 'media';
     case Posts = 'posts';

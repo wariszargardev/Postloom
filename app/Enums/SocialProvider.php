@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Services\Facebook\FacebookConnectService;
+use App\Services\Instagram\InstagramConnectService;
 use App\Services\LinkedIn\LinkedInConnectService;
 use App\Services\TikTok\TikTokConnectService;
 use App\Services\YouTube\YouTubeConnectService;
@@ -34,6 +35,7 @@ enum SocialProvider: string
             self::LinkedIn => LinkedInConnectService::isConfigured(),
             self::YouTube => YouTubeConnectService::isConfigured(),
             self::Facebook => FacebookConnectService::isConfigured(),
+            self::Instagram => InstagramConnectService::isConfigured(),
             self::TikTok => TikTokConnectService::isConfigured(),
             default => false,
         };
@@ -51,6 +53,9 @@ enum SocialProvider: string
             self::Facebook => $this->isAvailable()
                 ? 'Pages you manage'
                 : 'Add FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET to .env',
+            self::Instagram => $this->isAvailable()
+                ? 'Professional accounts linked to your Pages'
+                : 'Add FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET to .env',
             self::TikTok => $this->isAvailable()
                 ? 'Profile (videos)'
                 : 'Add TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET to .env',
@@ -64,6 +69,7 @@ enum SocialProvider: string
             self::LinkedIn => 'accounts.linkedin.redirect',
             self::YouTube => 'accounts.youtube.redirect',
             self::Facebook => 'accounts.facebook.redirect',
+            self::Instagram => 'accounts.instagram.redirect',
             self::TikTok => 'accounts.tiktok.redirect',
             default => null,
         };

@@ -106,4 +106,4 @@ Facebook is faked with a mocked Socialite provider, `Http::fake()` and `Process:
 
 - Disconnect in Postloom doesn't remove the app from Facebook; do that at facebook.com → Settings → Business integrations.
 - Pages shared in one Connect all land in the current workspace; disconnect the ones you don't want there.
-- Instagram (which uses the same Meta app) comes later and needs a public media link.
+- Instagram uses the same Meta app (piece 19): `knowledge-base/instagram/README.md`.

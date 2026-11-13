@@ -13,8 +13,9 @@ How Postloom runs locally: the stack, the database, the processes and the folder
 3. `php artisan schedule:work`: runs scheduled commands every minute (the publisher check arrives in piece 07).
 4. `php artisan queue:work`: runs queued jobs from the `jobs` table.
 5. `npm run dev` (Vite) for the Vue pages.
+6. `cloudflared tunnel --url http://localhost:8000` (only if `cloudflared` is installed): a free Cloudflare quick tunnel so Instagram can fetch photos. Its address is saved to `storage/app/postloom-run/tunnel-url.txt` (`stop.ps1` deletes it); only signed media links answer through it (`knowledge-base/instagram/README.md`).
 
-With Windows Terminal (`wt.exe`) the four processes open as **tabs in one window** ("Postloom web", "scheduler", "queue", "vite"); without it, each opens its own PowerShell window. Each process runs from a generated script in `storage/app/postloom-run/<name>.ps1` that writes its own process id to `storage/app/postloom-pids/<name>.pid` (running a file keeps Windows Terminal from treating `;` as "next tab").
+With Windows Terminal (`wt.exe`) the processes open as **tabs in one window** ("Postloom web", "scheduler", "queue", "vite", "tunnel"); without it, each opens its own PowerShell window. Each process runs from a generated script in `storage/app/postloom-run/<name>.ps1` that writes its own process id to `storage/app/postloom-pids/<name>.pid` (running a file keeps Windows Terminal from treating `;` as "next tab").
 
 `stop.ps1` stops each saved process with its child processes (`taskkill /T`), so the tabs or windows close, and deletes the pid files. It also understands the old single `postloom-pids.txt`. It does not stop MySQL because other projects share it; pass `-WithMySql` to stop it too.
 

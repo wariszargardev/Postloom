@@ -3,10 +3,12 @@
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacebookConnectController;
+use App\Http\Controllers\InstagramConnectController;
 use App\Http\Controllers\LinkedInConnectController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostImportController;
+use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\TikTokConnectController;
 use App\Http\Controllers\ToPostController;
@@ -15,6 +17,8 @@ use App\Http\Controllers\YouTubeConnectController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
+
+Route::get('public-media/{media}', PublicMediaController::class)->middleware('signed:relative')->name('public-media.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -36,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('accounts/facebook/redirect', [FacebookConnectController::class, 'redirect'])->name('accounts.facebook.redirect');
     Route::get('accounts/facebook/callback', [FacebookConnectController::class, 'callback'])->name('accounts.facebook.callback');
+
+    Route::get('accounts/instagram/redirect', [InstagramConnectController::class, 'redirect'])->name('accounts.instagram.redirect');
+    Route::get('accounts/instagram/callback', [InstagramConnectController::class, 'callback'])->name('accounts.instagram.callback');
 
     Route::get('accounts/tiktok/redirect', [TikTokConnectController::class, 'redirect'])->name('accounts.tiktok.redirect');
     Route::get('accounts/tiktok/callback', [TikTokConnectController::class, 'callback'])->name('accounts.tiktok.callback');
@@ -62,7 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     Route::get('to-post', [ToPostController::class, 'index'])->name('to-post.index');
-    Route::get('to-post/{postTarget}/video', [ToPostController::class, 'video'])->name('to-post.video');
+    Route::get('to-post/{postTarget}/media/{media}', [ToPostController::class, 'media'])->name('to-post.media');
     Route::post('to-post/{postTarget}/posted', [ToPostController::class, 'posted'])->name('to-post.posted');
 
     Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');

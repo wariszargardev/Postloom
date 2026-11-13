@@ -68,6 +68,19 @@ const boxClass = computed(() =>
                 d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.87.25-1.46 1.5-1.46h1.6V4.46c-.28-.04-1.22-.12-2.33-.12-2.3 0-3.87 1.4-3.87 3.98v2.18H7.8v3h2.6V21h3.1Z"
             />
         </svg>
+        <svg
+            v-else-if="provider === 'instagram'"
+            viewBox="0 0 24 24"
+            class="size-[72%]"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+        >
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.3" cy="6.7" r="0.6" fill="currentColor" />
+        </svg>
         <span v-else class="text-[0.55rem] leading-none font-bold">{{
             mark.letter
         }}</span>
