@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { FileText, Globe, Music, Play, Users } from '@lucide/vue';
+import {
+    FileText,
+    Globe,
+    Heart,
+    MessageCircle,
+    Music,
+    Play,
+    Send,
+    Users,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { EditorAccount, LibraryMedia, SettingValue } from '@/types/posts';
 
 const SEE_MORE_AFTER = 210;
+const INSTAGRAM_MORE_AFTER = 125;
 
 const props = defineProps<{
     account: EditorAccount;
@@ -19,6 +29,23 @@ const isExpanded = ref(false);
 const visibility = computed(() => String(props.settings.visibility ?? ''));
 const isYouTube = computed(() => props.account.provider === 'youtube');
 const isTikTok = computed(() => props.account.provider === 'tiktok');
+const isInstagram = computed(() => props.account.provider === 'instagram');
+const instagramFormat = computed(() => String(props.settings.format ?? 'post'));
+const instagramIsVertical = computed(() =>
+    ['reel', 'story'].includes(instagramFormat.value),
+);
+const instagramHandle = computed(
+    () => props.account.handle ?? props.account.name,
+);
+const instagramCover = computed(() => props.media[0]?.thumbnail_url ?? null);
+const instagramCaptionLong = computed(
+    () => props.text.length > INSTAGRAM_MORE_AFTER,
+);
+const instagramCaption = computed(() =>
+    instagramCaptionLong.value && !isExpanded.value
+        ? `${props.text.slice(0, INSTAGRAM_MORE_AFTER).trimEnd()}…`
+        : props.text,
+);
 const tikTokBadge = computed(() => {
     if (props.settings.mode === 'inbox') {
         return 'Inbox draft';
@@ -123,6 +150,143 @@ const initials = computed(() =>
                 >
             </div>
         </div>
+    </article>
+    <article
+        v-else-if="isInstagram && instagramIsVertical"
+        class="relative mx-auto aspect-[9/16] w-full max-w-[220px] overflow-hidden rounded-xl border bg-black text-white"
+        :data-test="`preview-${account.id}`"
+    >
+        <img
+            v-if="instagramCover"
+            :src="instagramCover"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div
+            v-else
+            class="absolute inset-0 flex items-center justify-center text-xs text-white/70"
+        >
+            {{ media.length ? 'Media preview' : 'Add a photo or video' }}
+        </div>
+        <div
+            v-if="instagramFormat === 'story'"
+            class="absolute inset-x-2 top-2 h-0.5 rounded bg-white/80"
+        ></div>
+        <div
+            class="absolute top-4 left-2 flex items-center gap-2 text-xs font-semibold"
+        >
+            <Avatar class="size-6">
+                <AvatarImage
+                    v-if="account.avatar_url"
+                    :src="account.avatar_url"
+                    :alt="account.name"
+                />
+                <AvatarFallback class="text-[9px]">{{
+                    initials
+                }}</AvatarFallback>
+            </Avatar>
+            {{ instagramHandle }}
+        </div>
+        <span
+            class="absolute top-4 right-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold"
+            >{{ instagramFormat === 'story' ? 'Story' : 'Reel' }}</span
+        >
+        <div
+            v-if="media[0]?.kind === 'video'"
+            class="absolute inset-0 flex items-center justify-center"
+        >
+            <span
+                class="flex size-12 items-center justify-center rounded-full bg-black/50"
+            >
+                <Play class="size-5" />
+            </span>
+        </div>
+        <div
+            v-if="instagramFormat === 'reel'"
+            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3"
+        >
+            <p v-if="text" class="line-clamp-2 text-xs whitespace-pre-wrap">
+                {{ text }}
+            </p>
+            <p
+                v-if="settings.share_to_feed === false"
+                class="mt-1 text-[10px] text-white/70"
+            >
+                Reels tab only
+            </p>
+        </div>
+        <p
+            v-else-if="text"
+            class="absolute inset-x-0 bottom-0 p-3 text-[11px] text-white/70"
+        >
+            Stories don't show a caption
+        </p>
+    </article>
+    <article
+        v-else-if="isInstagram"
+        class="overflow-hidden rounded-xl border bg-card text-card-foreground"
+        :data-test="`preview-${account.id}`"
+    >
+        <header class="flex items-center gap-2 p-3">
+            <Avatar class="size-8">
+                <AvatarImage
+                    v-if="account.avatar_url"
+                    :src="account.avatar_url"
+                    :alt="account.name"
+                />
+                <AvatarFallback>{{ initials }}</AvatarFallback>
+            </Avatar>
+            <span class="text-sm font-semibold">{{ instagramHandle }}</span>
+        </header>
+        <div class="relative aspect-square bg-muted">
+            <img
+                v-if="instagramCover"
+                :src="instagramCover"
+                alt=""
+                class="h-full w-full object-cover"
+            />
+            <div
+                v-else
+                class="flex h-full items-center justify-center text-xs text-muted-foreground"
+            >
+                {{ media.length ? 'Media preview' : 'Add a photo' }}
+            </div>
+            <span
+                v-if="media.length > 1"
+                class="absolute top-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white"
+                >1/{{ media.length }}</span
+            >
+        </div>
+        <div
+            v-if="media.length > 1"
+            class="flex justify-center gap-1 pt-2"
+            data-test="carousel-dots"
+        >
+            <span
+                v-for="(item, index) in media.slice(0, 10)"
+                :key="item.id"
+                class="size-1.5 rounded-full"
+                :class="index === 0 ? 'bg-primary' : 'bg-muted-foreground/40'"
+            ></span>
+        </div>
+        <div class="flex gap-3 px-3 pt-2">
+            <Heart class="size-5" />
+            <MessageCircle class="size-5" />
+            <Send class="size-5" />
+        </div>
+        <div v-if="text" class="px-3 pt-1 pb-3 text-sm whitespace-pre-wrap">
+            <span class="font-semibold">{{ instagramHandle }}</span>
+            {{ instagramCaption }}
+            <button
+                v-if="instagramCaptionLong"
+                type="button"
+                class="text-muted-foreground hover:underline"
+                @click="isExpanded = !isExpanded"
+            >
+                {{ isExpanded ? 'less' : 'more' }}
+            </button>
+        </div>
+        <div v-else class="pb-3"></div>
     </article>
     <article
         v-else-if="isTikTok"

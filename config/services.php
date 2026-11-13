@@ -66,6 +66,17 @@ return [
         'rupload_base_url' => env('FACEBOOK_RUPLOAD_BASE_URL', 'https://rupload.facebook.com/video-upload'),
     ],
 
+    'instagram' => [
+        'redirect' => env('INSTAGRAM_REDIRECT_URI', '/accounts/instagram/callback'),
+        'rupload_base_url' => env('INSTAGRAM_RUPLOAD_BASE_URL', 'https://rupload.facebook.com/ig-api-upload'),
+        'video_upload' => env('INSTAGRAM_VIDEO_UPLOAD', 'resumable'),
+        'status_poll_seconds' => (int) env('INSTAGRAM_STATUS_POLL_SECONDS', 15),
+        'status_wait_seconds' => (int) env('INSTAGRAM_STATUS_WAIT_SECONDS', 300),
+        'public_base_url' => env('INSTAGRAM_PUBLIC_BASE_URL'),
+        'tunnel_url_file' => env('INSTAGRAM_TUNNEL_URL_FILE', storage_path('app/postloom-run/tunnel-url.txt')),
+        'public_link_minutes' => (int) env('INSTAGRAM_PUBLIC_LINK_MINUTES', 15),
+    ],
+
     'tiktok' => [
         'client_key' => env('TIKTOK_CLIENT_KEY'),
         'client_secret' => env('TIKTOK_CLIENT_SECRET'),

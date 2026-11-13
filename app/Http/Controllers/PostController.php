@@ -204,6 +204,7 @@ class PostController extends Controller
                 'provider' => $account->provider->value,
                 'provider_label' => $account->provider->label(),
                 'name' => $account->name,
+                'handle' => $account->handle,
                 'avatar_url' => $account->avatar_url,
                 'status' => $account->status()->value,
                 'rules' => $this->platformRulesRegistry->forProvider($account->provider)?->describe(),

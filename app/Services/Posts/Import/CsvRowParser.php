@@ -6,6 +6,7 @@ use App\Enums\SocialProvider;
 use App\Models\Media;
 use App\Models\SocialAccount;
 use App\Services\Posts\Rules\FacebookPostRules;
+use App\Services\Posts\Rules\InstagramPostRules;
 use App\Services\Posts\Rules\TikTokPostRules;
 use App\Services\Posts\Rules\YouTubePostRules;
 use DateTime;
@@ -49,6 +50,7 @@ class CsvRowParser
             'youtube_title' => [SocialProvider::YouTube, 'title', null],
             'youtube_privacy' => [SocialProvider::YouTube, 'privacy', array_keys(YouTubePostRules::PRIVACY_OPTIONS)],
             'facebook_format' => [SocialProvider::Facebook, 'format', array_keys(FacebookPostRules::FORMAT_OPTIONS)],
+            'instagram_format' => [SocialProvider::Instagram, 'format', array_keys(InstagramPostRules::FORMAT_OPTIONS)],
             'tiktok_mode' => [SocialProvider::TikTok, 'mode', array_keys(TikTokPostRules::MODE_OPTIONS)],
         ];
     }

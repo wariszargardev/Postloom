@@ -21,7 +21,7 @@ const platforms = [
     { provider: 'linkedin', label: 'LinkedIn', live: true },
     { provider: 'youtube', label: 'YouTube', live: true },
     { provider: 'facebook', label: 'Facebook', live: true },
-    { provider: 'instagram', label: 'Instagram', live: false },
+    { provider: 'instagram', label: 'Instagram', live: true },
     { provider: 'tiktok', label: 'TikTok', live: true },
     { provider: 'whatsapp', label: 'WhatsApp', live: false },
 ];

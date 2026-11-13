@@ -158,6 +158,19 @@ it('uses the youtube_title, youtube_privacy and tiktok_mode columns', function (
         ->and($settings[$this->tikTok->id]['mode'])->toBe('inbox');
 });
 
+it('uses the instagram_format column and matches Instagram by @handle', function () {
+    $instagram = SocialAccount::factory()->instagram()->for($this->workspace)->create(['name' => 'Build Real Code IG', 'handle' => 'brc.insta']);
+
+    importedSummary(importCsv([dailyPackRow(['accounts' => 'instagram:@brc.insta', 'instagram_format' => 'Reel'])]));
+
+    expect(Post::query()->sole()->targets->sole()->social_account_id)->toBe($instagram->id)
+        ->and(Post::query()->sole()->targets->sole()->settings['format'])->toBe('reel');
+
+    $rows = previewRows(importCsv([dailyPackRow(['accounts' => '@brc.insta', 'instagram_format' => 'carousel', 'time' => '19:00'])]));
+
+    expect($rows[0]['errors'][0])->toContain('Instagram format "carousel" is not known. Use post, reel, story.');
+});
+
 it('matches accounts by name, @handle and platform prefix', function () {
     $rows = previewRows(importCsv([
         dailyPackRow(['accounts' => 'Build Real Code', 'facebook_format' => '']),

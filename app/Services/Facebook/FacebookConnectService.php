@@ -130,7 +130,7 @@ class FacebookConnectService
             }
 
             $account->update(['needs_reconnect' => true]);
-            LogService::warning('Facebook Page login was revoked, marked for reconnect', ['account_id' => $account->id, 'subcode' => $exception->errorSubcode]);
+            LogService::warning('Facebook Page login was revoked, marked for reconnect', ['account_id' => $account->id, 'provider' => $account->provider->value, 'subcode' => $exception->errorSubcode]);
 
             return false;
         }

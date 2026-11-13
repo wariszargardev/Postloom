@@ -15,7 +15,7 @@ KB: `knowledge-base/tiktok/README.md`. Setup guide: `docs/guides/tiktok/README.m
 - `app/Console/Commands/CheckAccountTokens.php` (daily refresh)
 - `app/Enums/SocialProvider.php`, `config/services.php` (`tiktok`), `database/factories/SocialAccountFactory.php` (`tikTok()` state)
 - Publishing: `app/Services/TikTok/TikTokPublisher.php`, `TikTokUploader.php`, `TikTokApiClient.php`, `TikTokApiException.php`; `app/Services/Posts/Rules/TikTokPostRules.php`; TikTok card in `resources/js/components/posts/PostPreview.vue`
-- Manual hand-off (default mode): `app/Services/Publishing/ManualHandoffService.php`, `app/Http/Controllers/ToPostController.php`, `app/Http/Requests/Posts/MarkPostedRequest.php`, routes `to-post.*`, `resources/js/pages/to-post/Index.vue`, `ToPostBanner.vue`, sidebar badge (`postsWaitingForYou` shared prop), status `PostTargetStatus::ReadyToPost`
+- Manual hand-off (default mode): `app/Services/Publishing/ManualHandoffService.php`, `app/Http/Controllers/ToPostController.php`, `app/Http/Requests/Posts/MarkPostedRequest.php`, routes `to-post.*` (`to-post.media` download, shared with Instagram), `resources/js/pages/to-post/Index.vue`, `ToPostBanner.vue`, sidebar badge (`postsWaitingForYou` shared prop), status `PostTargetStatus::ReadyToPost`
 
 ## Debugging
 

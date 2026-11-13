@@ -16,7 +16,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('accounts:check-tokens')]
-#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, refresh YouTube and TikTok tokens, and test Facebook Page tokens')]
+#[Description('Mark social accounts with expired tokens as needing reconnect, warn about tokens that expire soon, refresh YouTube and TikTok tokens, and test Facebook Page tokens (also used by Instagram)')]
 class CheckAccountTokens extends Command
 {
     public function handle(YouTubeTokenService $youTubeTokenService, FacebookConnectService $facebookConnectService, TikTokTokenService $tikTokTokenService): int
@@ -86,7 +86,7 @@ class CheckAccountTokens extends Command
             });
 
         SocialAccount::query()
-            ->where('provider', SocialProvider::Facebook)
+            ->whereIn('provider', [SocialProvider::Facebook, SocialProvider::Instagram])
             ->where('needs_reconnect', false)
             ->each(function (SocialAccount $account) use ($facebookConnectService, &$expiredCount): void {
                 if (! $facebookConnectService->checkPageToken($account)) {

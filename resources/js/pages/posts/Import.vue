@@ -392,6 +392,7 @@ function formatWhen(row: PreviewRow): string {
                     <code>youtube_title</code> (defaults to <code>name</code>),
                     <code>youtube_privacy</code> (public, unlisted, private),
                     <code>facebook_format</code> (post, reel),
+                    <code>instagram_format</code> (post, reel, story),
                     <code>tiktok_mode</code> (manual, direct, inbox; default
                     manual: you post it yourself).
                 </li>

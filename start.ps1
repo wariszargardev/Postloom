@@ -1,5 +1,5 @@
-# Starts everything Postloom needs locally: MySQL, web server, scheduler, queue worker and Vite.
-# With Windows Terminal they open as four tabs in one window; without it, as four windows.
+# Starts everything Postloom needs locally: MySQL, web server, scheduler, queue worker, Vite and the Cloudflare tunnel.
+# With Windows Terminal they open as tabs in one window; without it, as separate windows.
 $root = $PSScriptRoot
 $pidDir = Join-Path $root 'storage\app\postloom-pids'
 $runDir = Join-Path $root 'storage\app\postloom-run'
@@ -41,6 +41,17 @@ $processes = [ordered]@{
     'scheduler' = 'php artisan schedule:work'
     'queue'     = 'php artisan queue:work --tries=1 --timeout=300'
     'vite'      = 'npm run dev'
+}
+
+# Instagram fetches photos from a public link. A free Cloudflare quick tunnel gives one; its address changes on
+# every start and is saved to tunnel-url.txt, which Postloom reads. Only the signed media route answers through it.
+$tunnelUrlFile = Join-Path $runDir 'tunnel-url.txt'
+Remove-Item $tunnelUrlFile -ErrorAction SilentlyContinue
+if (Get-Command cloudflared -ErrorAction SilentlyContinue) {
+    $processes['tunnel'] = ('cloudflared tunnel --no-autoupdate --url http://localhost:8000 2>&1 | ForEach-Object { $line = "$_"; $line; ' +
+        'if ($line -match ''https://[a-z0-9-]+\.trycloudflare\.com'') { Set-Content -Path ''FILE'' -Value $Matches[0] -Encoding ascii } }').Replace('FILE', $tunnelUrlFile)
+} else {
+    'cloudflared not found: Instagram photo posts will wait under To post. Install it to post photos automatically.'
 }
 
 # Windows Terminal starts tabs with its own environment, which may not include Herd's php or Node.
@@ -95,4 +106,4 @@ if ($running -lt $processes.Count) {
     "Only $running of $($processes.Count) processes reported in. Check the Postloom tabs for errors."
 }
 
-"Postloom is running on http://localhost:8000 (web, scheduler, queue and vite in $layout)."
+"Postloom is running on http://localhost:8000 ($($processes.Keys -join ', ') in $layout)."

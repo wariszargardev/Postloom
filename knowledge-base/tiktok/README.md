@@ -76,8 +76,8 @@ TikTok's audit can't lift these limits for Postloom: the Content Sharing Guideli
 ### Manual hand-off
 
 1. At the post time the job calls `TikTokPublisher`, which for `manual` returns `PublishResult(needsManualPost: true)` without any API call. The job sets the account to `ready_to_post` ("Ready for you"), no `published_at`; `PostStatusResolver` counts it as delivered.
-2. **To post** (`GET /to-post`, sidebar item with a count badge, plus a banner on every page) lists the workspace's `ready_to_post` accounts (`ManualHandoffService::waiting()`), oldest first: video thumbnail, account, due time, caption.
-3. Buttons: **Download video** (`GET /to-post/{postTarget}/video`, file named from the post title, e.g. `kela-kaala-kyun.mp4`), **Copy caption**, **Open TikTok Studio** (`https://www.tiktok.com/tiktokstudio/upload`).
+2. **To post** (`GET /to-post`, sidebar item with a count badge, plus a banner on every page) lists the workspace's `ready_to_post` accounts (`ManualHandoffService::waiting()`), oldest first: thumbnails, account, due time, caption. Instagram photo posts made while the tunnel was off land here too (piece 19); each platform's upload page and accepted link come from `ManualHandoffService::DESTINATIONS`.
+3. Buttons: **Download video** (`GET /to-post/{postTarget}/media/{media}`, file named from the post title, e.g. `kela-kaala-kyun.mp4`; several files get `-1`, `-2`), **Copy caption**, **Open TikTok Studio** (`https://www.tiktok.com/tiktokstudio/upload`).
 4. The owner uploads it in TikTok Studio on the PC (the phone can't open `localhost`), then **Mark as posted** (`POST /to-post/{postTarget}/posted`, optional TikTok link validated by `MarkPostedRequest`). The account becomes **Published** with that link (`ManualHandoffService::markPosted()`), and the post status is resolved again.
 5. Only the workspace owner can download or mark (`PostPolicy` view / update); an account that isn't waiting gives 409.
 

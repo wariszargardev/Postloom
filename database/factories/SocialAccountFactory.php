@@ -64,6 +64,19 @@ class SocialAccountFactory extends Factory
         ]);
     }
 
+    public function instagram(): static
+    {
+        return $this->state(fn () => [
+            'provider' => SocialProvider::Instagram,
+            'account_type' => SocialAccountType::Profile,
+            'provider_account_id' => '1784'.fake()->unique()->numerify('############'),
+            'handle' => fake()->userName(),
+            'refresh_token' => null,
+            'token_expires_at' => null,
+            'scopes' => ['instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement'],
+        ]);
+    }
+
     public function tikTok(): static
     {
         return $this->state(fn () => [

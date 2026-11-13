@@ -153,7 +153,7 @@ class CsvPostImporter
                 return "{$provider->value}:{$fallback}";
             }
 
-            return $provider === SocialProvider::TikTok && filled($account->handle)
+            return in_array($provider, [SocialProvider::TikTok, SocialProvider::Instagram], true) && filled($account->handle)
                 ? "{$provider->value}:@".ltrim((string) $account->handle, '@')
                 : "{$provider->value}:{$account->name}";
         };
@@ -169,15 +169,16 @@ class CsvPostImporter
                     $label(SocialProvider::YouTube, 'Your channel'),
                     $label(SocialProvider::Facebook, 'Your Page'),
                     $label(SocialProvider::TikTok, '@yourhandle'),
+                    $label(SocialProvider::Instagram, '@yourinstagram'),
                 ]),
                 'Day 1 video', "Caption for day 1.\nSame text goes to every account. #shorts", 'day-01.mp4',
-                'Day 1 video', 'public', 'reel', 'manual',
+                'Day 1 video', 'public', 'reel', 'reel', 'manual',
             ],
             [
                 $tomorrow->copy()->addDay()->format('Y-m-d'), '', '', 'draft',
                 $label(SocialProvider::LinkedIn, 'Your name'),
                 'Idea for later', 'A draft with no time yet.', '',
-                '', '', '', '',
+                '', '', '', '', '',
             ],
         ];
 
