@@ -72,7 +72,7 @@ it('redirects to Facebook with the Instagram permissions and the Instagram callb
     $location = urldecode($this->actingAs($this->user)->get(route('accounts.instagram.redirect'))->headers->get('Location'));
 
     expect($location)->toStartWith('https://www.facebook.com/v27.0/dialog/oauth')
-        ->and($location)->toContain('scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement')
+        ->and($location)->toContain('scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,business_management')
         ->and($location)->toContain('redirect_uri=http://localhost:8000/accounts/instagram/callback')
         ->and($location)->not->toContain('email');
     expect(session(InstagramConnectController::SESSION_WORKSPACE_KEY))->toBe($this->workspace->id);

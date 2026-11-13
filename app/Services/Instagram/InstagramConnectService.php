@@ -26,7 +26,7 @@ class InstagramConnectService
     /**
      * @var array<int, string>
      */
-    public const SCOPES = ['instagram_basic', self::PUBLISH_SCOPE, 'pages_show_list', 'pages_read_engagement'];
+    public const SCOPES = ['instagram_basic', self::PUBLISH_SCOPE, 'pages_show_list', 'pages_read_engagement', 'business_management'];
 
     public function __construct(
         private SocialAccountService $socialAccountService,

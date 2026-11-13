@@ -35,7 +35,9 @@ Facebook → your Page → **Settings → Linked accounts → Instagram → Conn
 - `instagram_basic`
 - `instagram_content_publish`
 
-`pages_show_list` and `pages_read_engagement` are already there from the Facebook setup. If Meta also shows `business_management` as required for your Page, add it too.
+- `business_management` (linking Instagram puts the Page in your business portfolio; without this permission Facebook hides that Page from Postloom)
+
+`pages_show_list` and `pages_read_engagement` are already there from the Facebook setup.
 
 ![Instagram permissions](images/03-instagram-permissions.png)
 

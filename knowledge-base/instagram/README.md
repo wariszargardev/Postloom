@@ -31,7 +31,7 @@ Meta: media "must be hosted on a publicly accessible server at the time of the a
 
 ### Connect
 
-1. **Accounts → Instagram → Connect** opens `GET /accounts/instagram/redirect`. The workspace id goes into the session (`instagram_connect_workspace_id`). Socialite's `facebook` driver (same App ID, redirect `INSTAGRAM_REDIRECT_URI`) asks for `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement`.
+1. **Accounts → Instagram → Connect** opens `GET /accounts/instagram/redirect`. The workspace id goes into the session (`instagram_connect_workspace_id`). Socialite's `facebook` driver (same App ID, redirect `INSTAGRAM_REDIRECT_URI`) asks for `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement`, `business_management`. `business_management` is needed because linking Instagram to a Page puts the Page in a business portfolio, and `me/accounts` leaves out portfolio Pages without it (seen 2026-11-13: Build Real Code missing until added).
 2. `GET /accounts/instagram/callback`: the state is checked, the code is swapped, then `FacebookGraphClient`:
     - `GET /oauth/access_token?grant_type=fb_exchange_token…` → long-lived user token.
     - `GET /me/permissions` → refused without `instagram_content_publish`.
