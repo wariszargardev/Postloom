@@ -133,7 +133,7 @@ it('explains what to do when no Page has an Instagram professional account', fun
 
     $this->actingAs($this->user)
         ->get(route('accounts.instagram.callback', ['code' => 'abc']))
-        ->assertSessionHas('inertia.flash_data.toast.message', fn (string $message) => str_contains($message, 'No Instagram professional account was found'));
+        ->assertSessionHas('inertia.flash_data.toast.message', fn (string $message) => str_contains($message, 'Edit previous settings'));
 
     expect(SocialAccount::query()->count())->toBe(0);
 });

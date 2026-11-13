@@ -76,10 +76,21 @@ class InstagramConnectService
             throw InstagramConnectException::publishingPermissionMissing();
         }
 
-        $pages = $this->graph->get('me/accounts', [
+        $sharedPages = $this->graph->get('me/accounts', [
             'fields' => 'id,name,access_token,instagram_business_account{id,username,name,profile_picture_url}',
             'limit' => 100,
-        ], $userToken, 'list your Pages and Instagram accounts')->collect('data')
+        ], $userToken, 'list your Pages and Instagram accounts')->collect('data');
+
+        LogService::info('Facebook returned Pages for Instagram', [
+            'page_count' => $sharedPages->count(),
+            'pages' => $sharedPages->map(fn (array $page): array => [
+                'page_id' => $page['id'] ?? null,
+                'name' => $page['name'] ?? null,
+                'instagram_id' => $page['instagram_business_account']['id'] ?? null,
+            ])->values()->all(),
+        ]);
+
+        $pages = $sharedPages
             ->filter(fn (array $page): bool => filled($page['access_token'] ?? null)
                 && filled($page['instagram_business_account']['id'] ?? null))
             ->unique(fn (array $page): string => (string) $page['instagram_business_account']['id'])

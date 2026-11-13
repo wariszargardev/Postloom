@@ -13,6 +13,6 @@ class InstagramConnectException extends RuntimeException
 
     public static function noAccounts(): self
     {
-        return new self('No Instagram professional account was found. Switch the Instagram account to Business or Creator, link it to a Facebook Page, then connect again and tick that Page and account.');
+        return new self('No Instagram professional account was found on the Pages you shared. Switch the Instagram account to Business or Creator and link it to one of your Facebook Pages. Then click Connect again, choose "Edit previous settings" and tick that Instagram account and its Page.');
     }
 }

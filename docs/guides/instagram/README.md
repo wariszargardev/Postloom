@@ -99,7 +99,7 @@ See `.claude/skills/instagram/SKILL.md` (debug table) and `knowledge-base/instag
 
 - **"Invalid Scopes"** on the Facebook screen: step 3 permissions are missing.
 - **"URL blocked"**: step 4 redirect URI is missing.
-- **"No Instagram professional account was found"**: step 1 or 2 isn't done, or the Page / Instagram account wasn't ticked in step 7.
+- **"No Instagram professional account was found"**: step 1 or 2 isn't done, or the Instagram account wasn't ticked in step 7. Facebook remembers your earlier Page choices from the Facebook connect and may skip the picker: on the Facebook screen choose **Edit previous settings** and tick the Instagram account. The log line `Facebook returned Pages for Instagram` lists each Page and its `instagram_id` (null = no linked professional account).
 - **Photo post Ready for you instead of published**: the tunnel tab isn't running or `cloudflared` isn't installed (step 8).
 - **Reel failed with "could not process the media (ERROR"**: check length (3 s to 15 min), size (300 MB) and that it's MP4 or MOV with H.264.
 

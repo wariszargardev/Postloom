@@ -102,6 +102,7 @@ Feature `instagram` for connect; publishing runs on the `publishing` trace; the 
 | `Redirecting to Facebook to connect Instagram accounts`                                      | info           | `workspace_id`, `scopes`                                               |
 | `Instagram callback received` / `Instagram connection cancelled`                             | info           | `workspace_id` / `error`                                               |
 | `Facebook did not grant the Instagram publishing permission`                                 | warning        | `granted`                                                              |
+| `Facebook returned Pages for Instagram`                                                      | info           | `page_count`, `pages` (`page_id`, `name`, `instagram_id` or null)      |
 | `No Instagram professional account is linked to the shared Pages`                            | warning        |                                                                        |
 | `Instagram accounts connected`                                                               | info           | `account_ids`, `instagram_ids`, `page_ids`                             |
 | `Instagram callback state did not match` / `Instagram connection failed`                     | error          | exception                                                              |
