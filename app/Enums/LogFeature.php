@@ -17,4 +17,5 @@ enum LogFeature: string
     case Calendar = 'calendar';
     case Scheduler = 'scheduler';
     case Publishing = 'publishing';
+    case Import = 'import';
 }

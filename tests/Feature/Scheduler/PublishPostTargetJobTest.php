@@ -123,7 +123,7 @@ it('keeps the post publishing until every account has finished', function () {
 
 it('logs one send under a single trace id, without the scheduler command label', function () {
     Context::add(['command' => 'posts:dispatch-due', 'trace_id' => 'scheduler-trace']);
-    $logFile = storage_path('logs/postloom-'.now()->format('Y-m-d').'.log');
+    $logFile = storage_path('logs/testing/postloom-'.now()->format('Y-m-d').'.log');
     $linesBefore = is_file($logFile) ? count(file($logFile)) : 0;
 
     runPublishJob($this->target, new FakePublisher);

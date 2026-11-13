@@ -49,8 +49,10 @@ it('adds exception details to error messages', function () {
     LogService::error('Publish failed', ['post_id' => 7], $exception);
 });
 
-it('writes json lines to the daily postloom log file', function () {
-    $logFile = storage_path('logs/postloom-'.now()->format('Y-m-d').'.log');
+it('writes json lines to the daily test log file, never the real postloom log', function () {
+    expect(config('logging.channels.postloom.channels'))->toBe(['postloom_testing']);
+
+    $logFile = storage_path('logs/testing/postloom-'.now()->format('Y-m-d').'.log');
     $marker = 'Log file check '.Str::uuid();
 
     LogService::startFeatureLogging(LogFeature::System);

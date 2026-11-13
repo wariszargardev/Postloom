@@ -67,6 +67,14 @@ return [
             'formatter' => JsonFormatter::class,
         ],
 
+        'postloom_testing' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/testing/postloom.log'),
+            'level' => 'debug',
+            'days' => 3,
+            'formatter' => JsonFormatter::class,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),

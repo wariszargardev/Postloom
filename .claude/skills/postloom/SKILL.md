@@ -36,5 +36,6 @@ description: Start here for any work in the Postloom repo (personal social media
 | Look and feel, tokens, components    | `design`              | `knowledge-base/design/README.md`              |
 | Facebook Pages connect, Graph errors | `facebook`            | `knowledge-base/facebook/README.md`            |
 | TikTok connect, tokens, publishing   | `tiktok`              | `knowledge-base/tiktok/README.md`              |
+| CSV import, daily content pack       | `csv-import`          | `knowledge-base/csv-import/README.md`          |
 
 Add a row here whenever a piece adds a new skill.
