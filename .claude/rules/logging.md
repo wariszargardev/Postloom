@@ -10,5 +10,5 @@ Use `App\Services\LogService` only. Never call `Log::` directly in app code.
 - `LogService::info('<clear message>', [<context>])`, `LogService::warning('<message>', [<context>], $exception)` and `LogService::error('<message>', [<context>], $exception)`. The exception is optional for warning and error and adds `exception_class`, `exception_message` and `exception_location`.
 - Context holds ids and statuses (`post_id`, `target_id`, `account_id`, `provider`, `attempt`, `status_code`). Never tokens, secrets, passwords or full API responses.
 - Output: JSON lines in `storage/logs/postloom-YYYY-MM-DD.log` (channel `postloom` → `postloom_file`). Every line has `feature` and `trace_id` from the context.
-- Axiom later: add an `axiom` channel and set `POSTLOOM_LOG_CHANNELS=postloom_file,axiom` in `.env`. No app code changes.
+- Axiom: `POSTLOOM_LOG_CHANNELS=postloom_file,postloom_axiom` plus `AXIOM_TOKEN` / `AXIOM_DATASET` in `.env` sends the same lines to Axiom (`App\Logging\AxiomHandler`). No app code changes. Keys named like token, secret, password, authorization, cookie or api key are redacted before sending, but don't rely on it: still never log them. Never call `Log::` inside `AxiomHandler` (it would log itself).
 - Business history of publishing is also stored in the database (`publish_attempts`), so the UI can show it without reading logs.

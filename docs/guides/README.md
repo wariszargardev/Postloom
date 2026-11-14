@@ -10,6 +10,7 @@ One folder per platform with a step-by-step guide, its screenshots and a short v
 | Facebook (Pages)            | [facebook/README.md](facebook/README.md)   | [facebook-setup.mp4](facebook/facebook-setup.mp4)    | done (screenshots to add)         |
 | Instagram (professional)    | [instagram/README.md](instagram/README.md) | [instagram-setup.mp4](instagram/instagram-setup.mp4) | done (screenshots to add)         |
 | TikTok                      | [tiktok/README.md](tiktok/README.md)       | [tiktok-setup.mp4](tiktok/tiktok-setup.mp4)          | done (screenshots to add)         |
+| Axiom (log search)          | [axiom/README.md](axiom/README.md)         |                                                      | done (no screenshots)             |
 
 ## Folder layout
 
