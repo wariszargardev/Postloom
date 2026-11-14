@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -34,6 +35,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_used_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 #[Fillable([
     'provider',
@@ -54,7 +56,7 @@ use Illuminate\Support\Carbon;
 class SocialAccount extends Model
 {
     /** @use HasFactory<SocialAccountFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public const EXPIRING_SOON_DAYS = 7;
 

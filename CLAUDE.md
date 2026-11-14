@@ -21,6 +21,7 @@ Personal social media scheduler: plan posts on a calendar and publish them on ti
 - Plan first and wait for "approved" before writing code for a piece.
 - Every piece ships with a KB doc, a skill, rule updates if needed, a roadmap update, logging and tests (`kb-and-skills.md`).
 - Code style and structure: `coding.md`. Logging: `logging.md`.
+- Every model uses `SoftDeletes`; nothing is hard-deleted (`soft-deletes.md`).
 - When a piece is done and tested, commit, push and open the PR into `develop` directly. Never merge; Waris merges.
 
 ## Commands

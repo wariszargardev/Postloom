@@ -12,6 +12,7 @@ use App\Models\Workspace;
 use App\Services\LogService;
 use App\Services\Posts\Rules\PlatformRulesRegistry;
 use App\Services\Publishing\PostDispatcher;
+use App\Services\SoftDeleteCascade;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +23,7 @@ class PostService
         private PostValidator $postValidator,
         private PlatformRulesRegistry $platformRulesRegistry,
         private PostDispatcher $postDispatcher,
+        private SoftDeleteCascade $softDeleteCascade,
     ) {}
 
     /**
@@ -45,26 +47,39 @@ class PostService
      */
     public function retryFailed(Post $post): Post
     {
-        if (! in_array($post->status, [PostStatus::Failed, PostStatus::PartlyPublished], true)) {
-            throw ValidationException::withMessages(['post' => 'Only failed or partly published posts can be retried.']);
-        }
-
-        $retriedTargets = $post->targets()->where('status', PostTargetStatus::Failed)->update([
-            'status' => PostTargetStatus::Pending,
-            'attempts' => 0,
-            'last_error' => null,
-        ]);
-
-        $post->update([
-            'status' => PostStatus::Scheduled,
-            'scheduled_at' => $post->scheduled_at !== null && $post->scheduled_at->isFuture() ? $post->scheduled_at : now(),
-        ]);
-
         LogService::startFeatureLogging(LogFeature::Publishing, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
-        LogService::info('Retry of failed accounts requested', ['accounts' => $retriedTargets]);
+
+        DB::transaction(function () use ($post): void {
+            $current = $this->lockedCopy($post);
+
+            if (! in_array($current->status, [PostStatus::Failed, PostStatus::PartlyPublished], true)) {
+                throw ValidationException::withMessages(['post' => 'Only failed or partly published posts can be retried.']);
+            }
+
+            $errors = $this->postValidator->retryErrors($current);
+
+            if ($errors !== []) {
+                LogService::warning('Retry refused', ['reasons' => array_values($errors)]);
+
+                throw ValidationException::withMessages($errors);
+            }
+
+            $retriedTargets = $current->targets()->where('status', PostTargetStatus::Failed)->update([
+                'status' => PostTargetStatus::Pending,
+                'attempts' => 0,
+                'last_error' => null,
+            ]);
+
+            $current->update([
+                'status' => PostStatus::Scheduled,
+                'scheduled_at' => $current->scheduled_at !== null && $current->scheduled_at->isFuture() ? $current->scheduled_at : now(),
+            ]);
+
+            LogService::info('Retry of failed accounts requested', ['accounts' => $retriedTargets]);
+        });
 
         if (PostDispatcher::isEnabled()) {
-            $this->postDispatcher->dispatchPost($post);
+            $this->postDispatcher->dispatchPost($post->refresh());
         }
 
         return $post->refresh();
@@ -85,13 +100,14 @@ class PostService
      */
     public function save(Workspace $workspace, User $user, array $data, bool $schedule, ?Post $post = null): Post
     {
-        if ($post !== null) {
-            $this->ensureEditable($post);
-        }
-
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $workspace->id, 'post_id' => $post?->id]);
 
         $post = DB::transaction(function () use ($workspace, $user, $data, $schedule, $post): Post {
+            if ($post !== null) {
+                $post = $this->lockedCopy($post);
+                $this->ensureEditable($post);
+            }
+
             $post ??= new Post;
             $isNew = ! $post->exists;
 
@@ -158,14 +174,17 @@ class PostService
 
     public function unschedule(Post $post): Post
     {
-        $this->ensureEditable($post);
+        DB::transaction(function () use ($post): void {
+            $current = $this->lockedCopy($post);
+            $this->ensureEditable($current);
 
-        $post->update(['status' => PostStatus::Draft]);
+            $current->update(['status' => PostStatus::Draft]);
+        });
 
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
         LogService::info('Post moved back to draft', []);
 
-        return $post;
+        return $post->refresh();
     }
 
     public function duplicate(Post $post): Post
@@ -204,7 +223,7 @@ class PostService
         $this->ensureDeletable($post);
 
         $postId = $post->id;
-        $post->delete();
+        $this->softDeleteCascade->post($post);
 
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $post->workspace_id, 'post_id' => $postId]);
         LogService::info('Post deleted', []);
@@ -237,7 +256,7 @@ class PostService
     private function syncTargets(Post $post, array $targets): void
     {
         $accountIds = collect($targets)->pluck('social_account_id')->map(fn ($id): int => (int) $id)->all();
-        $post->targets()->whereNotIn('social_account_id', $accountIds)->delete();
+        $this->softDeleteCascade->targets($post->targets()->whereNotIn('social_account_id', $accountIds)->pluck('id')->all());
 
         $accounts = SocialAccount::query()->whereIn('id', $accountIds)->get()->keyBy('id');
 
@@ -250,7 +269,7 @@ class PostService
 
             $defaults = $this->platformRulesRegistry->forProvider($account->provider)?->defaultSettings() ?? [];
 
-            $post->targets()->updateOrCreate(
+            $postTarget = $post->targets()->withTrashed()->updateOrCreate(
                 ['social_account_id' => $account->id],
                 [
                     'content_override' => filled($target['content_override'] ?? null) ? $target['content_override'] : null,
@@ -258,6 +277,10 @@ class PostService
                     'status' => PostTargetStatus::Pending,
                 ],
             );
+
+            if ($postTarget->trashed()) {
+                $postTarget->fill(['attempts' => 0, 'last_error' => null, 'external_id' => null, 'external_url' => null, 'published_at' => null])->restore();
+            }
         }
     }
 
@@ -278,6 +301,15 @@ class PostService
         }
 
         return Carbon::parse($localDateTime, $timezone)->utc();
+    }
+
+    /**
+     * The post as it is in the database right now, locked until the transaction ends, so the scheduler
+     * can't start publishing it halfway through a change.
+     */
+    private function lockedCopy(Post $post): Post
+    {
+        return Post::query()->whereKey($post->id)->lockForUpdate()->firstOrFail();
     }
 
     private function ensureEditable(Post $post): void

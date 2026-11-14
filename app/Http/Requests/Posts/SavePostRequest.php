@@ -40,7 +40,7 @@ class SavePostRequest extends FormRequest
                 'required',
                 'integer',
                 'distinct',
-                Rule::exists('social_accounts', 'id')->where('workspace_id', $workspaceId),
+                Rule::exists('social_accounts', 'id')->where('workspace_id', $workspaceId)->withoutTrashed(),
             ],
             'targets.*.content_override' => ['nullable', 'string', 'max:10000'],
             'targets.*.settings' => ['nullable', 'array'],
@@ -48,7 +48,7 @@ class SavePostRequest extends FormRequest
             'media_ids.*' => [
                 'integer',
                 'distinct',
-                Rule::exists('media', 'id')->where('workspace_id', $workspaceId),
+                Rule::exists('media', 'id')->where('workspace_id', $workspaceId)->withoutTrashed(),
             ],
         ];
     }

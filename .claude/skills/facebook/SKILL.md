@@ -18,19 +18,20 @@ KB: `knowledge-base/facebook/README.md`. Setup guide: `docs/guides/facebook/READ
 
 ## Debugging
 
-| Symptom                                 | Check                                                                                                   |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Connect button disabled                 | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` empty, or config cached: `php artisan config:clear`     |
-| Facebook shows "URL blocked"            | Valid OAuth Redirect URIs must contain `FACEBOOK_REDIRECT_URI` exactly                                  |
-| "Invalid Scopes" on the Facebook screen | A permission isn't added to the app's use case (guide step 3)                                           |
-| "did not allow posting"                 | Log `Facebook did not grant the posting permission` → `granted`; reconnect and keep "manage content" on |
-| "No Facebook Page was shared"           | No Page ticked, or the role on the Page lacks `CREATE_CONTENT`                                          |
-| "Could not connect Facebook"            | Log `Facebook returned an error`: `code 1` + "client_secret" = wrong `.env` secret                      |
-| Page shows Reconnect needed             | Log `Facebook Page login was revoked` (190, subcode 460 = password changed, 458 = app removed)          |
-| Post failed with code 200 / 10          | The Page token lost `pages_manage_posts`; reconnect the Page and keep every permission on               |
-| Post failed with code 368               | Facebook flagged the content as possibly abusive; wait, change the content, don't retry blindly         |
-| Code 32 / 80001 / 4 / 17 / 613          | Rate limit; the job retries after 1 then 5 minutes                                                      |
-| Reel failed (1363040–1363129)           | Aspect, resolution, length or frame rate: vertical 9:16, 540×960 or more, 3–90 s, 24–60 fps             |
-| View post opens a missing page          | Reels and videos are still processing for a minute; otherwise check the Page's posts                    |
+| Symptom                                 | Check                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Connect button disabled                 | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` empty, or config cached: `php artisan config:clear`        |
+| Facebook shows "URL blocked"            | Valid OAuth Redirect URIs must contain `FACEBOOK_REDIRECT_URI` exactly                                     |
+| "Invalid Scopes" on the Facebook screen | A permission isn't added to the app's use case (guide step 3)                                              |
+| "did not allow posting"                 | Log `Facebook did not grant the posting permission` → `granted`; reconnect and keep "manage content" on    |
+| "No Facebook Page was shared"           | No Page ticked, or the role on the Page lacks `CREATE_CONTENT`                                             |
+| "Could not connect Facebook"            | Log `Facebook returned an error`: `code 1` + "client_secret" = wrong `.env` secret                         |
+| Page shows Reconnect needed             | Log `Facebook Page login was revoked` (190, subcode 460 = password changed, 458 = app removed)             |
+| Post failed with code 200 / 10          | The Page token lost `pages_manage_posts`; reconnect the Page and keep every permission on                  |
+| Post failed with code 368               | Facebook flagged the content as possibly abusive; wait, change the content, don't retry blindly            |
+| Code 32 / 80001 / 4 / 17 / 613          | Rate limit; the job retries after 1 then 5 minutes                                                         |
+| "may already be posted. Check the Page" | Connection dropped or 5xx on the call that publishes; look at the Page first, Retry only if it isn't there |
+| Reel failed (1363040–1363129)           | Aspect, resolution, length or frame rate: vertical 9:16, 540×960 or more, 3–90 s, 24–60 fps                |
+| View post opens a missing page          | Reels and videos are still processing for a minute; otherwise check the Page's posts                       |
 
 Logs: `storage/logs/postloom-*.log`, filter `extra.feature` = `facebook` (connect), `accounts` (daily check) or `publishing` (posts), then follow the `trace_id`.

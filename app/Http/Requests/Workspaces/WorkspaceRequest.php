@@ -23,6 +23,7 @@ class WorkspaceRequest extends FormRequest
                 'max:60',
                 Rule::unique('workspaces', 'name')
                     ->where('user_id', $this->user()->id)
+                    ->withoutTrashed()
                     ->ignore($workspace instanceof Workspace ? $workspace->id : null),
             ],
         ];

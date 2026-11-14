@@ -29,6 +29,7 @@ TikTok access tokens last up to **24 hours** (the docs say 2 hours; the first re
 
 - `TikTokTokenService::accessTokenFor($account)` returns the saved token if it is valid for 5 more minutes, otherwise calls `refresh()`. The publisher (`TikTokApiClient`) calls it before every API call.
 - `refresh()` posts `grant_type=refresh_token` to `/v2/oauth/token/` and saves the new access token, refresh token and expiry.
+- Only one process refreshes an account at a time (`Cache::lock("tiktok-token-refresh:{id}")`, 60 s, waits up to 45 s). Inside the lock the account is reloaded; if another process already swapped the refresh token and the access token is valid, that token is used (log `TikTok token already refreshed by another process`) instead of sending the old, now dead refresh token (which would wrongly mark the account Reconnect needed). A busy lock → `TikTokTokenException` (retryable).
     - `invalid_grant`, `access_token_invalid`, `scope_not_authorized` → `needs_reconnect = true`, `TikTokTokenException` (not retryable).
     - Other 4xx (for example `invalid_client`: wrong `.env` keys) → `TikTokTokenException` (not retryable); the account is **not** marked.
     - 5xx, 429 or no connection → `TikTokTokenException` (retryable).
@@ -164,7 +165,7 @@ Feature `tiktok` for the connect flow; token messages run on the caller's trace 
 ## Tests
 
 - `tests/Feature/TikTok/TikTokConnectTest.php`: redirect URL (client key, scopes, redirect URI, state in session), missing keys, connect into the starting workspace, reconnect updates the same account, forged state, cancel, missing video scope, refused code exchange, provider availability.
-- `tests/Feature/TikTok/TikTokTokenServiceTest.php`: refresh saves the new refresh token, valid token reused, `invalid_grant` marks reconnect, 5xx is retryable, the daily check refreshes TikTok and counts a dead login.
+- `tests/Feature/TikTok/TikTokTokenServiceTest.php`: refresh saves the new refresh token, a token another process just refreshed is used without a second refresh, valid token reused, `invalid_grant` marks reconnect, 5xx is retryable, the daily check refreshes TikTok and counts a dead login.
 - `tests/Feature/TikTok/TikTokPostRulesTest.php`: video and audio allowed; text only, photos, PDFs, two videos, AVI, too short / long refused; branded + Only me refused; caption over 2,200; editor props.
 - `tests/Feature/Posts/ToPostTest.php`: To post lists only this workspace's waiting accounts, download with a clean name, another owner gets 403, Mark as posted with a link, without a link, a non-TikTok link refused, 409 when not waiting.
 - `tests/Feature/TikTok/TikTokPublisherTest.php`: manual mode (no API call, Ready for you, post counted as delivered), inbox upload (no `post_info`, Content-Range, caption in the note, one poll), direct post (`post_info` fields), public post link, privacy not allowed by creator info, `FAILED`, still processing, unaudited private-account error, 429/5xx retryable, token refresh and repeat, `scope_not_authorized` marks reconnect, audio to video, chunk plan, end to end through the job.

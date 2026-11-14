@@ -13,6 +13,7 @@ use App\Services\Posts\Rules\FacebookPostRules;
 use App\Services\Publishing\Publisher;
 use App\Services\Publishing\PublishException;
 use App\Services\Publishing\PublishResult;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
@@ -75,7 +76,7 @@ class FacebookPublisher implements Publisher
 
     private function publishText(SocialAccount $page, string $text): PublishResult
     {
-        $postId = (string) $this->graph->post("{$page->provider_account_id}/feed", ['message' => $text], $page->access_token, 'create the post')->json('id');
+        $postId = (string) $this->finalCall(fn () => $this->graph->post("{$page->provider_account_id}/feed", ['message' => $text], $page->access_token, 'create the post'))->json('id');
 
         return new PublishResult($postId, $this->permalink($page, $postId));
     }
@@ -90,7 +91,7 @@ class FacebookPublisher implements Publisher
         if ($photos->count() === 1) {
             /** @var Media $photo */
             $photo = $photos->first();
-            $response = $this->graph->upload($photosUrl, ['caption' => $text, 'published' => 'true'], $this->path($photo), $photo->original_name, $page->access_token, 'upload the photo');
+            $response = $this->finalCall(fn () => $this->graph->upload($photosUrl, ['caption' => $text, 'published' => 'true'], $this->path($photo), $photo->original_name, $page->access_token, 'upload the photo'));
             $postId = (string) ($response->json('post_id') ?? $response->json('id'));
 
             return new PublishResult($postId, $this->permalink($page, $postId));
@@ -105,7 +106,7 @@ class FacebookPublisher implements Publisher
 
         LogService::info('Facebook photos uploaded', ['count' => count($attached)]);
 
-        $postId = (string) $this->graph->post("{$page->provider_account_id}/feed", ['message' => $text, ...$attached], $page->access_token, 'create the photo post')->json('id');
+        $postId = (string) $this->finalCall(fn () => $this->graph->post("{$page->provider_account_id}/feed", ['message' => $text, ...$attached], $page->access_token, 'create the photo post'))->json('id');
 
         return new PublishResult($postId, $this->permalink($page, $postId));
     }
@@ -131,7 +132,7 @@ class FacebookPublisher implements Publisher
     {
         $url = $this->graph->url("{$page->provider_account_id}/videos", 'graph_video_base_url');
         $data = array_filter(['description' => $text, 'title' => $title], fn (string $value): bool => $value !== '');
-        $videoId = (string) $this->graph->upload($url, $data, $path, $fileName, $page->access_token, 'upload the video')->json('id');
+        $videoId = (string) $this->finalCall(fn () => $this->graph->upload($url, $data, $path, $fileName, $page->access_token, 'upload the video'))->json('id');
 
         return new PublishResult($videoId, $this->permalink($page, $videoId, "https://www.facebook.com/{$page->provider_account_id}/videos/{$videoId}/"));
     }
@@ -150,15 +151,40 @@ class FacebookPublisher implements Publisher
 
         LogService::info('Facebook Reel uploaded', ['video_id' => $videoId]);
 
-        $this->graph->post($reelsPath, array_filter([
+        $this->finalCall(fn () => $this->graph->post($reelsPath, array_filter([
             'upload_phase' => 'finish',
             'video_id' => $videoId,
             'video_state' => 'PUBLISHED',
             'description' => $text,
             'title' => $title,
-        ], fn (string $value): bool => $value !== ''), $page->access_token, 'publish the Reel');
+        ], fn (string $value): bool => $value !== ''), $page->access_token, 'publish the Reel'));
 
         return new PublishResult($videoId, "https://www.facebook.com/reel/{$videoId}");
+    }
+
+    /**
+     * Run the request that makes the post public. A dropped connection or a Facebook server error here may come
+     * after Facebook already posted it, so it is not retried; the owner checks the Page first.
+     *
+     * @param  callable(): Response  $call
+     *
+     * @throws PublishException
+     */
+    private function finalCall(callable $call): Response
+    {
+        try {
+            return $call();
+        } catch (FacebookApiException $exception) {
+            if ($exception->statusCode !== null && $exception->statusCode < 500) {
+                throw $exception;
+            }
+
+            LogService::warning('Final publish call failed, may already be posted', ['status' => $exception->statusCode], $exception);
+
+            $reason = $exception->statusCode === null ? 'The connection to Facebook dropped' : 'Facebook had a server error';
+
+            throw PublishException::permanent("{$reason} while publishing, so it may already be posted. Check the Page before you retry.", $exception);
+        }
     }
 
     /**

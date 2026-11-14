@@ -8,7 +8,7 @@ Workspaces group social accounts (for example "Personal", "Build Real Code"). A 
 
 1. Every logged-in request runs `EnsureCurrentWorkspace`. If the owner has no workspace, a **Personal** workspace is created and made current. If the current workspace is missing, the oldest one becomes current.
 2. The sidebar's workspace switcher lists all workspaces. Choosing one calls `POST /workspaces/{id}/switch` and stores it in `users.current_workspace_id`.
-3. **Workspaces page** (`/workspaces`): add (and switch to it), rename, switch, delete. Delete is blocked while the workspace has accounts, and for the last workspace.
+3. **Workspaces page** (`/workspaces`): add (and switch to it), rename, switch, delete. Delete is blocked while the workspace has accounts, and for the last workspace. Delete is a soft delete (`SoftDeleteCascade::workspace()`): the workspace, its posts (with their accounts and tries) and its media get `deleted_at`. Its name can be used again (`Rule::unique()->withoutTrashed()`; the DB unique key on `user_id + name` was dropped).
 4. **Accounts page** (`/accounts`): accounts of the current workspace, grouped by platform, with status badge, type, handle and token expiry; Disconnect; and a "Connect a platform" grid (a platform's Connect button works once its piece ships and its keys are set; LinkedIn since piece 03, YouTube since piece 10, Facebook Pages since piece 13).
 5. A platform's OAuth callback (piece 03 onward) calls `SocialAccountService::saveConnectedAccount()`. Reconnecting the same account updates the existing row instead of adding a duplicate.
 
@@ -60,7 +60,8 @@ Unique: `workspace_id + provider + provider_account_id` (the same account can be
 - Creating a workspace switches to it.
 - Deleting the current workspace switches to the oldest remaining one.
 - Changing `APP_KEY` makes every stored token unreadable, so all accounts would need reconnecting.
-- Disconnect only deletes the saved token. To revoke the app on LinkedIn's side: LinkedIn → Settings → Data privacy → Permitted services.
+- Disconnect is a soft delete (`SoftDeleteCascade::socialAccount()`): the account and its post targets and their tries get `deleted_at`. Connecting the same account again restores that row (`withTrashed()->updateOrCreate()` + `restore()`), so the unique key `workspace_id + provider + provider_account_id` never blocks a reconnect.
+- Disconnect only removes the saved token from use. To revoke the app on LinkedIn's side: LinkedIn → Settings → Data privacy → Permitted services.
 
 ## Logging
 
@@ -81,8 +82,9 @@ Tokens are never logged.
 
 ## Tests
 
-- `tests/Feature/Workspaces/WorkspaceManagementTest.php`: default workspace on registration and first visit, create + switch, duplicate name, rename, switch, delete (empty, with accounts, last one), other owner blocked (403), list props.
-- `tests/Feature/Accounts/SocialAccountTest.php`: tokens encrypted at rest, tokens never in page props, only current workspace listed, status for valid/expiring/expired/reconnect, save + reconnect updates in place, several accounts per platform, disconnect, other owner blocked.
+- `tests/Feature/Workspaces/WorkspaceManagementTest.php`: default workspace on registration and first visit, create + switch, duplicate name, rename, switch, delete (empty, with accounts, last one; soft deleted), other owner blocked (403), list props.
+- `tests/Feature/SoftDeletesTest.php`: workspace delete soft deletes posts, targets, tries and media; a deleted workspace's name can be reused; disconnect soft deletes targets and tries; reconnect restores the same row; a removed post account is restored with a clean slate; deleted accounts and media are refused in a post; registration stays closed after the owner is deleted.
+- `tests/Feature/Accounts/SocialAccountTest.php`: tokens encrypted at rest, tokens never in page props, only current workspace listed, status for valid/expiring/expired/reconnect, save + reconnect updates in place, several accounts per platform, disconnect (soft deleted), other owner blocked.
 
 ## Known limits
 

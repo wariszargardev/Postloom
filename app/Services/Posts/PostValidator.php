@@ -2,10 +2,12 @@
 
 namespace App\Services\Posts;
 
+use App\Enums\PostTargetStatus;
 use App\Enums\SocialAccountStatus;
 use App\Models\Post;
 use App\Models\PostTarget;
 use App\Services\Posts\Rules\PlatformRulesRegistry;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Number;
 
@@ -31,11 +33,35 @@ class PostValidator
             $errors['scheduled_at'] = 'Pick a date and time in the future.';
         }
 
+        return [...$errors, ...$this->contentAndTargetErrors($post, $post->targets)];
+    }
+
+    /**
+     * Everything that stops the failed accounts of a post from being sent again. The time is not checked:
+     * a retry goes out now.
+     *
+     * @return array<string, string>
+     */
+    public function retryErrors(Post $post): array
+    {
+        $post->loadMissing(['targets.socialAccount', 'media']);
+
+        return $this->contentAndTargetErrors($post, $post->targets->where('status', PostTargetStatus::Failed));
+    }
+
+    /**
+     * @param  Collection<int, PostTarget>  $targets
+     * @return array<string, string>
+     */
+    private function contentAndTargetErrors(Post $post, Collection $targets): array
+    {
+        $errors = [];
+
         if (trim($post->content) === '' && $post->media->isEmpty() && $post->targets->every(fn (PostTarget $target): bool => blank($target->content_override))) {
             $errors['content'] = 'Write something or add media.';
         }
 
-        foreach ($post->targets as $target) {
+        foreach ($targets as $target) {
             $targetError = $this->targetError($post, $target);
 
             if ($targetError !== null) {

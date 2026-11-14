@@ -44,6 +44,7 @@ A Page token from a long-lived user token **doesn't expire** on a timer (Meta do
 - Pages only; never request `email` or user-profile permissions.
 - The Meta app stays in **Development mode**; app admins/developers/testers can use the Page permissions on Pages they manage without App Review. Serving other people's Pages would need App Review, Advanced Access and business verification.
 - Graph error mapping (`FacebookGraphClient`): **190** → invalid login (reconnect); **4, 17, 32, 613, 80001** → rate limit (retryable); **10, 200** → permission (permanent); **368** → blocked as abusive (permanent, no blind retries); 5xx → retryable; other 4xx → permanent with Facebook's message.
+- **Final call, no retry:** the call that makes the post public (text `/feed`, a single photo with `published=true`, the multi-photo `/feed`, the Page video upload, Reel `finish`) runs through `FacebookPublisher::finalCall()`. A dropped connection or 5xx there becomes permanent: "…while publishing, so it may already be posted. Check the Page before you retry." (log `Final publish call failed, may already be posted`). Unpublished photo uploads, Reel `start` and the Reel binary upload stay retryable. A big Page video that times out therefore fails instead of uploading again; check the Page, then Retry.
 
 ## Publishing
 
@@ -93,7 +94,7 @@ Tokens are never logged.
 
 - `tests/Feature/Facebook/FacebookConnectTest.php`: redirect with only the Page scopes; every shared Page saved with its token; reconnect updates in place; Pages without CREATE_CONTENT skipped; posting permission switched off; no Page shared; token exchange error; cancel; expired state; disabled without keys; daily check marks a 190 Page for reconnect; rate limit during the check keeps the Page connected.
 
-- `tests/Feature/Facebook/FacebookPublisherTest.php`: text post with Page token and permalink; 1 photo with caption; 3 photos unpublished then attached; video to graph-video with title and description; Reel start / binary upload / finish; landscape or long Reel refused before any call; audio as video; 190 marks reconnect; 32 / 80001 / 5xx retryable, 200 / 368 permanent; permalink fallback; end to end through the job.
+- `tests/Feature/Facebook/FacebookPublisherTest.php`: text post with Page token and permalink; 1 photo with caption; 3 photos unpublished then attached; video to graph-video with title and description; Reel start / binary upload / finish; landscape or long Reel refused before any call; audio as video; 190 marks reconnect; 32 / 80001 retryable, 200 / 368 permanent; 5xx or dropped connection on the final call (text, photo, Page video, Reel finish) permanent with "may already be posted"; a dropped unpublished photo upload still retryable; permalink fallback; end to end through the job.
 - `tests/Feature/Facebook/FacebookPostRulesTest.php`: text-only and photo posts schedule; PDFs, mixed media, 11 photos, WebP and photos over 10 MB refused; Reel needs a vertical 3–90 s video; settings in the editor; audio accepted.
 
 Facebook is faked with a mocked Socialite provider, `Http::fake()` and `Process::fake()` (ffmpeg).

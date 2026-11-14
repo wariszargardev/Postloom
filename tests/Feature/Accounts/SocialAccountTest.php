@@ -108,7 +108,7 @@ it('disconnects an account', function () {
         ->delete(route('accounts.destroy', $account))
         ->assertRedirect(route('accounts.index'));
 
-    $this->assertModelMissing($account);
+    $this->assertSoftDeleted($account);
 });
 
 it('blocks disconnecting another owner\'s account', function () {

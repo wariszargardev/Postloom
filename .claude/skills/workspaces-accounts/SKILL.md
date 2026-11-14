@@ -1,6 +1,6 @@
 ---
 name: workspaces-accounts
-description: Postloom workspaces and connected social accounts — use when changing the workspace switcher, the Workspaces or Accounts pages, the workspaces / social_accounts tables, token storage or expiry status, or when wiring a new platform's OAuth callback (call SocialAccountService::saveConnectedAccount). Also for "account shows Reconnect needed / Expires soon", "can't delete workspace", "account missing from Accounts page", or adding a SocialProvider case.
+description: Postloom workspaces and connected social accounts — use when changing the workspace switcher, the Workspaces or Accounts pages, the workspaces / social_accounts tables, token storage or expiry status, or when wiring a new platform's OAuth callback (call SocialAccountService::saveConnectedAccount). Also for "account shows Reconnect needed / Expires soon", "can't delete workspace", "account missing from Accounts page", or adding a SocialProvider case. Deletes are soft (SoftDeleteCascade); reconnect restores the old row.
 ---
 
 # Workspaces and social accounts

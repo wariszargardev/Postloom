@@ -116,15 +116,16 @@ Every call goes to `https://api.linkedin.com/rest` with `Authorization: Bearer`,
 
 ### Errors (`LinkedInApiException`, a `PublishException` with `statusCode` and `serviceErrorCode`)
 
-| LinkedIn                           | Result                                                            |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| 401                                | Permanent; the account is set `needs_reconnect = true`            |
-| 403                                | Permanent: "check the Share on LinkedIn product"                  |
-| Other 4xx (400, 422 …)             | Permanent, with LinkedIn's `message`                              |
-| 429, 5xx, no connection            | Retryable (job retries after 60 s, then 300 s)                    |
-| Video `PROCESSING_FAILED`          | Permanent                                                         |
-| Video still processing after 300 s | Retryable (the next try uploads it again)                         |
-| 201 without `x-restli-id`          | Permanent (the post may exist; check the profile before retrying) |
+| LinkedIn                              | Result                                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 401                                   | Permanent; the account is set `needs_reconnect = true`                                    |
+| 403                                   | Permanent: "check the Share on LinkedIn product"                                          |
+| Other 4xx (400, 422 …)                | Permanent, with LinkedIn's `message`                                                      |
+| 429; 5xx or no connection on uploads  | Retryable (job retries after 60 s, then 300 s)                                            |
+| 5xx or no connection on `POST /posts` | Permanent: "may already be posted. Check your profile before you retry." (`createPost()`) |
+| Video `PROCESSING_FAILED`             | Permanent                                                                                 |
+| Video still processing after 300 s    | Retryable (the next try uploads it again)                                                 |
+| 201 without `x-restli-id`             | Permanent (the post may exist; check the profile before retrying)                         |
 
 ### Publishing logs
 
@@ -147,7 +148,7 @@ Tokens are never logged.
 
 ### Publishing tests
 
-- `tests/Feature/LinkedIn/LinkedInPublisherTest.php`: text post headers and body; escaping, hashtags, override text and visibility; one image with alt text; three images as multi-image in order; video in 2 parts with finalize and PROCESSING → AVAILABLE; video processing failed; PDF; audio converted, posted and temp file deleted; 401 marks reconnect; 403 and 422 permanent; 429 / 500 / 503 retryable; end to end through the job to Published.
+- `tests/Feature/LinkedIn/LinkedInPublisherTest.php`: text post headers and body; escaping, hashtags, override text and visibility; one image with alt text; three images as multi-image in order; video in 2 parts with finalize and PROCESSING → AVAILABLE; video processing failed; PDF; audio converted, posted and temp file deleted; 401 marks reconnect; 403 and 422 permanent; 429 retryable; 500 / 503 / dropped connection on `POST /posts` permanent with "may already be posted"; a dropped image upload still retryable; end to end through the job to Published.
 - `tests/Unit/Services/LinkedInCommentaryFormatterTest.php`: plain text, every reserved character, hashtags, `#` inside words, non-English hashtags.
 
 LinkedIn is faked with `Http::fake()`, ffmpeg with `Process::fake()`, waits with `Sleep::fake()`.

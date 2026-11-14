@@ -8,6 +8,6 @@ class RegistrationGate
 {
     public function isOpen(): bool
     {
-        return config('postloom.allow_registration') || User::query()->doesntExist();
+        return config('postloom.allow_registration') || User::withTrashed()->doesntExist();
     }
 }

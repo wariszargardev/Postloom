@@ -25,5 +25,6 @@ KB: `knowledge-base/media/README.md`.
 | "does not look like a real … file"                                        | File content type doesn't match its extension (renamed file). Re-export it in the right format                                                                           |
 | Video has no thumbnail or length                                          | ffmpeg/ffprobe missing or failed: look for `Media could not be inspected with ffprobe` / `Video thumbnail could not be created` and check `FFMPEG_PATH` / `FFPROBE_PATH` |
 | Upload said "already in the library"                                      | Same file (same sha256) already exists in this workspace; the old row is reused                                                                                          |
+| A deleted file came back after an upload                                  | Deletes are soft; uploading the same file restores the deleted row (log `Deleted media uploaded again, restored`). Files stay on disk after delete                       |
 
 Logs: filter `storage/logs/postloom-*.log` by `extra.feature` = `media`, then by `media_id` or `workspace_id`.

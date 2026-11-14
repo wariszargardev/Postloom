@@ -26,5 +26,7 @@ KB: `knowledge-base/scheduler/README.md`.
 ## Rules not to break
 
 - Keep the `scheduled → publishing` conditional update as the lock, and the "skip published accounts" check in the job.
-- Publishers throw `PublishException::retryable()` only for temporary problems.
+- Publishers throw `PublishException::retryable()` only for temporary problems, and never for a dropped connection or 5xx on the call that makes the post public (it may already be posted).
+- Timed out = the account had no job left in the `jobs` table for 30 minutes. A retry waiting in the queue is not timed out.
+- Retry re-checks the failed accounts (`PostValidator::retryErrors()`); log `Retry refused` lists why.
 - `DB_QUEUE_RETRY_AFTER` must stay above the job `timeout`.

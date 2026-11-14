@@ -13,6 +13,7 @@ use App\Services\Posts\Rules\LinkedInPostRules;
 use App\Services\Publishing\Publisher;
 use App\Services\Publishing\PublishException;
 use App\Services\Publishing\PublishResult;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
@@ -75,7 +76,7 @@ class LinkedInPublisher implements Publisher
             $body['content'] = $content;
         }
 
-        $response = $this->client->post($account, '/posts', $body, 'create the post');
+        $response = $this->createPost($account, $body);
         $postUrn = trim((string) $response->header('x-restli-id'));
 
         if ($postUrn === '') {
@@ -85,6 +86,31 @@ class LinkedInPublisher implements Publisher
         LogService::info('LinkedIn post created', ['external_id' => $postUrn]);
 
         return new PublishResult($postUrn, "https://www.linkedin.com/feed/update/{$postUrn}/");
+    }
+
+    /**
+     * A dropped connection or a LinkedIn server error on this call may come after LinkedIn already created the post,
+     * so it is not retried; the owner checks the profile first.
+     *
+     * @param  array<string, mixed>  $body
+     *
+     * @throws PublishException
+     */
+    private function createPost(SocialAccount $account, array $body): Response
+    {
+        try {
+            return $this->client->post($account, '/posts', $body, 'create the post');
+        } catch (LinkedInApiException $exception) {
+            if ($exception->statusCode !== null && $exception->statusCode < 500) {
+                throw $exception;
+            }
+
+            LogService::warning('Final publish call failed, may already be posted', ['status' => $exception->statusCode], $exception);
+
+            $reason = $exception->statusCode === null ? 'The connection to LinkedIn dropped' : 'LinkedIn had a server error';
+
+            throw PublishException::permanent("{$reason} while publishing, so it may already be posted. Check your profile before you retry.", $exception);
+        }
     }
 
     /**

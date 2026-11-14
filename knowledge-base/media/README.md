@@ -11,13 +11,13 @@ Each workspace has a library of images, videos, audio and PDFs. Files are upload
 2. `StoreMediaRequest` checks each file: allowed extension, real content type matches the kind (`image/…`, `video/…`, `audio/…`, `application/pdf`), and size under that kind's limit.
 3. `MediaService::upload()` per file:
     1. Works out the kind from the extension (`MediaKind::fromExtension`).
-    2. Hashes the file (sha256). If the same file is already in this workspace, the existing row is reused and nothing is saved again.
+    2. Hashes the file (sha256). If the same file is already in this workspace, the existing row is reused and nothing is saved again. If it was deleted, that row is restored (`Deleted media uploaded again, restored`); if its old file is gone from disk, the new file is stored on that same row.
     3. Stores it as `media/<workspace_id>/<YYYY>/<MM>/<uuid>.<ext>` on the `POSTLOOM_MEDIA_DISK` disk (default `local` = `storage/app/private`).
     4. `MediaInspector` reads the details: images via GD `getimagesize`; video and audio via `ffprobe` (duration, and width and height for video).
     5. Videos get a 480px-wide JPG thumbnail from second 1 via `ffmpeg`, saved under `…/thumbs/<uuid>.jpg`.
     6. Saves the `media` row.
 4. The grid shows thumbnails (images, and videos with a thumbnail), icons for audio and PDF, an audio player, size, dimensions and length. Filter tabs: All, Image, Video, Audio, Document. 48 per page.
-5. Alt text can be added or edited (used later as the image description on platforms that support it). Delete removes the file, its thumbnail and the row.
+5. Alt text can be added or edited (used later as the image description on platforms that support it). Delete is a soft delete: the row gets `deleted_at` and drops out of the library and of drafts; the file and thumbnail stay on disk so it can be restored.
 
 If ffmpeg or ffprobe is missing or fails, the upload still succeeds; only duration, dimensions and thumbnail are empty (a warning is logged).
 
@@ -70,6 +70,7 @@ Feature `media`.
 | `Video thumbnail could not be created`      | warning | `exit_code`, `error`                              |
 | `Media alt text updated`                    | info    | `media_id`                                        |
 | `Media deleted`                             | info    | `media_id`                                        |
+| `Deleted media uploaded again, restored`    | info    | `media_id`                                        |
 
 ## Config (`.env`)
 
@@ -78,7 +79,7 @@ Feature `media`.
 
 ## Tests
 
-`tests/Feature/Media/MediaLibraryTest.php` (fake `local` disk; ffprobe and ffmpeg faked with `Process::fake`): image with size; video with duration, size and thumbnail; audio and PDF; upload works without ffmpeg; unsupported type; content not matching extension; over the size limit; more than 10 files; duplicate reused; current workspace only and kind filter; file served only to the owner; guests redirected; alt text; delete removes file, thumbnail and row; other owner blocked.
+`tests/Feature/Media/MediaLibraryTest.php` (fake `local` disk; ffprobe and ffmpeg faked with `Process::fake`): image with size; video with duration, size and thumbnail; audio and PDF; upload works without ffmpeg; unsupported type; content not matching extension; over the size limit; more than 10 files; duplicate reused; current workspace only and kind filter; file served only to the owner; guests redirected; alt text; delete soft deletes the row and keeps the file and thumbnail; uploading a deleted file again restores it (also when its file is gone); other owner blocked.
 
 The inspector was also checked once against the real ffmpeg 9 on this PC (3-second 640×360 test video: duration, size and thumbnail all correct).
 
@@ -86,4 +87,4 @@ The inspector was also checked once against the real ffmpeg 9 on this PC (3-seco
 
 - One request per upload batch, so very large videos depend on the 512 MB limit. Chunked uploads would be needed for bigger files or a production server.
 - No image editing or cropping.
-- Media used by a scheduled or publishing post cannot be deleted (`MediaService::deletionBlockReason()`); media used only in drafts is deleted and removed from them. See `knowledge-base/posts/README.md`.
+- Media used by a scheduled or publishing post cannot be deleted (`MediaService::deletionBlockReason()`), nor media used by a failed or partly published post that still has failed accounts ("Retry or delete that post first"); media used only in drafts or delivered posts is deleted and removed from them. See `knowledge-base/posts/README.md`.

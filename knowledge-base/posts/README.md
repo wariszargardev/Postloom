@@ -81,7 +81,9 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 **In-use guards (approved 2026-11-10):**
 
 - Disconnecting an account with a scheduled or publishing post is blocked (`SocialAccountService::disconnectBlockReason()`). Used only in drafts: it's disconnected and removed from those drafts.
-- Deleting media used by a scheduled or publishing post is blocked (`MediaService::deletionBlockReason()`). Used only in drafts: it's deleted and removed from those drafts.
+- **Soft deletes:** deleting a post soft deletes it with its targets and their tries (`SoftDeleteCascade::post()`). An account taken off a post is soft deleted too; adding it back restores the same target with a clean slate (pending, 0 tries, no error or link). `SavePostRequest` refuses deleted accounts and media (`Rule::exists()->withoutTrashed()`).
+- Deleting media used by a scheduled or publishing post is blocked (`MediaService::deletionBlockReason()`), and so is media used by a failed or partly published post that still has failed accounts (a retry would post without it). Used only in drafts or delivered posts: it's deleted and removed from them.
+- Save and unschedule lock the post row and check its status inside the transaction, so a post the scheduler took a moment ago is refused ("being published right now") instead of being overwritten.
 
 **Adding a platform:** add a class implementing `PlatformPostRules`, return it from `PlatformRulesRegistry::forProvider()`. The editor (counter, media hint, settings fields, validation) picks it up from `describe()`. Each setting has a `type` that `resources/js/components/posts/PlatformSettings.vue` renders: `select` (with `options`), `text` (`max_length`, `required`), `tags`, `boolean`, `image` (pick from the library). Settings are shown under each account in "Per account" (no need to open Customize). Checks that need text, media and settings together go in `targetErrors()`.
 
@@ -105,7 +107,7 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 
 ## Tests
 
-- `tests/Feature/Posts/PostEditorTest.php`: same-day times (1 minute, 20 minutes, 4 hours later accepted; 1 minute ago refused); draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; published / partly published posts refuse edits and unschedule but can be deleted; read-only editor props; failed post can be edited and rescheduled; duplicate; delete; another owner gets 403; list and filter; editor props.
+- `tests/Feature/Posts/PostEditorTest.php`: same-day times (1 minute, 20 minutes, 4 hours later accepted; 1 minute ago refused); draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; published / partly published posts refuse edits and unschedule but can be deleted; read-only editor props; failed post can be edited and rescheduled; duplicate; delete (soft, with its targets); another owner gets 403; list and filter; editor props.
 - `tests/Feature/Posts/InUseGuardsTest.php`: the two in-use guards, blocked and allowed.
 
 ## Known limits

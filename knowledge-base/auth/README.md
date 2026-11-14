@@ -15,7 +15,7 @@ Postloom has one owner. Logging in to the app is email + password (with optional
 ## Entry points
 
 - Fortify routes: `login`, `login.store`, `logout`, `register`, `register.store`, `password.request`, `password.email`, `password.reset`, `password.update`, two-factor and passkey routes (`php artisan route:list --path=login`).
-- `app/Services/RegistrationGate.php`: `isOpen()` = `config('postloom.allow_registration')` or no user exists.
+- `app/Services/RegistrationGate.php`: `isOpen()` = `config('postloom.allow_registration')` or no user exists, deleted users included (`User::withTrashed()`), so deleting the owner account does not reopen sign-up.
 - `app/Providers/FortifyServiceProvider.php`: register view redirects to login when the gate is closed.
 - `app/Actions/Fortify/CreateNewUser.php`: blocks registration on the server when the gate is closed.
 - `app/Http/Middleware/HandleInertiaRequests.php`: shares `canRegister` (guests only) with every page.
@@ -63,4 +63,5 @@ Emails are masked as `wa***@domain.com`. Passwords and tokens are never logged.
 ## Known limits
 
 - If the database is wiped, registration opens again until someone signs up.
+- Deleting your account (Settings → Profile) is a soft delete: the user gets `deleted_at` and can no longer log in; its data stays.
 - No real email delivery; set up a mailer before the app runs anywhere other than this PC.

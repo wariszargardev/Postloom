@@ -1,7 +1,11 @@
 <?php
 
 use App\Enums\MediaKind;
+use App\Enums\PostStatus;
+use App\Enums\PostTargetStatus;
 use App\Models\Media;
+use App\Models\Post;
+use App\Models\PostTarget;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,6 +59,34 @@ it('uploads an image and reads its size', function () {
         ->and($media->height)->toBe(800)
         ->and($media->path)->toStartWith("media/{$this->workspace->id}/");
     Storage::disk('local')->assertExists($media->path);
+});
+
+it('brings a deleted file back when the same file is uploaded again', function () {
+    $file = UploadedFile::fake()->image('again.jpg', 10, 10);
+    uploadMedia([$file])->assertRedirect();
+    $media = Media::query()->sole();
+    $this->actingAs($this->user)->delete(route('media.destroy', $media));
+
+    uploadMedia([$file])->assertRedirect();
+
+    expect(Media::withTrashed()->count())->toBe(1)
+        ->and($media->fresh()->trashed())->toBeFalse();
+});
+
+it('stores the file again on the deleted row when its old file is gone from disk', function () {
+    $file = UploadedFile::fake()->image('gone.jpg', 10, 10);
+    uploadMedia([$file])->assertRedirect();
+    $media = Media::query()->sole();
+    $this->actingAs($this->user)->delete(route('media.destroy', $media));
+    Storage::disk('local')->delete($media->path);
+
+    uploadMedia([$file])->assertRedirect();
+
+    $restored = $media->fresh();
+    expect(Media::withTrashed()->count())->toBe(1)
+        ->and($restored->trashed())->toBeFalse()
+        ->and($restored->path)->not->toBe($media->path);
+    Storage::disk('local')->assertExists($restored->path);
 });
 
 it('returns to the page it came from with the uploaded ids, so the post editor keeps its state', function () {
@@ -184,15 +216,42 @@ it('saves alt text', function () {
     expect($media->fresh()->alt_text)->toBe('Waris speaking at a meetup');
 });
 
-it('deletes the file, its thumbnail and the row', function () {
+it('soft deletes the row and keeps the file and thumbnail so it can come back', function () {
     uploadMedia([UploadedFile::fake()->create('clip.mp4', 2048, 'video/mp4')]);
     $media = Media::query()->sole();
 
     $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
 
-    $this->assertModelMissing($media);
-    Storage::disk('local')->assertMissing($media->path);
-    Storage::disk('local')->assertMissing($media->thumbnail_path);
+    $this->assertSoftDeleted($media);
+    Storage::disk('local')->assertExists($media->path);
+    Storage::disk('local')->assertExists($media->thumbnail_path);
+});
+
+it('keeps a file that a failed post can still retry with', function (PostStatus $postStatus) {
+    $media = Media::factory()->for($this->workspace)->create();
+    $post = Post::factory()->for($this->workspace)->create(['status' => $postStatus]);
+    PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Failed]);
+    $post->media()->attach($media, ['sort_order' => 0]);
+
+    $this->actingAs($this->user)->delete(route('media.destroy', $media))
+        ->assertSessionHas('inertia.flash_data.toast.message', 'This file is used by 1 failed post that can still be retried. Retry or delete that post first.');
+
+    $this->assertModelExists($media);
+})->with([
+    'failed' => PostStatus::Failed,
+    'partly published' => PostStatus::PartlyPublished,
+]);
+
+it('lets a file go once its post has nothing left to retry', function () {
+    uploadMedia([UploadedFile::fake()->image('card.png')]);
+    $media = Media::query()->sole();
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Published]);
+    PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Published]);
+    $post->media()->attach($media, ['sort_order' => 0]);
+
+    $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
+
+    $this->assertSoftDeleted($media);
 });
 
 it('blocks changes to another owner\'s media', function () {

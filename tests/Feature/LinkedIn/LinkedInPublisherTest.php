@@ -276,12 +276,35 @@ it('fails for good on 403 and 422 with LinkedIn\'s message', function (int $stat
     'invalid content' => [422, '(422)'],
 ]);
 
-it('retries on rate limits and LinkedIn server errors', function (int $status) {
-    Http::fake([LINKEDIN_API.'/posts' => Http::response(['message' => 'Try later'], $status)]);
+it('retries on rate limits', function () {
+    Http::fake([LINKEDIN_API.'/posts' => Http::response(['message' => 'Try later'], 429)]);
 
     expect(fn () => $this->publisher->publish($this->target))
         ->toThrow(fn (LinkedInApiException $exception) => expect($exception->isRetryable)->toBeTrue());
-})->with([429, 500, 503]);
+});
+
+it('does not retry when creating the post fails on LinkedIn\'s side, because it may already be posted', function (Closure $fake) {
+    Http::fake([LINKEDIN_API.'/posts' => $fake()]);
+
+    expect(fn () => $this->publisher->publish($this->target))
+        ->toThrow(fn (PublishException $exception) => expect($exception)->not->toBeInstanceOf(LinkedInApiException::class)
+            ->and($exception->isRetryable)->toBeFalse()
+            ->and($exception->getMessage())->toContain('may already be posted'));
+})->with([
+    'server error 500' => [fn () => Http::response(['message' => 'Oops'], 500)],
+    'server error 503' => [fn () => Http::response(['message' => 'Oops'], 503)],
+    'dropped connection' => [fn () => Http::failedConnection()],
+]);
+
+it('still retries when an image upload drops before the post is created', function () {
+    Http::fake([LINKEDIN_API.'/images*' => Http::failedConnection()]);
+    attachMedia(Media::factory()->for($this->workspace)->create());
+
+    expect(fn () => $this->publisher->publish($this->target))
+        ->toThrow(fn (LinkedInApiException $exception) => expect($exception->isRetryable)->toBeTrue());
+
+    Http::assertNotSent(fn (Request $request) => $request->url() === LINKEDIN_API.'/posts');
+});
 
 it('publishes end to end through the job and marks the post published', function () {
     fakeLinkedIn();
