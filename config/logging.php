@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\AxiomHandler;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
@@ -65,6 +66,19 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('POSTLOOM_LOG_DAYS', 14),
             'formatter' => JsonFormatter::class,
+        ],
+
+        'postloom_axiom' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => AxiomHandler::class,
+            'handler_with' => [
+                'token' => env('AXIOM_TOKEN'),
+                'dataset' => env('AXIOM_DATASET'),
+                'url' => env('AXIOM_URL', 'https://api.axiom.co'),
+                'batchSize' => (int) env('AXIOM_BATCH_SIZE', 50),
+                'environment' => env('APP_ENV', 'production'),
+            ],
         ],
 
         'postloom_testing' => [
