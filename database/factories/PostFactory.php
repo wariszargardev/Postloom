@@ -44,4 +44,20 @@ class PostFactory extends Factory
             'scheduled_at' => now()->subMinute(),
         ]);
     }
+
+    public function published(): static
+    {
+        return $this->state(fn () => [
+            'status' => PostStatus::Published,
+            'scheduled_at' => now()->subHour(),
+        ]);
+    }
+
+    public function failed(): static
+    {
+        return $this->state(fn () => [
+            'status' => PostStatus::Failed,
+            'scheduled_at' => now()->subHour(),
+        ]);
+    }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Copy } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import Heading from '@/components/Heading.vue';
@@ -216,6 +217,12 @@ function submit(intent: 'draft' | 'schedule' | 'publish_now'): void {
     }
 }
 
+function duplicate(): void {
+    if (props.post) {
+        router.post(PostController.duplicate(props.post.id).url);
+    }
+}
+
 function unschedule(): void {
     if (props.post) {
         router.post(
@@ -269,12 +276,29 @@ const initials = (name: string): string =>
                 />
             </div>
 
-            <p
+            <div
                 v-if="!isEditable"
-                class="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+                class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+                data-test="read-only-notice"
             >
-                This post is being published right now, so it can't be changed.
-            </p>
+                <span v-if="post?.is_delivered">
+                    This post has already gone out, so it can't be changed here.
+                    Duplicate it to post an edited copy.
+                </span>
+                <span v-else>
+                    This post is being published right now, so it can't be
+                    changed.
+                </span>
+                <Button
+                    v-if="post?.is_delivered"
+                    type="button"
+                    size="sm"
+                    data-test="duplicate-to-edit"
+                    @click="duplicate"
+                >
+                    <Copy class="size-4" /> Duplicate to edit
+                </Button>
+            </div>
 
             <div
                 v-if="generalErrors.length > 0"
@@ -612,7 +636,7 @@ const initials = (name: string): string =>
                     Move to drafts
                 </Button>
                 <Button
-                    v-if="post && isEditable"
+                    v-if="post?.is_deletable"
                     type="button"
                     variant="ghost"
                     class="ml-auto text-destructive"

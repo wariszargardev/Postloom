@@ -61,6 +61,7 @@ class PostController extends Controller
                     'avatar_url' => $target->socialAccount->avatar_url,
                 ])->values(),
                 'is_editable' => $post->status->isEditable(),
+                'is_deletable' => $post->status->isDeletable(),
             ]);
 
         $counts = $workspace->posts()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
@@ -230,6 +231,8 @@ class PostController extends Controller
                 'status' => $post->status->value,
                 'status_label' => $post->status->label(),
                 'is_editable' => $post->status->isEditable(),
+                'is_deletable' => $post->status->isDeletable(),
+                'is_delivered' => $post->status->isDelivered(),
                 'can_retry' => in_array($post->status, [PostStatus::Failed, PostStatus::PartlyPublished], true),
                 'targets' => $post->targets->map(fn (PostTarget $target): array => [
                     'social_account_id' => $target->social_account_id,

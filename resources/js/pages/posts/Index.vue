@@ -38,6 +38,7 @@ type PostRow = {
         avatar_url: string | null;
     }[];
     is_editable: boolean;
+    is_deletable: boolean;
 };
 
 type PaginationLink = { url: string | null; label: string; active: boolean };
@@ -217,7 +218,7 @@ function destroy(post: PostRow): void {
                         <span class="hidden lg:inline">Duplicate</span></Button
                     >
                     <Button
-                        v-if="post.is_editable"
+                        v-if="post.is_deletable"
                         size="sm"
                         variant="ghost"
                         class="text-destructive hover:text-destructive"

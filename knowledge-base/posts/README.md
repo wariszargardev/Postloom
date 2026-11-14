@@ -45,7 +45,17 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 | `post_targets` | `post_id`, `social_account_id` (unique per post), `content_override`, `settings` (JSON, defaults from the platform rules), `status` (`PostTargetStatus`: pending, publishing, published, ready_to_post, failed), `attempts`, `last_error`, `external_id`, `external_url`, `published_at` |
 | `post_media`   | `post_id`, `media_id` (unique per post), `sort_order`                                                                                                                                                                                                                                    |
 
-`PostStatus`: draft, scheduled, publishing, published, partly_published, failed. Only `publishing` blocks edits and deletes. `upcoming()` = scheduled + publishing.
+`PostStatus`: draft, scheduled, publishing, published, partly_published, failed. `upcoming()` = scheduled + publishing.
+
+**What can change (fix 20):**
+
+| Status                      | Edit / schedule / move to drafts | Delete | Editor                                   |
+| --------------------------- | -------------------------------- | ------ | ---------------------------------------- |
+| draft, scheduled, failed    | yes                              | yes    | normal                                   |
+| publishing                  | no                               | no     | read-only, "being published right now"   |
+| published, partly_published | no                               | yes    | read-only notice + **Duplicate to edit** |
+
+`PostStatus::isEditable()`, `isDeletable()`, `isDelivered()`; the editor gets `is_editable`, `is_deletable`, `is_delivered`. A post that already went out is a record of what was posted: platforms don't let us change it, and saving it used to reset it to draft with every account pending, so Schedule posted it a second time. Partly published posts still use **Retry failed accounts** for the accounts that failed. A refused change logs `Post change refused` (warning, `status`).
 
 ## Rules
 
@@ -87,6 +97,7 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 | `Post moved back to draft`      | info    |                                  |
 | `Post duplicated`               | info    | `source_post_id`                 |
 | `Post deleted`                  | info    |                                  |
+| `Post change refused`           | warning | `status`                         |
 
 ## Config (`.env`)
 
@@ -94,7 +105,7 @@ Feature `posts`; context has `workspace_id` and `post_id`.
 
 ## Tests
 
-- `tests/Feature/Posts/PostEditorTest.php`: same-day times (1 minute, 20 minutes, 4 hours later accepted; 1 minute ago refused); draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; duplicate; delete; another owner gets 403; list and filter; editor props.
+- `tests/Feature/Posts/PostEditorTest.php`: same-day times (1 minute, 20 minutes, 4 hours later accepted; 1 minute ago refused); draft with targets, ordered media and custom text; UTC storage and local display; schedule success message; refused schedules (no account, past time, no time, no text or media) save nothing; text-limit message; LinkedIn media rules (mix, 2 videos, 2 PDFs, 21 images) and 20 images allowed; reconnect-needed and not-yet-supported accounts; other workspace's accounts and media rejected; update drops removed accounts; back to draft; publishing post locked; published / partly published posts refuse edits and unschedule but can be deleted; read-only editor props; failed post can be edited and rescheduled; duplicate; delete; another owner gets 403; list and filter; editor props.
 - `tests/Feature/Posts/InUseGuardsTest.php`: the two in-use guards, blocked and allowed.
 
 ## Known limits

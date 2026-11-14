@@ -23,11 +23,12 @@ KB: `knowledge-base/posts/README.md`.
 
 ## Debugging
 
-| Symptom                                    | Check                                                                                                                                    |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Schedule refused                           | The reasons list at the top of the form = `PostValidator::scheduleErrors()`. Also logged as `Post could not be scheduled` with `reasons` |
-| Wrong time shown                           | `posts.scheduled_at` is UTC; compare with `posts.timezone`. The form sends local time + timezone                                         |
-| Can't edit a post                          | Status is `publishing` (`PostStatus::isEditable()`)                                                                                      |
-| Can't disconnect an account / delete media | It's used by a scheduled post; move the post to drafts or take it out of the post                                                        |
+| Symptom                                    | Check                                                                                                                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schedule refused                           | The reasons list at the top of the form = `PostValidator::scheduleErrors()`. Also logged as `Post could not be scheduled` with `reasons`                                     |
+| Wrong time shown                           | `posts.scheduled_at` is UTC; compare with `posts.timezone`. The form sends local time + timezone                                                                             |
+| Can't edit a post                          | Only draft, scheduled and failed posts are editable (`PostStatus::isEditable()`). Published / partly published = read-only: use Duplicate to edit; log `Post change refused` |
+| Can't delete a post                        | Only while it is `publishing` (`PostStatus::isDeletable()`)                                                                                                                  |
+| Can't disconnect an account / delete media | It's used by a scheduled post; move the post to drafts or take it out of the post                                                                                            |
 
 Logs: filter `storage/logs/postloom-*.log` by `extra.feature` = `posts`, then by `extra.post_id`.

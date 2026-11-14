@@ -23,7 +23,8 @@ Each piece = one branch from `develop` = one PR into `develop`. Status: `planned
 | 16  | `feat/16-tiktok-connect`        | Connect a TikTok account                 | Login Kit with state check, open_id per account, 2-hour tokens with rotating refresh tokens, daily refresh, setup guide                                          | merged    |
 | 17  | `feat/17-tiktok-publish`        | Publish to TikTok                        | Direct post (private until audit) or send to inbox; chunked video upload, creator info, status polling, TikTok settings                                          | merged    |
 | 18  | `feat/18-csv-import`            | Import posts from CSV                    | Upload a CSV (+ media) to create many scheduled or draft posts; row-by-row preview with editor rules; template; test logs moved                                  | merged    |
-| 19  | `feat/19-instagram`             | Instagram connect and publishing         | Professional accounts via the Meta app; photos, carousels, Reels, Stories; resumable video upload; photos via a signed link on a Cloudflare tunnel, else To post | in review |
+| 19  | `feat/19-instagram`             | Instagram connect and publishing         | Professional accounts via the Meta app; photos, carousels, Reels, Stories; resumable video upload; photos via a signed link on a Cloudflare tunnel, else To post | merged    |
+| 20  | `fix/20-post-edit`              | Posts that went out stay as they are     | Published and partly published posts open read-only with "Duplicate to edit"; saving can't reset them to draft and post them twice; they can still be deleted    | in review |
 
 ## Later
 
