@@ -18,6 +18,7 @@ KB: `knowledge-base/auth/README.md`.
 
 ## Common tasks
 
+- **Deleted owner:** profile delete is a soft delete; registration stays closed (`User::withTrashed()` in the gate). Restore the row (`deleted_at = null`) to get back in.
 - **Allow a second account:** set `POSTLOOM_ALLOW_REGISTRATION=true` in `.env`, run `php artisan config:clear`, register, then set it back to `false`.
 - **Forgot password:** use "Forgot password", then find the link in `storage/logs/laravel.log` (search `reset-password`).
 - **Locked out by the rate limit:** wait one minute, or run `php artisan cache:clear`.

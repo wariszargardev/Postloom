@@ -10,6 +10,8 @@ class WorkspaceService
 {
     public const DEFAULT_NAME = 'Personal';
 
+    public function __construct(private SoftDeleteCascade $softDeleteCascade) {}
+
     public function ensureCurrent(User $user): Workspace
     {
         $current = $user->currentWorkspace;
@@ -96,7 +98,7 @@ class WorkspaceService
             return;
         }
 
-        $workspace->delete();
+        $this->softDeleteCascade->workspace($workspace);
 
         LogService::info('Workspace deleted', ['workspace_id' => $workspaceId]);
 

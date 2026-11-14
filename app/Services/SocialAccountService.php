@@ -12,6 +12,8 @@ use Carbon\CarbonInterface;
 
 class SocialAccountService
 {
+    public function __construct(private SoftDeleteCascade $softDeleteCascade) {}
+
     /**
      * Save an account after its OAuth login. Reconnecting the same account updates it in place.
      *
@@ -30,7 +32,7 @@ class SocialAccountService
      */
     public function saveConnectedAccount(Workspace $workspace, array $details): SocialAccount
     {
-        $account = $workspace->socialAccounts()->updateOrCreate(
+        $account = $workspace->socialAccounts()->withTrashed()->updateOrCreate(
             [
                 'provider' => $details['provider'],
                 'provider_account_id' => $details['provider_account_id'],
@@ -48,6 +50,10 @@ class SocialAccountService
                 'connected_at' => now(),
             ],
         );
+
+        if ($account->trashed()) {
+            $account->restore();
+        }
 
         LogService::info($account->wasRecentlyCreated ? 'Social account connected' : 'Social account reconnected', [
             'workspace_id' => $workspace->id,
@@ -68,7 +74,7 @@ class SocialAccountService
         ]);
 
         $accountId = $account->id;
-        $account->delete();
+        $this->softDeleteCascade->socialAccount($account);
 
         LogService::info('Social account disconnected', ['account_id' => $accountId]);
     }

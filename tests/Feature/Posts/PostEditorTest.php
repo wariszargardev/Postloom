@@ -226,7 +226,8 @@ it('keeps a post that already went out unchanged, but lets you delete it', funct
         ->and($target->fresh()->status)->toBe(PostTargetStatus::Published);
 
     $this->actingAs($this->user)->delete(route('posts.destroy', $post))->assertRedirect(route('posts.index'));
-    $this->assertModelMissing($post);
+    $this->assertSoftDeleted($post);
+    $this->assertSoftDeleted($target);
 })->with([
     'published' => [PostStatus::Published],
     'partly published' => [PostStatus::PartlyPublished],
@@ -276,7 +277,7 @@ it('deletes a post', function () {
 
     $this->actingAs($this->user)->delete(route('posts.destroy', $post))->assertRedirect(route('posts.index'));
 
-    $this->assertModelMissing($post);
+    $this->assertSoftDeleted($post);
 });
 
 it('blocks another owner from viewing or changing a post', function () {

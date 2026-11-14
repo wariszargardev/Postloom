@@ -87,7 +87,7 @@ it('deletes an empty workspace and moves to another one', function () {
         ->delete(route('workspaces.destroy', $remove))
         ->assertRedirect(route('workspaces.index'));
 
-    $this->assertModelMissing($remove);
+    $this->assertSoftDeleted($remove);
     expect($user->fresh()->current_workspace_id)->toBe($keep->id);
 });
 

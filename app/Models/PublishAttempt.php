@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $duration_ms
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 #[Fillable([
     'attempt',
@@ -39,7 +41,7 @@ use Illuminate\Support\Carbon;
 class PublishAttempt extends Model
 {
     /** @use HasFactory<PublishAttemptFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>

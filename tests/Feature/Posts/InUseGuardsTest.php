@@ -37,8 +37,8 @@ it('disconnects an account used only in drafts and removes it from them', functi
 
     $this->actingAs($this->user)->delete(route('accounts.destroy', $account))->assertRedirect(route('accounts.index'));
 
-    $this->assertModelMissing($account);
-    $this->assertModelMissing($target);
+    $this->assertSoftDeleted($account);
+    $this->assertSoftDeleted($target);
 });
 
 it('blocks deleting media used by a scheduled post', function () {
@@ -59,6 +59,6 @@ it('deletes media used only in drafts and removes it from them', function () {
 
     $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
 
-    $this->assertModelMissing($media);
+    $this->assertSoftDeleted($media);
     expect($draft->media()->count())->toBe(0);
 });

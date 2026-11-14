@@ -12,6 +12,7 @@ use App\Models\Workspace;
 use App\Services\LogService;
 use App\Services\Posts\Rules\PlatformRulesRegistry;
 use App\Services\Publishing\PostDispatcher;
+use App\Services\SoftDeleteCascade;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +23,7 @@ class PostService
         private PostValidator $postValidator,
         private PlatformRulesRegistry $platformRulesRegistry,
         private PostDispatcher $postDispatcher,
+        private SoftDeleteCascade $softDeleteCascade,
     ) {}
 
     /**
@@ -221,7 +223,7 @@ class PostService
         $this->ensureDeletable($post);
 
         $postId = $post->id;
-        $post->delete();
+        $this->softDeleteCascade->post($post);
 
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $post->workspace_id, 'post_id' => $postId]);
         LogService::info('Post deleted', []);
@@ -254,7 +256,7 @@ class PostService
     private function syncTargets(Post $post, array $targets): void
     {
         $accountIds = collect($targets)->pluck('social_account_id')->map(fn ($id): int => (int) $id)->all();
-        $post->targets()->whereNotIn('social_account_id', $accountIds)->delete();
+        $this->softDeleteCascade->targets($post->targets()->whereNotIn('social_account_id', $accountIds)->pluck('id')->all());
 
         $accounts = SocialAccount::query()->whereIn('id', $accountIds)->get()->keyBy('id');
 
@@ -267,7 +269,7 @@ class PostService
 
             $defaults = $this->platformRulesRegistry->forProvider($account->provider)?->defaultSettings() ?? [];
 
-            $post->targets()->updateOrCreate(
+            $postTarget = $post->targets()->withTrashed()->updateOrCreate(
                 ['social_account_id' => $account->id],
                 [
                     'content_override' => filled($target['content_override'] ?? null) ? $target['content_override'] : null,
@@ -275,6 +277,10 @@ class PostService
                     'status' => PostTargetStatus::Pending,
                 ],
             );
+
+            if ($postTarget->trashed()) {
+                $postTarget->fill(['attempts' => 0, 'last_error' => null, 'external_id' => null, 'external_url' => null, 'published_at' => null])->restore();
+            }
         }
     }
 

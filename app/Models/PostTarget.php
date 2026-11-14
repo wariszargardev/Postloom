@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 #[Fillable([
     'social_account_id',
@@ -40,7 +42,7 @@ use Illuminate\Support\Carbon;
 class PostTarget extends Model
 {
     /** @use HasFactory<PostTargetFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>

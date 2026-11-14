@@ -61,6 +61,34 @@ it('uploads an image and reads its size', function () {
     Storage::disk('local')->assertExists($media->path);
 });
 
+it('brings a deleted file back when the same file is uploaded again', function () {
+    $file = UploadedFile::fake()->image('again.jpg', 10, 10);
+    uploadMedia([$file])->assertRedirect();
+    $media = Media::query()->sole();
+    $this->actingAs($this->user)->delete(route('media.destroy', $media));
+
+    uploadMedia([$file])->assertRedirect();
+
+    expect(Media::withTrashed()->count())->toBe(1)
+        ->and($media->fresh()->trashed())->toBeFalse();
+});
+
+it('stores the file again on the deleted row when its old file is gone from disk', function () {
+    $file = UploadedFile::fake()->image('gone.jpg', 10, 10);
+    uploadMedia([$file])->assertRedirect();
+    $media = Media::query()->sole();
+    $this->actingAs($this->user)->delete(route('media.destroy', $media));
+    Storage::disk('local')->delete($media->path);
+
+    uploadMedia([$file])->assertRedirect();
+
+    $restored = $media->fresh();
+    expect(Media::withTrashed()->count())->toBe(1)
+        ->and($restored->trashed())->toBeFalse()
+        ->and($restored->path)->not->toBe($media->path);
+    Storage::disk('local')->assertExists($restored->path);
+});
+
 it('returns to the page it came from with the uploaded ids, so the post editor keeps its state', function () {
     $existing = UploadedFile::fake()->image('same.jpg', 10, 10);
     uploadMedia([$existing])->assertRedirect();
@@ -188,15 +216,15 @@ it('saves alt text', function () {
     expect($media->fresh()->alt_text)->toBe('Waris speaking at a meetup');
 });
 
-it('deletes the file, its thumbnail and the row', function () {
+it('soft deletes the row and keeps the file and thumbnail so it can come back', function () {
     uploadMedia([UploadedFile::fake()->create('clip.mp4', 2048, 'video/mp4')]);
     $media = Media::query()->sole();
 
     $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
 
-    $this->assertModelMissing($media);
-    Storage::disk('local')->assertMissing($media->path);
-    Storage::disk('local')->assertMissing($media->thumbnail_path);
+    $this->assertSoftDeleted($media);
+    Storage::disk('local')->assertExists($media->path);
+    Storage::disk('local')->assertExists($media->thumbnail_path);
 });
 
 it('keeps a file that a failed post can still retry with', function (PostStatus $postStatus) {
@@ -223,7 +251,7 @@ it('lets a file go once its post has nothing left to retry', function () {
 
     $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
 
-    $this->assertModelMissing($media);
+    $this->assertSoftDeleted($media);
 });
 
 it('blocks changes to another owner\'s media', function () {
