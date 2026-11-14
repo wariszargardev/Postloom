@@ -76,8 +76,48 @@ it('retries only the failed accounts of a partly published post', function () {
     Queue::assertPushed(PublishPostTargetJob::class, 1);
 });
 
+it('refuses a retry the post can no longer pass and leaves it failed', function () {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Failed, 'scheduled_at' => now()->subHour()]);
+    $this->account->update(['needs_reconnect' => true]);
+    $failed = PostTarget::factory()->for($post)->for($this->account)->create(['status' => PostTargetStatus::Failed, 'last_error' => 'Token expired']);
+
+    $this->actingAs($this->user)->post(route('posts.retry', $post))
+        ->assertSessionHasErrors(["targets.{$this->account->id}"]);
+
+    expect($post->fresh()->status)->toBe(PostStatus::Failed)
+        ->and($failed->fresh()->status)->toBe(PostTargetStatus::Failed)
+        ->and($failed->fresh()->last_error)->toBe('Token expired');
+    Queue::assertNothingPushed();
+});
+
+it('only checks the failed accounts on retry', function () {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::PartlyPublished, 'scheduled_at' => now()->subHour()]);
+    $brokenAccount = SocialAccount::factory()->for($this->workspace)->create(['needs_reconnect' => true]);
+    PostTarget::factory()->for($post)->for($brokenAccount)->create(['status' => PostTargetStatus::Published]);
+    $failed = PostTarget::factory()->for($post)->for($this->account)->create(['status' => PostTargetStatus::Failed]);
+
+    $this->actingAs($this->user)->post(route('posts.retry', $post))->assertSessionHasNoErrors();
+
+    expect($failed->fresh()->status)->toBe(PostTargetStatus::Pending);
+    Queue::assertPushed(PublishPostTargetJob::class, 1);
+});
+
+it('refuses changes once the scheduler has taken the post', function (string $routeName, string $method, Closure $payload) {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Publishing, 'scheduled_at' => now()->subMinute()]);
+    PostTarget::factory()->for($post)->for($this->account)->create(['status' => PostTargetStatus::Publishing]);
+
+    $this->actingAs($this->user)->{$method}(route($routeName, $post), $payload())->assertSessionHasErrors('post');
+
+    expect($post->fresh()->status)->toBe(PostStatus::Publishing);
+})->with([
+    'unschedule' => ['posts.unschedule', 'post', fn () => []],
+    'retry' => ['posts.retry', 'post', fn () => []],
+    'save' => ['posts.update', 'put', fn () => [...publishNowPayload(), 'intent' => 'draft']],
+]);
+
 it('only retries failed or partly published posts', function () {
     $post = Post::factory()->for($this->workspace)->scheduled()->create();
+    PostTarget::factory()->for($post)->for($this->account)->create();
 
     $this->actingAs($this->user)->post(route('posts.retry', $post))->assertSessionHasErrors('post');
 });

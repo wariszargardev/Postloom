@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\LogFeature;
 use App\Enums\MediaKind;
 use App\Enums\PostStatus;
+use App\Enums\PostTargetStatus;
 use App\Models\Media;
 use App\Models\Workspace;
 use App\Services\Media\MediaInspector;
@@ -96,9 +97,18 @@ class MediaService
     {
         $upcomingPosts = $media->posts()->whereIn('status', PostStatus::upcoming())->count();
 
-        return $upcomingPosts === 0
+        if ($upcomingPosts > 0) {
+            return trans_choice('{1} This file is used by 1 scheduled post. Remove it from the post or move the post to drafts first.|[2,*] This file is used by :count scheduled posts. Remove it from them or move them to drafts first.', $upcomingPosts);
+        }
+
+        $retryablePosts = $media->posts()
+            ->whereIn('status', [PostStatus::Failed, PostStatus::PartlyPublished])
+            ->whereHas('targets', fn ($query) => $query->where('status', PostTargetStatus::Failed))
+            ->count();
+
+        return $retryablePosts === 0
             ? null
-            : trans_choice('{1} This file is used by 1 scheduled post. Remove it from the post or move the post to drafts first.|[2,*] This file is used by :count scheduled posts. Remove it from them or move them to drafts first.', $upcomingPosts);
+            : trans_choice('{1} This file is used by 1 failed post that can still be retried. Retry or delete that post first.|[2,*] This file is used by :count failed posts that can still be retried. Retry or delete them first.', $retryablePosts);
     }
 
     public function delete(Media $media): void

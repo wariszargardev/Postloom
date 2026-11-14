@@ -204,8 +204,46 @@ it('maps Facebook errors to retryable or permanent', function (int $status, int 
     'business rate limit 80001' => [400, 80001, true],
     'permission 200' => [403, 200, false],
     'blocked 368' => [400, 368, false],
-    'server error' => [500, 2, true],
 ]);
+
+it('does not retry when the call that makes the post public fails, because it may already be posted', function (string $format, Closure $setUp) {
+    $this->target->update(['settings' => ['format' => $format, 'video_title' => '']]);
+    $setUp();
+
+    expect(fn () => $this->publisher->publish($this->target->fresh()))
+        ->toThrow(fn (PublishException $exception) => expect($exception)->not->toBeInstanceOf(FacebookApiException::class)
+            ->and($exception->isRetryable)->toBeFalse()
+            ->and($exception->getMessage())->toContain('may already be posted'));
+})->with([
+    'text post, server error' => ['post', fn () => Http::fake([FBP_GRAPH.'/'.FBP_PAGE.'/feed' => Http::response(['error' => ['message' => 'Oops', 'code' => 2]], 500)])],
+    'text post, dropped connection' => ['post', fn () => Http::fake([FBP_GRAPH.'/'.FBP_PAGE.'/feed' => Http::failedConnection()])],
+    'single photo, dropped connection' => ['post', function () {
+        Http::fake([FBP_GRAPH.'/'.FBP_PAGE.'/photos' => Http::failedConnection()]);
+        attachFacebookMedia();
+    }],
+    'page video, dropped connection' => ['post', function () {
+        Http::fake([FBP_VIDEO.'/'.FBP_PAGE.'/videos' => Http::failedConnection()]);
+        attachFacebookMedia(['kind' => MediaKind::Video, 'mime_type' => 'video/mp4', 'original_name' => 'clip.mp4']);
+    }],
+    'reel finish, server error' => ['reel', function () {
+        Http::fake([
+            FBP_GRAPH.'/'.FBP_PAGE.'/video_reels' => Http::sequence()->push(['video_id' => 'r42'])->push(['error' => ['message' => 'Oops', 'code' => 2]], 503),
+            FBP_RUPLOAD.'/r42' => Http::response(['success' => true]),
+        ]);
+        attachFacebookMedia(['kind' => MediaKind::Video, 'mime_type' => 'video/mp4', 'width' => 1080, 'height' => 1920, 'duration_seconds' => '30.00']);
+    }],
+]);
+
+it('still retries when a step before the post goes public drops', function () {
+    Http::fake([FBP_GRAPH.'/'.FBP_PAGE.'/photos' => Http::failedConnection()]);
+    attachFacebookMedia();
+    attachFacebookMedia();
+
+    expect(fn () => $this->publisher->publish($this->target->fresh()))
+        ->toThrow(fn (FacebookApiException $exception) => expect($exception->isRetryable)->toBeTrue());
+
+    Http::assertNotSent(fn (Request $request) => $request->url() === FBP_GRAPH.'/'.FBP_PAGE.'/feed');
+});
 
 it('falls back to a constructed link when the permalink lookup fails', function () {
     Http::fake([

@@ -86,4 +86,4 @@ The inspector was also checked once against the real ffmpeg 9 on this PC (3-seco
 
 - One request per upload batch, so very large videos depend on the 512 MB limit. Chunked uploads would be needed for bigger files or a production server.
 - No image editing or cropping.
-- Media used by a scheduled or publishing post cannot be deleted (`MediaService::deletionBlockReason()`); media used only in drafts is deleted and removed from them. See `knowledge-base/posts/README.md`.
+- Media used by a scheduled or publishing post cannot be deleted (`MediaService::deletionBlockReason()`), nor media used by a failed or partly published post that still has failed accounts ("Retry or delete that post first"); media used only in drafts or delivered posts is deleted and removed from them. See `knowledge-base/posts/README.md`.

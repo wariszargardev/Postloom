@@ -81,7 +81,8 @@ Write a post once, choose which accounts it goes to, attach media from the libra
 **In-use guards (approved 2026-11-10):**
 
 - Disconnecting an account with a scheduled or publishing post is blocked (`SocialAccountService::disconnectBlockReason()`). Used only in drafts: it's disconnected and removed from those drafts.
-- Deleting media used by a scheduled or publishing post is blocked (`MediaService::deletionBlockReason()`). Used only in drafts: it's deleted and removed from those drafts.
+- Deleting media used by a scheduled or publishing post is blocked (`MediaService::deletionBlockReason()`), and so is media used by a failed or partly published post that still has failed accounts (a retry would post without it). Used only in drafts or delivered posts: it's deleted and removed from them.
+- Save and unschedule lock the post row and check its status inside the transaction, so a post the scheduler took a moment ago is refused ("being published right now") instead of being overwritten.
 
 **Adding a platform:** add a class implementing `PlatformPostRules`, return it from `PlatformRulesRegistry::forProvider()`. The editor (counter, media hint, settings fields, validation) picks it up from `describe()`. Each setting has a `type` that `resources/js/components/posts/PlatformSettings.vue` renders: `select` (with `options`), `text` (`max_length`, `required`), `tags`, `boolean`, `image` (pick from the library). Settings are shown under each account in "Per account" (no need to open Customize). Checks that need text, media and settings together go in `targetErrors()`.
 

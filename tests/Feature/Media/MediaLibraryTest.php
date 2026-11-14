@@ -1,7 +1,11 @@
 <?php
 
 use App\Enums\MediaKind;
+use App\Enums\PostStatus;
+use App\Enums\PostTargetStatus;
 use App\Models\Media;
+use App\Models\Post;
+use App\Models\PostTarget;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -193,6 +197,33 @@ it('deletes the file, its thumbnail and the row', function () {
     $this->assertModelMissing($media);
     Storage::disk('local')->assertMissing($media->path);
     Storage::disk('local')->assertMissing($media->thumbnail_path);
+});
+
+it('keeps a file that a failed post can still retry with', function (PostStatus $postStatus) {
+    $media = Media::factory()->for($this->workspace)->create();
+    $post = Post::factory()->for($this->workspace)->create(['status' => $postStatus]);
+    PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Failed]);
+    $post->media()->attach($media, ['sort_order' => 0]);
+
+    $this->actingAs($this->user)->delete(route('media.destroy', $media))
+        ->assertSessionHas('inertia.flash_data.toast.message', 'This file is used by 1 failed post that can still be retried. Retry or delete that post first.');
+
+    $this->assertModelExists($media);
+})->with([
+    'failed' => PostStatus::Failed,
+    'partly published' => PostStatus::PartlyPublished,
+]);
+
+it('lets a file go once its post has nothing left to retry', function () {
+    uploadMedia([UploadedFile::fake()->image('card.png')]);
+    $media = Media::query()->sole();
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Published]);
+    PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Published]);
+    $post->media()->attach($media, ['sort_order' => 0]);
+
+    $this->actingAs($this->user)->delete(route('media.destroy', $media))->assertRedirect();
+
+    $this->assertModelMissing($media);
 });
 
 it('blocks changes to another owner\'s media', function () {

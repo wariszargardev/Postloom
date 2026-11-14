@@ -29,6 +29,7 @@ KB: `knowledge-base/posts/README.md`.
 | Wrong time shown                           | `posts.scheduled_at` is UTC; compare with `posts.timezone`. The form sends local time + timezone                                                                             |
 | Can't edit a post                          | Only draft, scheduled and failed posts are editable (`PostStatus::isEditable()`). Published / partly published = read-only: use Duplicate to edit; log `Post change refused` |
 | Can't delete a post                        | Only while it is `publishing` (`PostStatus::isDeletable()`)                                                                                                                  |
-| Can't disconnect an account / delete media | It's used by a scheduled post; move the post to drafts or take it out of the post                                                                                            |
+| Can't disconnect an account / delete media | It's used by a scheduled post; move the post to drafts or take it out of the post. Media is also kept while a failed post can still retry with it: retry or delete that post |
+| "being published right now" on save        | The scheduler took the post a moment before; wait for it to finish                                                                                                           |
 
 Logs: filter `storage/logs/postloom-*.log` by `extra.feature` = `posts`, then by `extra.post_id`.

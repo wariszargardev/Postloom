@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostTarget;
 use App\Models\Workspace;
 use App\Services\Publishing\PostDispatcher;
+use App\Services\Publishing\QueuedPublishJobs;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -99,6 +100,52 @@ it('times out accounts stuck in publishing for 30 minutes', function () {
     expect($stuck->fresh()->status)->toBe(PostTargetStatus::Failed)
         ->and($stuck->fresh()->last_error)->toBe(PostDispatcher::TIMED_OUT_MESSAGE)
         ->and($post->fresh()->status)->toBe(PostStatus::Failed);
+});
+
+it('keeps a missed post partly published when an earlier run already reached an account', function () {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Scheduled, 'scheduled_at' => now()->subHours(7)]);
+    $published = PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Published]);
+    $waiting = PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Pending]);
+
+    $this->artisan('posts:dispatch-due')->expectsOutput('Dispatched: 0. Missed: 1. Timed out: 0.');
+
+    expect($post->fresh()->status)->toBe(PostStatus::PartlyPublished)
+        ->and($published->fresh()->status)->toBe(PostTargetStatus::Published)
+        ->and($waiting->fresh()->status)->toBe(PostTargetStatus::Failed)
+        ->and($waiting->fresh()->last_error)->toBe(PostDispatcher::MISSED_MESSAGE);
+});
+
+it('does not time out a retry that is still waiting in the queue', function () {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Publishing, 'scheduled_at' => now()->subHour()]);
+    $waitingRetry = PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Publishing]);
+    PostTarget::query()->whereKey($waitingRetry->id)->update(['updated_at' => now()->subMinutes(45)]);
+    $this->mock(QueuedPublishJobs::class)->shouldReceive('targetIds')->andReturn([$waitingRetry->id]);
+
+    $this->artisan('posts:dispatch-due')->expectsOutput('Dispatched: 0. Missed: 0. Timed out: 0.');
+
+    expect($waitingRetry->fresh()->status)->toBe(PostTargetStatus::Publishing)
+        ->and($post->fresh()->status)->toBe(PostStatus::Publishing);
+});
+
+it('times out a waiting account whose job was lost', function () {
+    $post = Post::factory()->for($this->workspace)->create(['status' => PostStatus::Publishing, 'scheduled_at' => now()->subHour()]);
+    $lost = PostTarget::factory()->for($post)->create(['status' => PostTargetStatus::Pending]);
+    PostTarget::query()->whereKey($lost->id)->update(['updated_at' => now()->subMinutes(31)]);
+
+    $this->artisan('posts:dispatch-due')->expectsOutput('Dispatched: 0. Missed: 0. Timed out: 1.');
+
+    expect($lost->fresh()->status)->toBe(PostTargetStatus::Failed)
+        ->and($lost->fresh()->last_error)->toBe(PostDispatcher::TIMED_OUT_MESSAGE)
+        ->and($post->fresh()->status)->toBe(PostStatus::Failed);
+});
+
+it('leaves accounts of a scheduled post alone however old they are', function () {
+    $post = duePost(now()->addHour(), 1);
+    PostTarget::query()->where('post_id', $post->id)->update(['updated_at' => now()->subDays(2)]);
+
+    $this->artisan('posts:dispatch-due')->expectsOutput('Dispatched: 0. Missed: 0. Timed out: 0.');
+
+    expect($post->targets()->sole()->status)->toBe(PostTargetStatus::Pending);
 });
 
 it('does nothing while publishing is turned off', function () {

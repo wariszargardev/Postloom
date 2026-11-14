@@ -19,17 +19,17 @@ KB: `knowledge-base/tiktok/README.md`. Setup guide: `docs/guides/tiktok/README.m
 
 ## Debugging
 
-| Symptom                               | Check                                                                                                                             |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Connect button disabled               | `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET` empty, or config cached: `php artisan config:clear`                                  |
-| TikTok shows a redirect_uri error     | Login Kit's Redirect URI must equal `TIKTOK_REDIRECT_URI` exactly and be https; open Postloom on that same https host             |
-| TikTok page "non_sandbox_target"      | The TikTok account used isn't a Sandbox target user: log in as a listed one, or add it under Sandbox settings → Target Users      |
-| "The TikTok login expired"            | `state` mismatch: the session was lost (different host than `APP_URL`, cookies blocked, or callback opened twice). Connect again  |
-| "did not allow posting videos"        | `video.publish` / `video.upload` not granted: add Content Posting API to the app and tick every permission                        |
-| "TikTok did not accept the login (…)" | Log `TikTok code exchange failed`: `invalid_client` = wrong keys, `invalid_grant` = code reused or redirect URI differs           |
-| "Could not connect TikTok"            | Log `TikTok user info lookup failed`: `error_code` `scope_not_authorized` = `user.info.profile` missing in the app's scopes       |
-| Account shows Reconnect needed        | `TikTok access was revoked or expired` with `reason` `invalid_grant`: app removed in TikTok, or refresh token older than 180 days |
-| Every account fails to refresh        | `TikTok refused to refresh a token` with `error` `invalid_client`: the `.env` keys don't match the app                            |
+| Symptom                               | Check                                                                                                                                                                                              |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connect button disabled               | `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET` empty, or config cached: `php artisan config:clear`                                                                                                   |
+| TikTok shows a redirect_uri error     | Login Kit's Redirect URI must equal `TIKTOK_REDIRECT_URI` exactly and be https; open Postloom on that same https host                                                                              |
+| TikTok page "non_sandbox_target"      | The TikTok account used isn't a Sandbox target user: log in as a listed one, or add it under Sandbox settings → Target Users                                                                       |
+| "The TikTok login expired"            | `state` mismatch: the session was lost (different host than `APP_URL`, cookies blocked, or callback opened twice). Connect again                                                                   |
+| "did not allow posting videos"        | `video.publish` / `video.upload` not granted: add Content Posting API to the app and tick every permission                                                                                         |
+| "TikTok did not accept the login (…)" | Log `TikTok code exchange failed`: `invalid_client` = wrong keys, `invalid_grant` = code reused or redirect URI differs                                                                            |
+| "Could not connect TikTok"            | Log `TikTok user info lookup failed`: `error_code` `scope_not_authorized` = `user.info.profile` missing in the app's scopes                                                                        |
+| Account shows Reconnect needed        | `TikTok access was revoked or expired` with `reason` `invalid_grant`: app removed in TikTok, or refresh token older than 180 days. Two refreshes at once can no longer cause it (per-account lock) |
+| Every account fails to refresh        | `TikTok refused to refresh a token` with `error` `invalid_client`: the `.env` keys don't match the app                                                                                             |
 
 | TikTok account shows "Ready for you" | Expected for "I'll post it myself": upload it from **To post**, then Mark as posted |
 | Nothing under To post at the time | Mode wasn't `manual`, or the scheduler/queue isn't running (`start.ps1`); check `TikTok post handed off to you` |

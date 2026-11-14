@@ -45,26 +45,39 @@ class PostService
      */
     public function retryFailed(Post $post): Post
     {
-        if (! in_array($post->status, [PostStatus::Failed, PostStatus::PartlyPublished], true)) {
-            throw ValidationException::withMessages(['post' => 'Only failed or partly published posts can be retried.']);
-        }
-
-        $retriedTargets = $post->targets()->where('status', PostTargetStatus::Failed)->update([
-            'status' => PostTargetStatus::Pending,
-            'attempts' => 0,
-            'last_error' => null,
-        ]);
-
-        $post->update([
-            'status' => PostStatus::Scheduled,
-            'scheduled_at' => $post->scheduled_at !== null && $post->scheduled_at->isFuture() ? $post->scheduled_at : now(),
-        ]);
-
         LogService::startFeatureLogging(LogFeature::Publishing, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
-        LogService::info('Retry of failed accounts requested', ['accounts' => $retriedTargets]);
+
+        DB::transaction(function () use ($post): void {
+            $current = $this->lockedCopy($post);
+
+            if (! in_array($current->status, [PostStatus::Failed, PostStatus::PartlyPublished], true)) {
+                throw ValidationException::withMessages(['post' => 'Only failed or partly published posts can be retried.']);
+            }
+
+            $errors = $this->postValidator->retryErrors($current);
+
+            if ($errors !== []) {
+                LogService::warning('Retry refused', ['reasons' => array_values($errors)]);
+
+                throw ValidationException::withMessages($errors);
+            }
+
+            $retriedTargets = $current->targets()->where('status', PostTargetStatus::Failed)->update([
+                'status' => PostTargetStatus::Pending,
+                'attempts' => 0,
+                'last_error' => null,
+            ]);
+
+            $current->update([
+                'status' => PostStatus::Scheduled,
+                'scheduled_at' => $current->scheduled_at !== null && $current->scheduled_at->isFuture() ? $current->scheduled_at : now(),
+            ]);
+
+            LogService::info('Retry of failed accounts requested', ['accounts' => $retriedTargets]);
+        });
 
         if (PostDispatcher::isEnabled()) {
-            $this->postDispatcher->dispatchPost($post);
+            $this->postDispatcher->dispatchPost($post->refresh());
         }
 
         return $post->refresh();
@@ -85,13 +98,14 @@ class PostService
      */
     public function save(Workspace $workspace, User $user, array $data, bool $schedule, ?Post $post = null): Post
     {
-        if ($post !== null) {
-            $this->ensureEditable($post);
-        }
-
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $workspace->id, 'post_id' => $post?->id]);
 
         $post = DB::transaction(function () use ($workspace, $user, $data, $schedule, $post): Post {
+            if ($post !== null) {
+                $post = $this->lockedCopy($post);
+                $this->ensureEditable($post);
+            }
+
             $post ??= new Post;
             $isNew = ! $post->exists;
 
@@ -158,14 +172,17 @@ class PostService
 
     public function unschedule(Post $post): Post
     {
-        $this->ensureEditable($post);
+        DB::transaction(function () use ($post): void {
+            $current = $this->lockedCopy($post);
+            $this->ensureEditable($current);
 
-        $post->update(['status' => PostStatus::Draft]);
+            $current->update(['status' => PostStatus::Draft]);
+        });
 
         LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
         LogService::info('Post moved back to draft', []);
 
-        return $post;
+        return $post->refresh();
     }
 
     public function duplicate(Post $post): Post
@@ -278,6 +295,15 @@ class PostService
         }
 
         return Carbon::parse($localDateTime, $timezone)->utc();
+    }
+
+    /**
+     * The post as it is in the database right now, locked until the transaction ends, so the scheduler
+     * can't start publishing it halfway through a change.
+     */
+    private function lockedCopy(Post $post): Post
+    {
+        return Post::query()->whereKey($post->id)->lockForUpdate()->firstOrFail();
     }
 
     private function ensureEditable(Post $post): void

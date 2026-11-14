@@ -40,6 +40,20 @@ it('refreshes an expired token and saves the new refresh token too', function ()
         && $request['client_key'] === 'tiktok-client-key');
 });
 
+it('uses the token another process just refreshed instead of spending the old refresh token', function () {
+    Http::fake();
+    SocialAccount::query()->findOrFail($this->profile->id)->update([
+        'access_token' => 'act.from-other-process',
+        'refresh_token' => 'rft.from-other-process',
+        'token_expires_at' => now()->addHours(2),
+    ]);
+
+    expect($this->tokens->accessTokenFor($this->profile))->toBe('act.from-other-process');
+
+    Http::assertNothingSent();
+    expect($this->profile->fresh()->needs_reconnect)->toBeFalse();
+});
+
 it('reuses a token that is still valid', function () {
     Http::fake();
     $this->profile->update(['token_expires_at' => now()->addHour(), 'access_token' => 'act.still-good']);
