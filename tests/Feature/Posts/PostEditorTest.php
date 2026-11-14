@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PostStatus;
+use App\Enums\PostTargetStatus;
 use App\Enums\SocialProvider;
 use App\Models\Media;
 use App\Models\Post;
@@ -202,6 +203,56 @@ it('does not change a post while it is publishing', function () {
     $this->actingAs($this->user)->delete(route('posts.destroy', $post))->assertSessionHasErrors('post');
 
     expect($post->fresh()->content)->toBe('Original');
+});
+
+it('keeps a post that already went out unchanged, but lets you delete it', function (PostStatus $status) {
+    $post = Post::factory()->for($this->workspace)->create([
+        'status' => $status,
+        'scheduled_at' => now()->subHour(),
+        'content' => 'Original',
+    ]);
+    $target = PostTarget::factory()->for($post)->for($this->linkedIn)->create([
+        'status' => PostTargetStatus::Published,
+        'external_url' => 'https://www.linkedin.com/feed/update/urn:li:share:1',
+    ]);
+
+    $this->actingAs($this->user)
+        ->put(route('posts.update', $post), postPayload(['intent' => 'schedule', 'content' => 'Changed']))
+        ->assertSessionHasErrors(['post' => 'This post has already gone out, so it can\'t be changed. Duplicate it to post an edited copy.']);
+    $this->actingAs($this->user)->post(route('posts.unschedule', $post))->assertSessionHasErrors('post');
+
+    expect($post->fresh()->status)->toBe($status)
+        ->and($post->fresh()->content)->toBe('Original')
+        ->and($target->fresh()->status)->toBe(PostTargetStatus::Published);
+
+    $this->actingAs($this->user)->delete(route('posts.destroy', $post))->assertRedirect(route('posts.index'));
+    $this->assertModelMissing($post);
+})->with([
+    'published' => [PostStatus::Published],
+    'partly published' => [PostStatus::PartlyPublished],
+]);
+
+it('shows a post that already went out as read-only with Duplicate to edit', function () {
+    $post = Post::factory()->for($this->workspace)->published()->create();
+
+    $this->actingAs($this->user)->get(route('posts.edit', $post))
+        ->assertInertia(fn ($page) => $page
+            ->where('post.is_editable', false)
+            ->where('post.is_delivered', true)
+            ->where('post.is_deletable', true));
+});
+
+it('still lets you edit and reschedule a failed post', function () {
+    $post = Post::factory()->for($this->workspace)->failed()->create(['content' => 'Original']);
+    PostTarget::factory()->for($post)->for($this->linkedIn)->create(['status' => PostTargetStatus::Failed, 'last_error' => 'Boom']);
+
+    $this->actingAs($this->user)
+        ->put(route('posts.update', $post), postPayload(['intent' => 'schedule', 'content' => 'Fixed']))
+        ->assertSessionHasNoErrors();
+
+    expect($post->fresh()->status)->toBe(PostStatus::Scheduled)
+        ->and($post->fresh()->content)->toBe('Fixed')
+        ->and($post->targets()->sole()->status)->toBe(PostTargetStatus::Pending);
 });
 
 it('duplicates a post as a draft without a time', function () {

@@ -23,9 +23,23 @@ enum PostStatus: string
         };
     }
 
+    /**
+     * Text, accounts, media and time can still change. Posts that already went out
+     * (fully or partly) are kept as a record; duplicate them to post an edited copy.
+     */
     public function isEditable(): bool
     {
+        return in_array($this, [self::Draft, self::Scheduled, self::Failed], true);
+    }
+
+    public function isDeletable(): bool
+    {
         return $this !== self::Publishing;
+    }
+
+    public function isDelivered(): bool
+    {
+        return in_array($this, [self::Published, self::PartlyPublished], true);
     }
 
     /**

@@ -58,6 +58,8 @@ export type EditorPost = {
     status: string;
     status_label: string;
     is_editable: boolean;
+    is_deletable: boolean;
+    is_delivered: boolean;
     can_retry: boolean;
     targets: (TargetForm & TargetDelivery)[];
     media_ids: number[];

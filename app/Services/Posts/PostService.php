@@ -201,7 +201,7 @@ class PostService
 
     public function delete(Post $post): void
     {
-        $this->ensureEditable($post);
+        $this->ensureDeletable($post);
 
         $postId = $post->id;
         $post->delete();
@@ -282,7 +282,23 @@ class PostService
 
     private function ensureEditable(Post $post): void
     {
-        if (! $post->status->isEditable()) {
+        if ($post->status->isEditable()) {
+            return;
+        }
+
+        $reason = $post->status->isDelivered()
+            ? 'This post has already gone out, so it can\'t be changed. Duplicate it to post an edited copy.'
+            : 'This post is being published right now and can\'t be changed.';
+
+        LogService::startFeatureLogging(LogFeature::Posts, ['workspace_id' => $post->workspace_id, 'post_id' => $post->id]);
+        LogService::warning('Post change refused', ['status' => $post->status->value]);
+
+        throw ValidationException::withMessages(['post' => $reason]);
+    }
+
+    private function ensureDeletable(Post $post): void
+    {
+        if (! $post->status->isDeletable()) {
             throw ValidationException::withMessages([
                 'post' => 'This post is being published right now and can\'t be changed.',
             ]);
